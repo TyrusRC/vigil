@@ -132,6 +132,8 @@ var (
 	fpDatabasePath       string
 	incremental          bool
 	headlessMode         bool
+	uiPort               int
+	noUI                 bool
 )
 
 // applyCLIFlags merges parsed CLI flag state into the internalConfig.

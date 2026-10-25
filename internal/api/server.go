@@ -51,6 +51,7 @@ type Server struct {
 	wg      sync.WaitGroup
 	scanSem chan struct{}
 	config  ServerConfig
+	events  *ScanEventBus
 }
 
 // NewServer builds a Server backed by runner. The returned Server's Handler
@@ -68,6 +69,7 @@ func NewServerWithStore(runner Runner, store *Store, cfg ServerConfig) *Server {
 		mux:     http.NewServeMux(),
 		scanSem: make(chan struct{}, maxConcurrentScans),
 		config:  cfg,
+		events:  NewScanEventBus(),
 	}
 	s.routes()
 	return s
@@ -76,6 +78,11 @@ func NewServerWithStore(runner Runner, store *Store, cfg ServerConfig) *Server {
 // Handler returns the HTTP handler for the API (without the static frontend).
 func (s *Server) Handler() http.Handler {
 	return s.mux
+}
+
+// Events returns the scan event bus for publishing real-time events.
+func (s *Server) Events() *ScanEventBus {
+	return s.events
 }
 
 // WaitIdle blocks until all in-flight scans finish. Intended for tests and
@@ -92,6 +99,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("DELETE /api/scans/{id}", s.requireAuth(s.handleCancelScan))
 	s.mux.HandleFunc("GET /api/scans/{id}/progress", s.requireAuth(s.handleGetProgress))
 	s.mux.HandleFunc("GET /api/scans/{id}/report", s.requireAuth(s.handleGetReport))
+	s.mux.HandleFunc("GET /api/scans/{id}/events", s.handleSSE)
 }
 
 // requireAuth wraps a handler with bearer-token checking when an API key is

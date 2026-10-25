@@ -3,6 +3,7 @@ package scanner
 import (
 	"time"
 
+	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/detection/subtakeover"
 	"github.com/TyrusRC/vigil/internal/scope"
 	"github.com/TyrusRC/vigil/internal/session"
@@ -260,6 +261,9 @@ type InternalScanConfig struct {
 	EnableWeakPwd      bool   // Weak password policy probe (WSTG-ATHN-07)
 	EnableDupReg       bool   // Duplicate registration probe (WSTG-IDNT-02)
 	RegistrationURL    string // Registration/signup URL for weak-pwd and dup-reg probes
+
+	// OnFinding is called for each finding as it's discovered (real-time UI).
+	OnFinding func(f *core.Finding)
 }
 
 // DefaultInternalConfig returns a reasonable default configuration.

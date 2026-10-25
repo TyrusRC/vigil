@@ -303,6 +303,7 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 			idx := findingIdx
 			findingsMu.Unlock()
 			prog.IncrementFindings(1)
+			// Real-time: TUI card + web UI event bus
 			tui.PrintFindingCard(tui.FindingCard{
 				Idx:      idx,
 				Severity: string(finding.Severity),
@@ -314,6 +315,9 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 				Response: finding.Response,
 				Verified: finding.Verified,
 			})
+			if s.config.OnFinding != nil {
+				s.config.OnFinding(finding)
+			}
 		}
 	}()
 

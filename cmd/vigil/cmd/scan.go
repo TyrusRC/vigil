@@ -160,5 +160,7 @@ func init() {
 	scanCmd.Flags().StringVar(&coveragePath, "coverage", "", "Write coverage data (tested/skipped params × detectors) to this JSON file")
 	scanCmd.Flags().StringVar(&fpDatabasePath, "fp-database", "", "FP feedback database path (.vigil-fp.json); known FPs get confidence=low")
 	scanCmd.Flags().BoolVar(&incremental, "incremental", false, "With --baseline, skip scanning endpoints whose response matches the baseline")
-	scanCmd.Flags().BoolVar(&headlessMode, "headless", false, "Plain text output for automation (no colors, no progress bar). Auto-detected when stdout is not a TTY")
+	scanCmd.Flags().BoolVar(&headlessMode, "headless", false, "Plain text output for automation (no web UI, no colors). Auto-detected when stdout is not a TTY")
+	scanCmd.Flags().IntVar(&uiPort, "port", 6274, "Web UI port (default 6274)")
+	scanCmd.Flags().BoolVar(&noUI, "no-ui", false, "Skip web UI, print to terminal only")
 }

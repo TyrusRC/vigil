@@ -1,224 +1,339 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { listScans, createScan, getReport, reportURL } from './api.js'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { listScans, createScan, getReport, subscribeScan } from './api.js'
 
-const PROFILES = ['', 'quick', 'normal', 'thorough', 'passive']
-const SEVERITIES = ['critical', 'high', 'medium', 'low', 'info']
-const FORMATS = ['json', 'html', 'csv', 'md', 'sarif', 'junit', 'gitlab']
+const SEV_ORDER = ['critical', 'high', 'medium', 'low', 'info']
+const SEV_LABELS = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low', info: 'Info' }
+
+function Badge({ severity }) {
+  return <span className={`badge ${severity}`}>{SEV_LABELS[severity] || severity}</span>
+}
+
+function highlightText(text, markers) {
+  if (!text || !markers || markers.length === 0) return text
+  let result = text
+  for (const m of markers) {
+    if (m && m.length > 2 && result.includes(m)) {
+      result = result.split(m).join(`<mark>${m}</mark>`)
+    }
+  }
+  return result
+}
+
+function CodeBlock({ content, highlights = [] }) {
+  const html = highlightText(content || '', highlights)
+  return <pre className="code-block" dangerouslySetInnerHTML={{ __html: html }} />
+}
+
+function CurlBlock({ curl }) {
+  const [copied, setCopied] = useState(false)
+  if (!curl) return null
+  const copy = () => {
+    navigator.clipboard.writeText(curl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+  return (
+    <div className="curl-block">
+      <code>{curl}</code>
+      <button className="copy-btn" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+    </div>
+  )
+}
+
+function FindingDetail({ finding }) {
+  const [tab, setTab] = useState('request')
+
+  if (!finding) return (
+    <div className="empty-state">
+      <div className="icon">&#128269;</div>
+      <p>Select a finding to view details</p>
+    </div>
+  )
+
+  const f = finding
+  const sev = (f.severity || 'info').toLowerCase()
+  const highlights = []
+  if (f.parameter) highlights.push(f.parameter)
+
+  return (
+    <div className="detail-card">
+      <div className="detail-header">
+        <div className="title-block">
+          <h2>{f.type || f.title}</h2>
+          <div className="detail-meta">
+            <span><span className="label">URL:</span> {f.url}</span>
+            {f.parameter && <span><span className="label">Param:</span> {f.parameter}</span>}
+            {f.tool && <span><span className="label">Tool:</span> {f.tool}</span>}
+            {f.verified && <span className="verified">&#10003; Verified</span>}
+          </div>
+        </div>
+        <Badge severity={sev} />
+      </div>
+
+      <div className="tabs">
+        <div className={`tab ${tab === 'request' ? 'active' : ''}`} onClick={() => setTab('request')}>Request</div>
+        <div className={`tab ${tab === 'response' ? 'active' : ''}`} onClick={() => setTab('response')}>Response</div>
+        <div className={`tab ${tab === 'details' ? 'active' : ''}`} onClick={() => setTab('details')}>Details</div>
+        <div className={`tab ${tab === 'remediation' ? 'active' : ''}`} onClick={() => setTab('remediation')}>Remediation</div>
+      </div>
+
+      <div className="tab-content">
+        {tab === 'request' && (
+          <>
+            {f.request ? (
+              <CodeBlock content={f.request} highlights={highlights} />
+            ) : (
+              <p style={{ color: 'var(--ink-muted)' }}>No HTTP request captured for this finding.</p>
+            )}
+            <CurlBlock curl={f.request} />
+          </>
+        )}
+
+        {tab === 'response' && (
+          <>
+            {f.response ? (
+              <CodeBlock content={f.response} highlights={[f.evidence, ...(f.cwe || [])]} />
+            ) : f.evidence ? (
+              <CodeBlock content={f.evidence} highlights={highlights} />
+            ) : (
+              <p style={{ color: 'var(--ink-muted)' }}>No HTTP response captured.</p>
+            )}
+          </>
+        )}
+
+        {tab === 'details' && (
+          <>
+            {f.description && <p className="remediation">{f.description}</p>}
+            <div className="tags" style={{ marginTop: 16 }}>
+              {(f.cwe || []).map(c => <span key={c} className="tag">{c}</span>)}
+              {(f.wstg || []).map(w => <span key={w} className="tag">{w}</span>)}
+              {(f.top10 || []).map(t => <span key={t} className="tag">OWASP {t}</span>)}
+              {f.cvss_vector && <span className="tag">CVSS: {f.cvss_vector}</span>}
+            </div>
+            {f.confidence && (
+              <p style={{ marginTop: 12, fontSize: 13, color: 'var(--ink-muted)' }}>
+                Confidence: {f.confidence}
+              </p>
+            )}
+          </>
+        )}
+
+        {tab === 'remediation' && (
+          <div className="remediation">
+            {f.remediation || 'No remediation guidance available for this finding.'}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SeverityGroup({ severity, findings, selected, onSelect }) {
+  const [collapsed, setCollapsed] = useState(false)
+  if (findings.length === 0) return null
+  const colors = { critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--low)', info: 'var(--info)' }
+  return (
+    <div className="severity-group">
+      <div
+        className="severity-group-header"
+        style={{ color: colors[severity] }}
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        <span className="dot" style={{ background: colors[severity] }} />
+        {SEV_LABELS[severity]}
+        <span className="group-count" style={{ color: 'var(--sidebar-text)' }}>{findings.length}</span>
+      </div>
+      {!collapsed && findings.map((f, i) => (
+        <div
+          key={f.id || i}
+          className={`finding-row ${selected?.id === f.id ? 'active' : ''}`}
+          onClick={() => onSelect(f)}
+        >
+          <div className="type">{f.type || f.title}</div>
+          <div className="url">{f.url}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SummaryBar({ findings, scanInfo }) {
+  const counts = {}
+  for (const s of SEV_ORDER) counts[s] = 0
+  for (const f of findings) {
+    const s = (f.severity || 'info').toLowerCase()
+    counts[s] = (counts[s] || 0) + 1
+  }
+  const colors = { critical: 'var(--critical)', high: 'var(--high)', medium: 'var(--medium)', low: 'var(--low)', info: 'var(--info)' }
+  return (
+    <div className="summary-bar">
+      <div className="stat">
+        <span className="n">{findings.length}</span>
+        <span className="label">Total</span>
+      </div>
+      <div className="divider" />
+      {SEV_ORDER.map(s => counts[s] > 0 && (
+        <div key={s} className="stat" style={{ color: colors[s] }}>
+          <span className="n">{counts[s]}</span>
+          <span className="label">{s}</span>
+        </div>
+      ))}
+      {scanInfo && (
+        <span className="scan-info">{scanInfo}</span>
+      )}
+    </div>
+  )
+}
 
 export default function App() {
   const [scans, setScans] = useState([])
+  const [currentScan, setCurrentScan] = useState(null)
+  const [findings, setFindings] = useState([])
   const [selected, setSelected] = useState(null)
-  const [error, setError] = useState('')
+  const [status, setStatus] = useState('idle')
+  const [progress, setProgress] = useState({ phase: '', tested: 0, total: 0, pct: 0 })
+  const [target, setTarget] = useState('')
+  const [scanning, setScanning] = useState(false)
+  const [scanInfo, setScanInfo] = useState('')
+  const unsubRef = useRef(null)
 
-  const refresh = useCallback(async () => {
+  useEffect(() => {
+    listScans().then(data => {
+      setScans(data || [])
+      const active = (data || []).find(s => s.status === 'running') || (data || [])[0]
+      if (active) loadScan(active)
+    }).catch(() => {})
+  }, [])
+
+  const loadScan = useCallback(async (scan) => {
+    setCurrentScan(scan)
+    setTarget(scan.target || '')
+    setStatus(scan.status || 'idle')
+
+    if (scan.status === 'running') {
+      setScanning(true)
+      subscribeToScan(scan.id)
+    } else {
+      setScanning(false)
+    }
+
     try {
-      setScans(await listScans())
-    } catch (e) {
-      setError(String(e.message || e))
+      const report = await getReport(scan.id)
+      const f = report?.scan_result?.findings || []
+      setFindings(f)
+      if (f.length > 0) setSelected(f[0])
+      const dur = report?.scan_result?.duration
+      setScanInfo(dur ? `Duration: ${(dur / 1e9).toFixed(0)}s` : '')
+    } catch {
+      setFindings([])
     }
   }, [])
 
-  useEffect(() => {
-    refresh()
-    const t = setInterval(refresh, 2000)
-    return () => clearInterval(t)
-  }, [refresh])
+  const subscribeToScan = (id) => {
+    if (unsubRef.current) unsubRef.current()
+    const unsub = subscribeScan(id, {
+      onFinding: (f) => {
+        setFindings(prev => {
+          const exists = prev.some(p => p.id === f.id)
+          if (exists) return prev
+          return [...prev, f]
+        })
+      },
+      onProgress: (p) => {
+        setProgress({
+          phase: p.phase || '',
+          tested: p.tested || 0,
+          total: p.total || 0,
+          pct: p.total > 0 ? Math.round((p.tested / p.total) * 100) : 0,
+        })
+      },
+      onDone: () => {
+        setStatus('completed')
+        setScanning(false)
+      },
+    })
+    unsubRef.current = unsub
+  }
 
-  return (
-    <div className="app">
-      <header>
-        <h1>assay</h1>
-        <span className="tagline">context-aware web vulnerability scanner</span>
-      </header>
-      <main>
-        <section className="left">
-          <NewScan onError={setError} onCreated={refresh} />
-          {error && <div className="error" onClick={() => setError('')}>{error}</div>}
-          <ScanList scans={scans} selectedId={selected?.id} onSelect={setSelected} />
-        </section>
-        <section className="right">
-          {selected ? <ScanDetail scan={selected} /> : <Empty />}
-        </section>
-      </main>
-    </div>
-  )
-}
-
-function NewScan({ onCreated, onError }) {
-  const [target, setTarget] = useState('')
-  const [profile, setProfile] = useState('normal')
-  const [busy, setBusy] = useState(false)
-
-  async function submit(e) {
-    e.preventDefault()
-    if (!target.trim()) return
-    setBusy(true)
+  const startScan = async () => {
+    if (!target.trim() || scanning) return
+    setScanning(true)
+    setFindings([])
+    setSelected(null)
+    setStatus('running')
+    setProgress({ phase: 'starting', tested: 0, total: 0, pct: 0 })
     try {
-      await createScan({ target: target.trim(), profile: profile || undefined })
-      setTarget('')
-      onCreated()
-    } catch (err) {
-      onError(String(err.message || err))
-    } finally {
-      setBusy(false)
+      const scan = await createScan({ target: target.trim() })
+      setCurrentScan(scan)
+      subscribeToScan(scan.id)
+    } catch (e) {
+      setStatus('failed')
+      setScanning(false)
+      setScanInfo(`Error: ${e.message}`)
     }
   }
 
-  return (
-    <form className="newscan card" onSubmit={submit}>
-      <h2>New scan</h2>
-      <input
-        type="text"
-        placeholder="https://example.com"
-        value={target}
-        onChange={(e) => setTarget(e.target.value)}
-      />
-      <label>
-        Profile
-        <select value={profile} onChange={(e) => setProfile(e.target.value)}>
-          {PROFILES.map((p) => (
-            <option key={p || 'default'} value={p}>{p || 'default'}</option>
-          ))}
-        </select>
-      </label>
-      <button type="submit" disabled={busy}>{busy ? 'Starting…' : 'Start scan'}</button>
-    </form>
-  )
-}
+  const grouped = {}
+  for (const s of SEV_ORDER) grouped[s] = []
+  for (const f of findings) {
+    const s = (f.severity || 'info').toLowerCase()
+    if (!grouped[s]) grouped[s] = []
+    grouped[s].push(f)
+  }
 
-function ScanList({ scans, selectedId, onSelect }) {
-  if (!scans.length) return <p className="muted">No scans yet.</p>
-  return (
-    <ul className="scanlist">
-      {[...scans].reverse().map((s) => (
-        <li
-          key={s.id}
-          className={s.id === selectedId ? 'active' : ''}
-          onClick={() => onSelect(s)}
-        >
-          <div className="row">
-            <span className="target">{s.target}</span>
-            <StatusBadge status={s.status} />
-          </div>
-          <div className="row small muted">
-            <span>{s.profile || 'default'}</span>
-            {s.summary && <SeverityChips summary={s.summary} />}
-          </div>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function ScanDetail({ scan }) {
-  const [report, setReport] = useState(null)
-  const [err, setErr] = useState('')
-
-  useEffect(() => {
-    setReport(null)
-    setErr('')
-    if (scan.status !== 'completed') return
-    getReport(scan.id).then(setReport).catch((e) => setErr(String(e.message || e)))
-  }, [scan.id, scan.status])
-
-  const findings = report?.scan_result?.findings || []
+  const pct = progress.pct || 0
 
   return (
-    <div className="detail">
-      <div className="detail-head">
-        <div>
-          <h2>{scan.target}</h2>
-          <div className="muted small">{scan.id}</div>
-        </div>
-        <StatusBadge status={scan.status} />
+    <>
+      <div className="topbar">
+        <div className="logo">vigil</div>
+        <div className="target">{target || 'No target'}</div>
+        <span className={`scan-status ${status}`}>{status}</span>
       </div>
 
-      {scan.status === 'failed' && <div className="error">{scan.error}</div>}
-      {scan.status !== 'completed' && scan.status !== 'failed' && (
-        <p className="muted">Scan {scan.status}…</p>
-      )}
-
-      {scan.status === 'completed' && (
-        <>
-          {scan.summary && <SummaryBar summary={scan.summary} />}
-          <div className="downloads">
-            Download:
-            {FORMATS.map((f) => (
-              <a key={f} href={reportURL(scan.id, f)} target="_blank" rel="noreferrer">{f}</a>
-            ))}
-          </div>
-          {err && <div className="error">{err}</div>}
-          <FindingsTable findings={findings} />
-        </>
-      )}
-    </div>
-  )
-}
-
-function FindingsTable({ findings }) {
-  if (!findings.length) return <p className="muted">No findings.</p>
-  const sorted = [...findings].sort(
-    (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity),
-  )
-  return (
-    <table className="findings">
-      <thead>
-        <tr><th>Severity</th><th>Type</th><th>CVSS</th><th>URL</th><th>Param</th></tr>
-      </thead>
-      <tbody>
-        {sorted.map((f) => (
-          <tr key={f.id}>
-            <td><span className={`badge ${f.severity}`}>{f.severity}</span></td>
-            <td>{f.type}</td>
-            <td>{f.cvss ? f.cvss.toFixed(1) : '—'}</td>
-            <td className="url">{f.url}</td>
-            <td>{f.parameter || '—'}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-function SummaryBar({ summary }) {
-  const counts = {
-    critical: summary.Critical, high: summary.High, medium: summary.Medium,
-    low: summary.Low, info: summary.Info,
-  }
-  return (
-    <div className="summary">
-      {SEVERITIES.map((s) => (
-        <div key={s} className={`stat ${s}`}>
-          <div className="n">{counts[s] || 0}</div>
-          <div className="lbl">{s}</div>
+      {scanning && (
+        <div className="progress-bar">
+          <div className="fill" style={{ width: `${pct}%` }} />
         </div>
-      ))}
-    </div>
-  )
-}
+      )}
 
-function SeverityChips({ summary }) {
-  const items = [
-    ['critical', summary.Critical], ['high', summary.High], ['medium', summary.Medium],
-  ].filter(([, n]) => n > 0)
-  if (!items.length) return <span className="muted small">clean</span>
-  return (
-    <span>
-      {items.map(([s, n]) => (
-        <span key={s} className={`chip ${s}`}>{n}</span>
-      ))}
-    </span>
-  )
-}
+      <SummaryBar findings={findings} scanInfo={scanInfo} />
 
-function StatusBadge({ status }) {
-  return <span className={`status ${status}`}>{status}</span>
-}
+      <div className="layout">
+        <div className="sidebar">
+          <div className="new-scan">
+            <input
+              value={target}
+              onChange={e => setTarget(e.target.value)}
+              placeholder="https://example.com"
+              onKeyDown={e => e.key === 'Enter' && startScan()}
+            />
+            <button onClick={startScan} disabled={scanning || !target.trim()}>
+              {scanning ? 'Scanning...' : 'Scan'}
+            </button>
+          </div>
 
-function Empty() {
-  return (
-    <div className="empty muted">
-      <p>Select a scan to view its findings, or start a new one.</p>
-    </div>
+          <div className="sidebar-header">
+            <h2>Findings</h2>
+            <span className="count">{findings.length}</span>
+          </div>
+
+          {SEV_ORDER.map(s => (
+            <SeverityGroup
+              key={s}
+              severity={s}
+              findings={grouped[s]}
+              selected={selected}
+              onSelect={setSelected}
+            />
+          ))}
+        </div>
+
+        <div className="main">
+          <FindingDetail finding={selected} />
+        </div>
+      </div>
+    </>
   )
 }

@@ -1,31 +1,64 @@
-// Thin client for the assay JSON API.
+// Vigil dashboard API client.
+
+const BASE = '';
+
+async function json(res) {
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
 
 export async function listScans() {
-  const res = await fetch('/api/scans')
-  if (!res.ok) throw new Error(`list scans: ${res.status}`)
-  return res.json()
+  return json(await fetch(`${BASE}/api/scans`));
 }
 
 export async function createScan(req) {
-  const res = await fetch('/api/scans', {
+  return json(await fetch(`${BASE}/api/scans`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(req),
-  })
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.error || `create scan: ${res.status}`)
-  }
-  return res.json()
+  }));
+}
+
+export async function getScan(id) {
+  return json(await fetch(`${BASE}/api/scans/${encodeURIComponent(id)}`));
 }
 
 export async function getReport(id) {
-  const res = await fetch(`/api/scans/${encodeURIComponent(id)}/report?format=json`)
-  if (!res.ok) throw new Error(`report: ${res.status}`)
-  return res.json()
+  return json(await fetch(`${BASE}/api/scans/${encodeURIComponent(id)}/report?format=json`));
 }
 
-// reportURL builds a download link for a scan report in the given format.
 export function reportURL(id, format) {
-  return `/api/scans/${encodeURIComponent(id)}/report?format=${encodeURIComponent(format)}`
+  return `${BASE}/api/scans/${encodeURIComponent(id)}/report?format=${encodeURIComponent(format)}`;
+}
+
+// SSE stream for real-time scan events.
+// Calls onFinding({finding}), onProgress({phase, tested, total, findings}), onDone().
+export function subscribeScan(id, { onFinding, onProgress, onDone, onError }) {
+  const url = `${BASE}/api/scans/${encodeURIComponent(id)}/events`;
+  const es = new EventSource(url);
+
+  es.addEventListener('finding', (e) => {
+    try { onFinding?.(JSON.parse(e.data)); } catch {}
+  });
+  es.addEventListener('progress', (e) => {
+    try { onProgress?.(JSON.parse(e.data)); } catch {}
+  });
+  es.addEventListener('done', () => {
+    onDone?.();
+    es.close();
+  });
+  es.addEventListener('error', () => {
+    // SSE auto-reconnects; if server closed, treat as done
+    if (es.readyState === EventSource.CLOSED) {
+      onDone?.();
+    }
+  });
+  es.onerror = () => {
+    onError?.();
+  };
+
+  return () => es.close();
 }

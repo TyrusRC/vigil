@@ -13,11 +13,14 @@ import (
 	"syscall"
 	"time"
 
+	"net/http"
+
 	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/reporting"
 	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/TyrusRC/vigil/internal/scope"
 	uitui "github.com/TyrusRC/vigil/internal/tui"
+	"github.com/TyrusRC/vigil/internal/webui"
 	"github.com/TyrusRC/vigil/internal/session"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +30,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// TUI mode: rich inline output by default, headless for automation.
+	// UI mode: web UI by default, headless for automation (praetor/CI).
 	uitui.AutoDetect()
 	if headlessMode {
 		uitui.SetHeadless(true)
@@ -36,6 +39,35 @@ func runScan(cmd *cobra.Command, args []string) error {
 	targets, err := collectTargets(args)
 	if err != nil {
 		return err
+	}
+
+	// Start web UI server unless --headless or --no-ui
+	var eventBus *webui.EventBus
+	if !headlessMode && !noUI {
+		eventBus = webui.NewEventBus()
+		uiHandler, uiErr := webui.Handler()
+		if uiErr == nil {
+			mux := http.NewServeMux()
+			mux.Handle("/", uiHandler)
+			mux.HandleFunc("/api/events", eventBus.SSEHandler())
+			// Serve scan data as JSON for the frontend
+			mux.HandleFunc("/api/target", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				target := ""
+				if len(targets) > 0 {
+					target = targets[0]
+				}
+				fmt.Fprintf(w, `{"target":%q,"status":"running"}`, target)
+			})
+			ln, uiURL, listenErr := webui.LaunchServer(mux, uiPort)
+			if listenErr == nil {
+				go http.Serve(ln, mux)
+				fmt.Fprintf(os.Stderr, "  Web UI: %s\n\n", uiURL)
+				webui.OpenBrowser(uiURL)
+			} else {
+				fmt.Fprintf(os.Stderr, "[!] Web UI failed: %v (scan continues without UI)\n", listenErr)
+			}
+		}
 	}
 
 	for _, target := range targets {
@@ -184,6 +216,11 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 	}
 	internalConfig.Verbose = verbose
+	if eventBus != nil {
+		internalConfig.OnFinding = func(f *core.Finding) {
+			eventBus.PublishFinding(f)
+		}
+	}
 
 	if dryRun {
 		printDryRun(targets, internalConfig)
