@@ -1,10 +1,10 @@
-# Makefile for assay — context-aware web vulnerability assay
+# Makefile for vigil — context-aware web vulnerability vigil
 # Usage: make <target>
 
 # Variables
-BINARY_NAME=assay
+BINARY_NAME=vigil
 BINARY_DIR=bin
-CMD_DIR=cmd/assay
+CMD_DIR=cmd/vigil
 COVERAGE_DIR=coverage
 
 # Go parameters
@@ -241,7 +241,7 @@ docs:
 
 ## help: Show this help message
 help:
-	@echo "assay - Makefile"
+	@echo "vigil - Makefile"
 	@echo ""
 	@echo "Usage: make <target>"
 	@echo ""
