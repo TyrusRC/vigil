@@ -17,6 +17,7 @@ import (
 
 	"net/http"
 
+	"github.com/TyrusRC/vigil/internal/capture"
 	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/reporting"
 	"github.com/TyrusRC/vigil/internal/scanner"
@@ -43,6 +44,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	s := scanner.New()
+	defer s.Close()
+
 	// Start web UI server unless --headless or --no-ui
 	var eventBus *webui.EventBus
 	scanStatus := "running"
@@ -65,14 +69,43 @@ func runScan(cmd *cobra.Command, args []string) error {
 			mux.HandleFunc("/api/findings", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				findingsMu.Lock()
-				data, _ := json.Marshal(liveFindings)
+				deduped := core.Findings(liveFindings).Deduplicate()
 				findingsMu.Unlock()
+				data, _ := json.Marshal(deduped)
 				if data == nil {
 					data = []byte("[]")
 				}
 				w.Write(data)
 			})
-			// SPA catch-all LAST — serves index.html for all non-API paths
+			// Capture proxy — routes all tool traffic for full req/res recording.
+			captureProxy := capture.New("")
+			captureAddr, captureErr := captureProxy.Start(0)
+			if captureErr == nil {
+				// Tools will use this proxy via HTTP_PROXY env
+				os.Setenv("HTTP_PROXY", "http://"+captureAddr)
+				os.Setenv("HTTPS_PROXY", "http://"+captureAddr)
+				fmt.Fprintf(os.Stderr, "  Capture proxy: %s\n", captureAddr)
+			}
+			mux.HandleFunc("/api/history", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				data, _ := json.Marshal(captureProxy.Store.All())
+				w.Write(data)
+			})
+			mux.HandleFunc("/api/history/", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				idStr := strings.TrimPrefix(r.URL.Path, "/api/history/")
+				var id int64
+				fmt.Sscanf(idStr, "%d", &id)
+				entry := captureProxy.Store.Get(id)
+				if entry == nil {
+					http.Error(w, `{"error":"not found"}`, 404)
+					return
+				}
+				data, _ := json.Marshal(entry)
+				w.Write(data)
+			})
+
+			// SPA catch-all LAST
 			mux.Handle("/", uiHandler)
 			ln, uiURL, listenErr := webui.LaunchServer(mux, uiPort)
 			if listenErr == nil {
@@ -118,9 +151,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 		headerMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
 	}
-
-	s := scanner.New()
-	defer s.Close()
 
 	// CLI flag wins over env; missing flag falls back to VIGIL_LOGIN_PASS.
 	if loginPass == "" {
