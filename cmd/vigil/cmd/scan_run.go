@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -45,13 +46,13 @@ func runScan(cmd *cobra.Command, args []string) error {
 	// Start web UI server unless --headless or --no-ui
 	var eventBus *webui.EventBus
 	scanStatus := "running"
-	var scanFindings []*core.Finding
+	var findingsMu sync.Mutex
+	var liveFindings []*core.Finding
 	if !headlessMode && !noUI {
 		eventBus = webui.NewEventBus()
 		uiHandler, uiErr := webui.Handler()
 		if uiErr == nil {
 			mux := http.NewServeMux()
-			// API routes first — must be registered before the SPA catch-all
 			mux.HandleFunc("/api/events", eventBus.SSEHandler())
 			mux.HandleFunc("/api/target", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -63,7 +64,12 @@ func runScan(cmd *cobra.Command, args []string) error {
 			})
 			mux.HandleFunc("/api/findings", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
-				data, _ := json.Marshal(scanFindings)
+				findingsMu.Lock()
+				data, _ := json.Marshal(liveFindings)
+				findingsMu.Unlock()
+				if data == nil {
+					data = []byte("[]")
+				}
 				w.Write(data)
 			})
 			// SPA catch-all LAST — serves index.html for all non-API paths
@@ -231,6 +237,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 	internalConfig.Verbose = verbose
 	if eventBus != nil {
 		internalConfig.OnFinding = func(f *core.Finding) {
+			findingsMu.Lock()
+			liveFindings = append(liveFindings, f)
+			findingsMu.Unlock()
 			eventBus.PublishFinding(f)
 		}
 	}
@@ -291,7 +300,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("scan failed: %w", err)
 	}
 	scanStatus = "complete"
-	scanFindings = result.Findings
+	findingsMu.Lock()
+	liveFindings = result.Findings
+	findingsMu.Unlock()
 
 	if verifyFindings {
 		runVerification(ctx, result.Findings, headerMap, sessionCookies)

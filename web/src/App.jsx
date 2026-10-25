@@ -231,11 +231,10 @@ export default function App() {
           <span className={`status-dot ${status === 'running' ? 'running' : 'complete'}`} />
           <span className="status-text">{status}</span>
         </div>
+        {status === 'running' && (
+          <div className="progress-bar" style={{ width: '100%' }}><div className="fill" style={{ width: `${progress.pct}%` }} /></div>
+        )}
       </div>
-
-      {status === 'running' && (
-        <div className="progress-bar"><div className="fill" style={{ width: `${progress.pct}%` }} /></div>
-      )}
 
       <div className="sidebar">
         {SEV_ORDER.map(s => (
