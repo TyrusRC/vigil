@@ -276,6 +276,7 @@ func (s *InternalScanner) initDiscovery(httpClient *http.Client) {
 	pipeline.Register(discovery.NewGraphQLIntrospectionDiscoverer().WithClient(httpClient))
 	pipeline.Register(discovery.NewReflectedParamDiscoverer().WithClient(httpClient))
 	pipeline.Register(discovery.NewJSFetchDiscoverer().WithClient(httpClient))
+	pipeline.Register(discovery.NewJSAPIDiscoverer().WithClient(httpClient))
 	s.discoveryPipeline = pipeline
 }
 
