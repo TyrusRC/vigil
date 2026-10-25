@@ -51,7 +51,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 		uiHandler, uiErr := webui.Handler()
 		if uiErr == nil {
 			mux := http.NewServeMux()
-			mux.Handle("/", uiHandler)
+			// API routes first — must be registered before the SPA catch-all
 			mux.HandleFunc("/api/events", eventBus.SSEHandler())
 			mux.HandleFunc("/api/target", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -66,6 +66,8 @@ func runScan(cmd *cobra.Command, args []string) error {
 				data, _ := json.Marshal(scanFindings)
 				w.Write(data)
 			})
+			// SPA catch-all LAST — serves index.html for all non-API paths
+			mux.Handle("/", uiHandler)
 			ln, uiURL, listenErr := webui.LaunchServer(mux, uiPort)
 			if listenErr == nil {
 				go func() {
