@@ -131,6 +131,7 @@ var (
 	coveragePath         string
 	fpDatabasePath       string
 	incremental          bool
+	headlessMode         bool
 )
 
 // applyCLIFlags merges parsed CLI flag state into the internalConfig.

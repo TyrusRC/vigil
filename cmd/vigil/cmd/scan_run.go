@@ -19,6 +19,7 @@ import (
 	"github.com/TyrusRC/vigil/internal/reporting"
 	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/TyrusRC/vigil/internal/scope"
+	uitui "github.com/TyrusRC/vigil/internal/tui"
 	"github.com/TyrusRC/vigil/internal/session"
 	"github.com/spf13/cobra"
 )
@@ -148,6 +149,12 @@ func adjudicateFindings(ctx context.Context, findings core.Findings) {
 func runScan(cmd *cobra.Command, args []string) error {
 	if err := applyConfigFile(cmd); err != nil {
 		return err
+	}
+
+	// TUI mode: rich inline output by default, headless for automation.
+	uitui.AutoDetect()
+	if headlessMode {
+		uitui.SetHeadless(true)
 	}
 
 	targets, err := collectTargets(args)

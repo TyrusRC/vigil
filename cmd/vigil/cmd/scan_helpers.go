@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/scanner"
+	uitui "github.com/TyrusRC/vigil/internal/tui"
 	"github.com/TyrusRC/vigil/internal/tools/arjun"
 	"github.com/TyrusRC/vigil/internal/tools/commix"
 	"github.com/TyrusRC/vigil/internal/tools/dalfox"
@@ -175,15 +175,13 @@ func splitCSV(s string) []string {
 }
 
 func printScanHeader(target string) {
-	fmt.Println("╔════════════════════════════════════════════════════════╗")
-	fmt.Println("║    vigil - Context-aware web vulnerability vigil        ║")
-	fmt.Println("╚════════════════════════════════════════════════════════╝")
-	fmt.Println()
-	fmt.Printf("Target: %s\n", target)
-	fmt.Printf("Started: %s\n", time.Now().Format(time.RFC3339))
-	fmt.Println()
-	fmt.Println("Scanning...")
-	fmt.Println()
+	if uitui.IsEnabled() {
+		uitui.Banner("1.0.0")
+		uitui.Target(target)
+		fmt.Fprintln(os.Stderr)
+	} else {
+		fmt.Fprintf(os.Stderr, "vigil scan — %s\n", target)
+	}
 }
 
 // filterByConfidence removes findings whose confidence is below the

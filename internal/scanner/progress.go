@@ -5,6 +5,8 @@ import (
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/TyrusRC/vigil/internal/tui"
 )
 
 // Progress tracks scan progress for real-time output.
@@ -33,13 +35,9 @@ func (p *Progress) IncrementTested() {
 	tested := atomic.AddInt64(&p.testedParams, 1)
 	elapsed := time.Since(p.startTime).Round(time.Second)
 	phase := p.currentPhase.Load().(string)
-	total := p.totalParams
-	pct := 0
-	if total > 0 {
-		pct = int(tested * 100 / total)
-	}
-	fmt.Fprintf(os.Stderr, "\r[%s] %s | %d/%d params (%d%%) | %d findings found",
-		elapsed, phase, tested, total, pct, atomic.LoadInt64(&p.findingsCount))
+	total := int(p.totalParams)
+	findings := int(atomic.LoadInt64(&p.findingsCount))
+	tui.ProgressLine(phase, int(tested), total, findings, elapsed.String())
 }
 
 // IncrementFindings atomically adds the given count to the findings counter.
