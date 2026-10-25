@@ -15,8 +15,10 @@ func LaunchServer(handler http.Handler, port int) (net.Listener, string, error) 
 	if port <= 0 {
 		port = DefaultPort
 	}
-	addr := fmt.Sprintf("127.0.0.1:%d", port)
-	ln, err := net.Listen("tcp", addr)
+	// Bind IPv4 explicitly — "0.0.0.0" on WSL2 mirrored mode goes IPv6-only
+	// which Windows localhost (127.0.0.1) can't reach. Use tcp4 to force IPv4.
+	addr := fmt.Sprintf(":%d", port)
+	ln, err := net.Listen("tcp4", addr)
 	if err != nil {
 		return nil, "", fmt.Errorf("webui: port %d in use: %w", port, err)
 	}

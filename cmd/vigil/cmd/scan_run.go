@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -43,6 +44,8 @@ func runScan(cmd *cobra.Command, args []string) error {
 
 	// Start web UI server unless --headless or --no-ui
 	var eventBus *webui.EventBus
+	scanStatus := "running"
+	var scanFindings []*core.Finding
 	if !headlessMode && !noUI {
 		eventBus = webui.NewEventBus()
 		uiHandler, uiErr := webui.Handler()
@@ -50,18 +53,26 @@ func runScan(cmd *cobra.Command, args []string) error {
 			mux := http.NewServeMux()
 			mux.Handle("/", uiHandler)
 			mux.HandleFunc("/api/events", eventBus.SSEHandler())
-			// Serve scan data as JSON for the frontend
 			mux.HandleFunc("/api/target", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				target := ""
 				if len(targets) > 0 {
 					target = targets[0]
 				}
-				fmt.Fprintf(w, `{"target":%q,"status":"running"}`, target)
+				fmt.Fprintf(w, `{"target":%q,"status":%q}`, target, scanStatus)
+			})
+			mux.HandleFunc("/api/findings", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				data, _ := json.Marshal(scanFindings)
+				w.Write(data)
 			})
 			ln, uiURL, listenErr := webui.LaunchServer(mux, uiPort)
 			if listenErr == nil {
-				go http.Serve(ln, mux)
+				go func() {
+					if serveErr := http.Serve(ln, mux); serveErr != nil {
+						fmt.Fprintf(os.Stderr, "[!] Web UI server error: %v\n", serveErr)
+					}
+				}()
 				fmt.Fprintf(os.Stderr, "  Web UI: %s\n\n", uiURL)
 				webui.OpenBrowser(uiURL)
 			} else {
@@ -277,6 +288,8 @@ func runScan(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("scan failed: %w", err)
 	}
+	scanStatus = "complete"
+	scanFindings = result.Findings
 
 	if verifyFindings {
 		runVerification(ctx, result.Findings, headerMap, sessionCookies)
@@ -387,6 +400,20 @@ func runScan(cmd *cobra.Command, args []string) error {
 	if fail {
 		threshold, _ := core.ParseSeverity(failOn)
 		return &gateError{Threshold: threshold, Count: count}
+	}
+
+	// When web UI is active, keep the server alive so the user can
+	// browse results. Wait for Ctrl+C.
+	if eventBus != nil {
+		eventBus.PublishComplete(map[string]interface{}{
+			"findings": len(result.Findings),
+			"duration": result.Duration.String(),
+		})
+		fmt.Fprintf(os.Stderr, "\n  Scan complete. Web UI at http://localhost:%d — press Ctrl+C to exit.\n", uiPort)
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		<-sigCh
+		fmt.Fprintln(os.Stderr, "\n  Shutting down.")
 	}
 	return nil
 }
