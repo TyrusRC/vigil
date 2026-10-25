@@ -118,6 +118,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', syst
 .tag { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-size: 11px; color: var(--ink-muted); font-weight: 500; }
 .remediation { font-size: 14px; line-height: 1.7; color: var(--ink); }
 
+/* CVSS */
+.cvss-bar { display: flex; align-items: center; gap: 10px; }
+.cvss-score { background: var(--high); color: #fff; font-weight: 700; font-size: 14px; padding: 2px 8px; border-radius: 4px; min-width: 36px; text-align: center; }
+.cvss-vector { font-size: 11px; color: var(--ink-muted); background: var(--code-bg); padding: 3px 8px; border-radius: 4px; }
+.cvss-full { font-size: 12px; color: var(--ink-muted); display: block; margin-top: 4px; }
+
+/* Detail grid */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+.section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-muted); margin-bottom: 6px; }
+.no-data { color: var(--ink-muted); font-size: 13px; padding: 20px 0; }
+
+/* Total chip */
+.chip-total { background: var(--ink); color: var(--bg); font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 12px; margin-right: 4px; }
+
 /* Progress */
 .progress-bar { height: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
 .progress-bar .fill { height: 100%; background: linear-gradient(90deg, var(--accent), #818cf8); transition: width 0.3s ease; }
