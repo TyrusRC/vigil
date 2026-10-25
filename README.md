@@ -53,7 +53,7 @@ well.
 - **Stored XSS** — full inject → crawl → match → confirm workflow
 - **Native SAST** — `vigil sast ./src` for secret scanning, dependency CVEs (OSV.dev), and config security
 - **Form auto-submission** — smart crawl discovers pages behind form gates (`--submit-forms`)
-- **Auto template discovery** — loads `~/nuclei-templates` + `~/.local/share/vigil/custom-nuclei-templates/templates` by default. Override with `--templates` or `ASSAY_TEMPLATES` env.
+- **Auto template discovery** — loads `~/nuclei-templates` + `~/.local/share/vigil/custom-nuclei-templates/templates` by default. Override with `--templates` or `VIGIL_TEMPLATES` env.
 - **Nuclei template parity** — 20 headless actions, file / workflow / code templates, unsafe-raw (smuggling), pipeline (HTTP/2 desync), interactsh OOB polling
 - **AI finding triage** — Haruspex adjudication scores each finding's "real vs noise" probability
 - **WAF bypass payloads** — per-class evasion variants: SQLi (inline comments, hex encoding, CTE WITH clause, scientific notation, whitespace alternatives, double URL encoding), SSRF (octal/hex/decimal/IPv6 IP encoding, DNS rebinding, Unicode IDNA), LFI (null byte, UTF-8 overlong, backslash), XSS (unicode normalization NFKC, SVG onload, event handler injection). Long-payload padding pushes injection past WAF body inspection limits (8KB AWS WAF, 128KB Cloudflare).
@@ -129,7 +129,7 @@ vigil scan --profile thorough --stored-xss --submit-forms https://app.example.co
 
 # DAST — authenticated scan with session keep-alive
 vigil scan --login-url https://app.example.com/login \
-  --login-user admin --login-pass "$ASSAY_LOGIN_PASS" \
+  --login-user admin --login-pass "$VIGIL_LOGIN_PASS" \
   --login-success "Dashboard" https://app.example.com/admin
 
 # DAST — two-identity IDOR / BOLA probe
@@ -146,7 +146,7 @@ vigil sast ./my-project
 vigil sast --sca-only ./  # dependency CVEs only
 
 # API server
-vigil serve --api-key "$ASSAY_API_KEY"
+vigil serve --api-key "$VIGIL_API_KEY"
 # POST http://127.0.0.1:8080/api/scans  {"target":"https://example.com"}
 
 # CI/CD gate
@@ -216,7 +216,7 @@ vigil scan [target URL] [flags]
 | `-X, --method METHOD` | HTTP method (default `GET`) |
 | `--login-url URL` | Login page URL for form-based authentication |
 | `--login-user USER` | Login username |
-| `--login-pass PASS` | Login password (prefer `ASSAY_LOGIN_PASS` env var) |
+| `--login-pass PASS` | Login password (prefer `VIGIL_LOGIN_PASS` env var) |
 | `--login-headless` | Use headless browser for login (SPAs, JS-rendered forms) |
 | `--login-success STRING` | Marker string in post-login response confirming success |
 
@@ -245,11 +245,11 @@ run — the "Jev for nuclei" idea. Env-driven, opt-in, two backends:
 
 | Env | Effect |
 |---|---|
-| `ASSAY_DECIDE=1` | Enable the decision engine (deterministic tech-tag ranking, no key). |
+| `VIGIL_DECIDE=1` | Enable the decision engine (deterministic tech-tag ranking, no key). |
 | `AI_GATEWAY_API_KEY` | Use TypeSafe **Jev** via Vercel AI Gateway (`POST /v1/evaluate`, calibrated per-template relevance). Enables the engine on its own; falls back to deterministic on any gateway error. |
-| `ASSAY_DECISION_BASE_URL=http://127.0.0.1:PORT` | Use a **self-hosted** decision engine (e.g. Haruspex / OpenJev) on loopback — same `/v1/evaluate` contract, selected **keyless** (the key authenticates the remote gateway only). Enables the engine on its own. |
-| `ASSAY_DECIDE_TOP=N` | Run only the N most relevant templates (operator cap to cut the firehose). Default `0` = order only, no drop. |
-| `ASSAY_DECISION_MODEL` / `ASSAY_DECISION_BASE_URL` | Override the model id / gateway base URL (defaults `typesafe-ai/jev` / `https://ai-gateway.vercel.sh`). |
+| `VIGIL_DECISION_BASE_URL=http://127.0.0.1:PORT` | Use a **self-hosted** decision engine (e.g. Haruspex / OpenJev) on loopback — same `/v1/evaluate` contract, selected **keyless** (the key authenticates the remote gateway only). Enables the engine on its own. |
+| `VIGIL_DECIDE_TOP=N` | Run only the N most relevant templates (operator cap to cut the firehose). Default `0` = order only, no drop. |
+| `VIGIL_DECISION_MODEL` / `VIGIL_DECISION_BASE_URL` | Override the model id / gateway base URL (defaults `typesafe-ai/jev` / `https://ai-gateway.vercel.sh`). |
 
 Disabled by default — the template set is untouched unless you opt in.
 
@@ -500,7 +500,7 @@ Run vigil as an HTTP API for programmatic scan management.
 |---|---|---|
 | `--port N` | Listen port | `8080` |
 | `--listen ADDR` | Bind address | `127.0.0.1` |
-| `--api-key KEY` | Bearer token for API authentication (also `ASSAY_API_KEY` env) | |
+| `--api-key KEY` | Bearer token for API authentication (also `VIGIL_API_KEY` env) | |
 
 ### Endpoints
 
