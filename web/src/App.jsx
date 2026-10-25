@@ -31,15 +31,23 @@ function Badge({ severity }) {
   return <span className={`badge ${severity}`}>{SEV_LABELS[severity] || severity}</span>
 }
 
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function highlightText(text, markers) {
-  if (!text || !markers || markers.length === 0) return text
-  let result = text
+  if (!text) return ''
+  let escaped = escapeHtml(text)
+  if (!markers || markers.length === 0) return escaped
   for (const m of markers) {
-    if (m && m.length > 2 && result.includes(m)) {
-      result = result.split(m).join(`<mark>${m}</mark>`)
+    if (m && m.length > 2) {
+      const escapedMarker = escapeHtml(m)
+      if (escaped.includes(escapedMarker)) {
+        escaped = escaped.split(escapedMarker).join(`<mark>${escapedMarker}</mark>`)
+      }
     }
   }
-  return result
+  return escaped
 }
 
 function CodeBlock({ content, highlights = [] }) {
