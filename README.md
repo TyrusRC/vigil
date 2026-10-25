@@ -118,39 +118,14 @@ you do not have to choose between the two.
 ## Quickstart
 
 ```sh
-# install (Go 1.24+)
+# install
 go install -v github.com/TyrusRC/vigil/cmd/vigil@latest
 
-# DAST — scan a single URL
-vigil scan https://example.com/page?id=1
+# scan — just give it a target, vigil handles the rest
+vigil scan https://example.com
 
-# DAST — thorough scan with stored XSS and form submission
-vigil scan --profile thorough --stored-xss --submit-forms https://app.example.com
-
-# DAST — authenticated scan with session keep-alive
-vigil scan --login-url https://app.example.com/login \
-  --login-user admin --login-pass "$VIGIL_LOGIN_PASS" \
-  --login-success "Dashboard" https://app.example.com/admin
-
-# DAST — two-identity IDOR / BOLA probe
-vigil scan https://app.example.com/account/123 \
-  --auth-a-header "Authorization: Bearer alice-token" \
-  --auth-b-header "Authorization: Bearer bob-token"
-
-# DAST — proxy through Burp Suite
-vigil scan -X POST -d "user=admin&pass=test" \
-  --proxy http://127.0.0.1:8080 -k https://example.com/login
-
-# SAST — scan a codebase for secrets, vulnerable dependencies, config issues
+# scan a codebase for secrets and vulnerable dependencies
 vigil sast ./my-project
-vigil sast --sca-only ./  # dependency CVEs only
-
-# API server
-vigil serve --api-key "$VIGIL_API_KEY"
-# POST http://127.0.0.1:8080/api/scans  {"target":"https://example.com"}
-
-# CI/CD gate
-vigil scan "$TARGET" --format sarif,junit --fail-on high --output-dir report
 ```
 
 ---
@@ -193,9 +168,33 @@ docker run --rm vigil scan https://example.com
 
 ## Usage
 
-```text
-vigil scan [target URL] [flags]
+```sh
+vigil scan https://example.com
 ```
+
+That's it. Vigil auto-detects the tech stack, discovers parameters, picks
+the right detectors, and runs them. No flags needed for a standard scan —
+the defaults cover OWASP Top 10, API injection, business logic, and more.
+
+Reports auto-save to `vigil-report-<timestamp>/` when findings exist.
+Real-time findings appear in the terminal as they're discovered.
+
+```sh
+# multiple targets
+vigil scan -l targets.txt
+
+# scan a codebase (SAST)
+vigil sast ./src
+
+# CI/CD gate — fail the build on high+ findings
+vigil scan "$TARGET" --fail-on high --format sarif --output-dir report
+
+# headless mode for automation (no colors, no progress bar)
+vigil scan --headless https://example.com
+```
+
+<details>
+<summary>Advanced flags (authentication, proxy, tuning)</summary>
 
 ### Targets
 
@@ -356,11 +355,13 @@ Aggressive probes are **opt-in** (mutate state or send heavy traffic):
 limit from ~5 to ~50 requests / 30 seconds for the JS-dependency
 detector.
 
+</details>
+
 ---
 
 ## Detection coverage (DAST)
 
-110+ native detectors mapped to OWASP WSTG / Top 10 / API Top 10 / CWE.
+113 native detectors mapped to OWASP WSTG / Top 10 / API Top 10 / CWE.
 Each finding ships with all four mappings plus CVSS scoring.
 
 ### Injection
