@@ -210,6 +210,6 @@ func (d *Detector) createFinding(target, param string, payload rfi.Payload, resp
 		[]string{"CWE-98"},       // Improper Control of Filename for Include
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

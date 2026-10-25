@@ -177,7 +177,7 @@ func (d *Detector) createFinding(targetURL, cname string, service subtakeover.Se
 		[]string{"CWE-284"},      // Improper Access Control
 	)
 
-	finding.WithProof("", targetURL, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", targetURL, "", resp.StatusCode, resp.Body) }
 	return finding
 }
 

@@ -228,7 +228,7 @@ func (d *Detector) createFinding(checkURL, bucketName string, check cloud.Bucket
 		[]string{"CWE-284", "CWE-732"}, // Improper Access Control, Incorrect Permission Assignment
 	)
 
-	finding.WithProof("", checkURL, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", checkURL, "", resp.StatusCode, resp.Body) }
 	return finding
 }
 

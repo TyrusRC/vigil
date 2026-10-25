@@ -386,6 +386,6 @@ func (d *Detector) createFinding(target, param string, payload redirect.Payload,
 		[]string{"CWE-601"},      // Open Redirect
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

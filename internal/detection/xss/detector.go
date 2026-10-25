@@ -420,6 +420,6 @@ func (d *Detector) createFinding(target, param string, payload xss.Payload, resp
 		[]string{"CWE-79"},       // XSS
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

@@ -21,7 +21,7 @@ var (
 // rootCmd represents the base command.
 var rootCmd = &cobra.Command{
 	Use:   "vigil",
-	Short: "Context-aware web vulnerability vigil",
+	Short: "Context-aware web vulnerability scanner",
 	Long: `vigil is a CLI-based web security scanner
 that uses context-aware and behavior-based detection to identify vulnerabilities.
 

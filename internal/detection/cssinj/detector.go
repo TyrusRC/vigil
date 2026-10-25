@@ -162,6 +162,6 @@ func (d *Detector) createFinding(target, param string, payload cssinj.Payload, r
 		[]string{"CWE-1236"},
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

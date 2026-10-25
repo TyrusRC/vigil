@@ -1,5 +1,5 @@
 // Package core provides the fundamental types and interfaces for the
-// vigil — context-aware web vulnerability vigil.
+// vigil — context-aware web vulnerability scanner.
 //
 // This package defines:
 //   - Finding: represents a discovered vulnerability

@@ -277,6 +277,6 @@ func (d *Detector) createFinding(target, param string, payload hpppayloads.Paylo
 		[]string{"CWE-235"},      // Improper Handling of Extra Parameters
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

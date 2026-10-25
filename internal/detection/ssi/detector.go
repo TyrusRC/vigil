@@ -164,6 +164,6 @@ func (d *Detector) createFinding(target, param string, payload ssi.Payload, resp
 		[]string{"CWE-97"},
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

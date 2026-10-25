@@ -47,6 +47,6 @@ func (d *Detector) createFinding(target, param string, payload nosql.Payload, re
 		[]string{"CWE-943"},      // Improper Neutralization of Special Elements in Data Query Logic
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

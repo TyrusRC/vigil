@@ -410,6 +410,6 @@ func (d *Detector) createFinding(target, param string, payload crlf.Payload, res
 		[]string{"CWE-93"},       // CRLF Injection
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

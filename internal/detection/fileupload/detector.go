@@ -324,6 +324,6 @@ func (d *Detector) createFinding(target, param, filename, mimeType string, resp 
 		[]string{"CWE-434"},
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }

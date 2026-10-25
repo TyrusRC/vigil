@@ -163,6 +163,6 @@ func (d *Detector) createFinding(target, param string, payload emailinj.Payload,
 		[]string{"CWE-93"},
 	)
 
-	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
+	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
 	return finding
 }
