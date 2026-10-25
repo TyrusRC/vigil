@@ -16,6 +16,7 @@ type Progress struct {
 	findingsCount int64
 	currentPhase  atomic.Value
 	startTime     time.Time
+	lastPrint     atomic.Int64
 	enabled       bool
 }
 
@@ -31,8 +32,17 @@ func NewProgress(totalParams int, enabled bool) *Progress {
 }
 
 // IncrementTested atomically increments the tested parameter count and prints progress.
+// Throttled to max 4 updates/sec to avoid flicker from concurrent goroutines.
 func (p *Progress) IncrementTested() {
 	tested := atomic.AddInt64(&p.testedParams, 1)
+	now := time.Now().UnixMilli()
+	last := p.lastPrint.Load()
+	if now-last < 250 && tested < p.totalParams {
+		return
+	}
+	if !p.lastPrint.CompareAndSwap(last, now) {
+		return
+	}
 	elapsed := time.Since(p.startTime).Round(time.Second)
 	phase := p.currentPhase.Load().(string)
 	total := int(p.totalParams)
@@ -45,12 +55,15 @@ func (p *Progress) IncrementFindings(count int) {
 	atomic.AddInt64(&p.findingsCount, int64(count))
 }
 
-// SetPhase updates the current scan phase label used by the live progress
-// line. It does not print on its own; the scan emits its own phase banners
-// (shown in every mode), while this label only contextualizes the verbose
-// per-parameter counter printed by IncrementTested.
+// SetPhase updates the current scan phase label. Clears the progress line
+// so the next phase banner prints on a clean line.
 func (p *Progress) SetPhase(phase string) {
 	p.currentPhase.Store(phase)
+	if tui.IsEnabled() {
+		fmt.Fprint(os.Stderr, "\r\033[K")
+	} else {
+		fmt.Fprintln(os.Stderr)
+	}
 }
 
 // Finish prints the final scan completion summary.

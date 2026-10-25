@@ -1,0 +1,141 @@
+{
+  "version": "1.0.0",
+  "tool": "vigil",
+  "generated_at": "2026-10-25T08:41:42.252836913+07:00",
+  "scan_result": {
+    "targets": [
+      "https://pentest-ground.com:9000/openapi.yaml"
+    ],
+    "findings": [
+      {
+        "id": "7987dbae-b9cf-4b8e-bb93-89e16f8cc0b0",
+        "tool": "internal-sqli-detector",
+        "type": "SQL Injection",
+        "severity": "critical",
+        "confidence": "low",
+        "title": "SQL Injection",
+        "description": "error-based SQL Injection vulnerability detected in 'username' parameter (Database: sqlite)",
+        "url": "https://pentest-ground.com:9000/tokens",
+        "parameter": "username",
+        "evidence": "Payload: '\nEvidence: sqlite3.OperationalError",
+        "wstg": [
+          "WSTG-INPV-05"
+        ],
+        "top10": [
+          "A05:2025"
+        ],
+        "cwe": [
+          "CWE-89"
+        ],
+        "cvss": 9.8,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "remediation": "Use parameterized queries or prepared statements. Never concatenate user input into SQL queries.",
+        "timestamp": "2026-10-25T08:41:09.406341236+07:00",
+        "metadata": {
+          "haruspex_real_prob": 0.65
+        }
+      },
+      {
+        "id": "11aecbf5-d19b-4abd-8dfa-ce64fc2bf5e4",
+        "tool": "internal-sqli-detector",
+        "type": "SQL Injection",
+        "severity": "critical",
+        "confidence": "low",
+        "title": "SQL Injection",
+        "description": "error-based SQL Injection vulnerability detected in 'password' parameter (Database: sqlite)",
+        "url": "https://pentest-ground.com:9000/tokens",
+        "parameter": "password",
+        "evidence": "Payload: '\nEvidence: sqlite3.OperationalError",
+        "wstg": [
+          "WSTG-INPV-05"
+        ],
+        "top10": [
+          "A05:2025"
+        ],
+        "cwe": [
+          "CWE-89"
+        ],
+        "cvss": 9.8,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "remediation": "Use parameterized queries or prepared statements. Never concatenate user input into SQL queries.",
+        "timestamp": "2026-10-25T08:41:09.778289378+07:00",
+        "metadata": {
+          "haruspex_real_prob": 0.65
+        }
+      },
+      {
+        "id": "abccf26f-1310-4660-ae70-77387a66e058",
+        "tool": "xss-detector",
+        "type": "Cross-Site Scripting (XSS)",
+        "severity": "high",
+        "confidence": "low",
+        "title": "Cross-Site Scripting (XSS)",
+        "description": "reflected XSS vulnerability in 'username' parameter (html context)",
+        "url": "https://pentest-ground.com:9000/tokens",
+        "parameter": "username",
+        "evidence": "\u003cscript\u003ealert(document.domain)\u003c/script\u003e",
+        "wstg": [
+          "WSTG-INPV-02"
+        ],
+        "top10": [
+          "A05:2025"
+        ],
+        "cwe": [
+          "CWE-79"
+        ],
+        "cvss": 6.1,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+        "remediation": "Implement proper output encoding based on context. Use Content-Security-Policy headers. Validate and sanitize all user input.",
+        "timestamp": "2026-10-25T08:41:11.418190635+07:00",
+        "metadata": {
+          "haruspex_real_prob": 0.45,
+          "haruspex_triage": "review"
+        }
+      },
+      {
+        "id": "28f98e84-7ff4-4db7-8be9-0a3a08190e0b",
+        "tool": "xxe-detector",
+        "type": "XML External Entity (XXE) Injection",
+        "severity": "high",
+        "confidence": "medium",
+        "title": "XML External Entity (XXE) Injection",
+        "description": "XXE vulnerability in 'username' parameter (Type: classic, Target: file)",
+        "url": "https://pentest-ground.com:9000/tokens",
+        "parameter": "username",
+        "evidence": "Payload type: classic\nDescription: Basic file read /etc/passwd\nResponse snippet: {\n  \"error\": {\n    \"message\": \"username \u003c?xml version=\\\"1.0\\\"?\u003e\\n\u003c!DOCTYPE foo [\\n\u003c!ENTITY xxe SYSTEM \\\"file:///etc/passwd\\\"\u003e\\n]\u003e\\n\u003cfoo\u003e\u0026xxe;\u003c/foo\u003e not found\"\n  }\n}\n",
+        "wstg": [
+          "WSTG-INPV-07"
+        ],
+        "top10": [
+          "A02:2025"
+        ],
+        "cwe": [
+          "CWE-611"
+        ],
+        "cvss": 7.5,
+        "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "remediation": "Disable external entity processing in XML parsers. Use defusedxml or similar libraries. For Java, disable DOCTYPE declarations. For PHP, set libxml_disable_entity_loader(true). Validate and sanitize XML input.",
+        "timestamp": "2026-10-25T08:41:38.069493641+07:00",
+        "metadata": {
+          "haruspex_real_prob": 0.65
+        }
+      }
+    ],
+    "tools_run": 5,
+    "tools_skipped": 0,
+    "start_time": "2026-10-25T08:39:40.587239357+07:00",
+    "end_time": "2026-10-25T08:41:42.252711152+07:00",
+    "duration": 121665471777,
+    "errors": [
+      "nikto: context deadline exceeded"
+    ]
+  },
+  "summary": {
+    "TotalFindings": 4,
+    "Critical": 2,
+    "High": 2,
+    "Medium": 0,
+    "Low": 0,
+    "Info": 0
+  }
+}

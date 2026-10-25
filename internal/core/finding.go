@@ -126,6 +126,22 @@ func (f *Finding) SetEvidence(evidence, request, response string) *Finding {
 	return f
 }
 
+// WithProof attaches a compact request/response proof to the finding.
+// Builds a curl-style request line and truncated response for the report.
+func (f *Finding) WithProof(method, url, payload string, statusCode int, responseBody string) *Finding {
+	if method == "" {
+		method = "GET"
+	}
+	f.Request = fmt.Sprintf("%s %s\nPayload: %s", method, url, payload)
+	maxBody := 500
+	body := responseBody
+	if len(body) > maxBody {
+		body = body[:maxBody] + "\n... (truncated)"
+	}
+	f.Response = fmt.Sprintf("HTTP %d\n%s", statusCode, body)
+	return f
+}
+
 // Age returns the duration since the finding was discovered.
 func (f *Finding) Age() time.Duration {
 	return time.Since(f.Timestamp)
