@@ -1,5 +1,5 @@
-// scan_run.go — scan execution: runScan (the cobra RunE handler),
-// printDryRun, and adjudicateFindings.
+// scan_run.go — runScan: the cobra RunE handler for `vigil scan`.
+// Adjudication logic is in scan_adjudicate.go; TUI output in scan_tui.go.
 package cmd
 
 import (
@@ -9,13 +9,11 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/TyrusRC/vigil/internal/core"
-	"github.com/TyrusRC/vigil/internal/decision"
 	"github.com/TyrusRC/vigil/internal/reporting"
 	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/TyrusRC/vigil/internal/scope"
@@ -23,128 +21,6 @@ import (
 	"github.com/TyrusRC/vigil/internal/session"
 	"github.com/spf13/cobra"
 )
-func printDryRun(targets []string, cfg *scanner.InternalScanConfig) {
-	w := os.Stderr
-	fmt.Fprintln(w, "=== DRY RUN — no traffic will be sent ===")
-	fmt.Fprintf(w, "Targets (%d):\n", len(targets))
-	for _, t := range targets {
-		fmt.Fprintf(w, "  %s\n", t)
-	}
-	fmt.Fprintf(w, "Profile: %s\n", profile)
-	fmt.Fprintf(w, "Level: %d  Risk: %d\n", level, risk)
-	fmt.Fprintf(w, "Rate limit: %.0f req/s\n", cfg.RateLimitPerSec)
-	if cfg.Scope != nil {
-		fmt.Fprintln(w, "Scope: ON (target host(s))")
-	} else {
-		fmt.Fprintln(w, "Scope: OFF")
-	}
-	fmt.Fprintln(w, "\nEnabled detectors:")
-	v := reflect.ValueOf(cfg).Elem()
-	t := v.Type()
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		if strings.HasPrefix(f.Name, "Enable") && f.Type.Kind() == reflect.Bool && v.Field(i).Bool() {
-			fmt.Fprintf(w, "  %s\n", strings.TrimPrefix(f.Name, "Enable"))
-		}
-	}
-	tplPaths := templateDirs
-	if len(tplPaths) == 0 {
-		tplPaths = discoverTemplatePaths()
-	}
-	if len(tplPaths) > 0 {
-		fmt.Fprintf(w, "\nTemplates: %v\n", tplPaths)
-	}
-	if loginURL != "" {
-		fmt.Fprintf(w, "\nLogin: %s (user: %s)\n", loginURL, loginUser)
-	}
-	fmt.Fprintln(w, "\n=== No traffic sent ===")
-}
-
-// adjudicateFindings runs a fail-open Haruspex triage pass over already-produced
-// findings. It records, per finding, the model's "real reportable finding" probability
-// in Metadata["haruspex_real_prob"], and tags unverified low-probability ones
-// Metadata["haruspex_triage"]="review" so a consumer can deprioritize noise. It never
-// removes, reorders, or re-severities a finding — a missed finding is the cardinal harm,
-// so the model can only annotate here, never gate. Engine off / unreachable / any error
-// leaves every finding exactly as emitted.
-func adjudicateFindings(ctx context.Context, findings core.Findings) {
-	cfg := decision.FromEnv()
-	if len(findings) == 0 {
-		return
-	}
-	engine := "heuristic"
-	if cfg.Enabled && (cfg.APIKey != "" || decision.IsLocal(cfg.BaseURL)) {
-		engine = "haruspex"
-	}
-	fmt.Fprintf(os.Stderr, "[*] Finding adjudication (%s): scoring %d findings...\n", engine, len(findings))
-	items := make([]decision.Item, len(findings))
-	for i, f := range findings {
-		ev := f.Evidence
-		if len(ev) > 600 {
-			ev = ev[:600]
-		}
-		var tags []string
-		tags = append(tags, string(f.Severity))
-		tags = append(tags, string(f.Confidence))
-		if f.Verified {
-			tags = append(tags, "verified-by-replay")
-		} else {
-			tags = append(tags, "unverified")
-		}
-		if f.Tool != "" {
-			tags = append(tags, "tool:"+f.Tool)
-		}
-		if f.Metadata != nil {
-			if rounds, ok := f.Metadata["verification_rounds"]; ok {
-				tags = append(tags, fmt.Sprintf("vrounds:%v", rounds))
-			}
-			if confirmed, ok := f.Metadata["verification_confirmed"]; ok {
-				tags = append(tags, fmt.Sprintf("vconfirmed:%v", confirmed))
-			}
-		}
-		// For low-value classes, append impact context when unverified.
-		// This helps the ML engine distinguish real exploits from mere
-		// reflections that programs mark as informational.
-		qualifier := ""
-		if !f.Verified {
-			qualifier = decision.ImpactQualifier(f.Type)
-		}
-		items[i] = decision.Item{
-			Key: f.ID,
-			Text: fmt.Sprintf("%s on %s param %q [%s]: %s%s",
-				f.Type, f.URL, f.Parameter, strings.Join(tags, ","), ev, qualifier),
-		}
-	}
-	probs, err := decision.Adjudicate(ctx, cfg, items)
-	if err != nil || probs == nil || len(probs) != len(findings) {
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "[!] Haruspex adjudication failed (findings unchanged): %v\n", err)
-		}
-		return // fail-open: keep every finding untouched
-	}
-	reviewed := 0
-	for i, f := range findings {
-		p := probs[i]
-		if p == nil {
-			// The engine had no opinion for this one item (e.g. an oversized
-			// state it rejected) — leave the finding exactly as it was, never
-			// read this as a confident "not a finding".
-			continue
-		}
-		if f.Metadata == nil {
-			f.Metadata = map[string]interface{}{}
-		}
-		f.Metadata["haruspex_real_prob"] = *p
-		if *p < 0.5 && !f.Verified {
-			f.Metadata["haruspex_triage"] = "review"
-		}
-		reviewed++
-	}
-	if reviewed > 0 {
-		fmt.Fprintf(os.Stderr, "[+] Haruspex adjudication: scored %d/%d findings\n", reviewed, len(findings))
-	}
-}
-
 
 func runScan(cmd *cobra.Command, args []string) error {
 	if err := applyConfigFile(cmd); err != nil {
@@ -398,6 +274,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	printTUIFindings(result.Findings)
+	printTUISummary(result)
+
 	// Coverage summary: show what was tested and what was skipped so the
 	// result is never silently incomplete.
 	printCoverageSummary(result, internalConfig)
@@ -433,7 +312,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 					f.Close()
 				}
 			}
-			fmt.Fprintf(os.Stderr, "[+] Auto-saved report to %s/\n", autoDir)
+			printTUIAutoSave(autoDir + "/")
 		}
 	}
 

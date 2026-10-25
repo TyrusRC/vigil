@@ -1,4 +1,4 @@
-# vigil — context-aware web vulnerability vigil
+# vigil — context-aware web vulnerability scanner
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/TyrusRC/vigil)](go.mod)
 [![Go Report Card](https://goreportcard.com/badge/github.com/TyrusRC/vigil)](https://goreportcard.com/report/github.com/TyrusRC/vigil)
@@ -19,8 +19,9 @@ Security Top 10**, and compliance frameworks (**PCI DSS**, **HIPAA**,
 
 `vigil scan https://target.com` works with **zero flags** — smart
 defaults auto-detect the target's tech stack, API spec, SPA framework,
-and choose the right detectors and tools. No need to learn complex flag
-combinations.
+and choose the right detectors and tools. Rich inline TUI with colored
+severity badges, progress bars, and evidence per finding in interactive
+terminals; plain headless output for CI/CD and automation (`--headless`).
 
 vigil focuses on the categories Nuclei templates structurally cannot
 reach — stateful business-logic bugs, two-identity IDOR/BOLA, race
