@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // requestToken issues a reset request for the given user and returns

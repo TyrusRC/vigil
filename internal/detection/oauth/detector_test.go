@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // idpHandler returns an httptest server that simulates an OIDC IdP. The

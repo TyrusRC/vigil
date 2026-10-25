@@ -1,6 +1,6 @@
 package scoring
 
-import "github.com/TyrusRC/assay/internal/core"
+import "github.com/TyrusRC/vigil/internal/core"
 
 // cweVectors maps the high-impact CWEs the detectors emit to a representative
 // CVSS v3.1 base vector. Unmapped CWEs fall through to the severity table.

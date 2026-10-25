@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // ReauthFunc performs a fresh login and returns the new cookie string.

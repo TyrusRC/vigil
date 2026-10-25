@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	internalhttp "github.com/TyrusRC/assay/internal/http"
-	xsspayloads "github.com/TyrusRC/assay/internal/payloads/xss"
+	"github.com/TyrusRC/vigil/internal/core"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
+	xsspayloads "github.com/TyrusRC/vigil/internal/payloads/xss"
 )
 
 func TestNew(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func TestDetector_Detect_NoRSCFingerprint_NoOp(t *testing.T) {

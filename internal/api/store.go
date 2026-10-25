@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 // ScanStatus is the lifecycle state of a scan job.
@@ -71,7 +71,7 @@ func (j *ScanJob) Result() *scanner.ScanResult {
 }
 
 // Store is a concurrency-safe registry of scan jobs. When path is non-empty the
-// job metadata is persisted to disk after each change, so `assay serve` survives
+// job metadata is persisted to disk after each change, so `vigil serve` survives
 // a restart (the in-memory raw result is not persisted — status, summary and
 // listing are).
 type Store struct {

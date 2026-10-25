@@ -77,8 +77,8 @@ if (orig) {
 // crawler reads back after settle.
 (function(){
   try {
-    window.__assayRoutes = window.__assayRoutes || [];
-    var rec = function(u){ try { if (u) window.__assayRoutes.push(String(u)); } catch(e){} };
+    window.__vigilRoutes = window.__vigilRoutes || [];
+    var rec = function(u){ try { if (u) window.__vigilRoutes.push(String(u)); } catch(e){} };
     if (history.pushState) {
       var _ps = history.pushState;
       history.pushState = function(s, t, u){ rec(u); return _ps.apply(this, arguments); };

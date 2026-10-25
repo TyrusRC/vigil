@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // WriteMarkdown renders the assessment as a control-by-control Markdown report.

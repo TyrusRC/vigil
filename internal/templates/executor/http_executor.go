@@ -13,7 +13,7 @@ package executor
 import (
 	"context"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 // executeHTTP executes an HTTP request from a template.

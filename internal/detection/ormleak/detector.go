@@ -20,8 +20,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // expansionParams is the curated set of expansion-style query
@@ -48,11 +48,11 @@ var sensitiveKeyRe = regexp.MustCompile(`(?i)(password|passwd|api[_-]?key|secret
 
 // Detector probes targetURL for ORM expansion leaks.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -183,7 +183,7 @@ func looksJSON(contentType, body string) bool {
 	return t[0] == '{' || t[0] == '['
 }
 
-func buildFinding(target, paramName, value string, newKeys []string, resp *assayhttp.Response) *core.Finding {
+func buildFinding(target, paramName, value string, newKeys []string, resp *vigilhttp.Response) *core.Finding {
 	finding := core.NewFinding("ORM Over-Fetch via Expansion Parameter", core.SeverityHigh).At(target, paramName)
 	finding.Tool = "ormleak"
 	finding.Confidence = core.ConfidenceHigh

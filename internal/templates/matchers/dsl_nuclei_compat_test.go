@@ -2,7 +2,7 @@ package matchers
 
 import "testing"
 
-// Nuclei templates call DSL helpers in snake_case; assay registers many in
+// Nuclei templates call DSL helpers in snake_case; vigil registers many in
 // camelCase. The snake->camel fallback must resolve both.
 func TestDSL_SnakeToCamelFallback(t *testing.T) {
 	dsl := NewDSLEngine()

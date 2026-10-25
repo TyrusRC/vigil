@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/exposure"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/exposure"
 )
 
 // Detector performs sensitive file exposure detection.

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectImplicitFlow probes whether the IdP still issues tokens via the
@@ -31,8 +31,8 @@ func (d *Detector) DetectImplicitFlow(ctx context.Context, authzURL string, opts
 	for _, rt := range []string{"token", "id_token token"} {
 		probeURL := d.buildAuthzURL(base, opts, map[string]string{
 			"response_type": rt,
-			"nonce":         "assay-implicit-nonce",
-			"state":         "assay-implicit-state",
+			"nonce":         "vigil-implicit-nonce",
+			"state":         "vigil-implicit-state",
 		}, true)
 		resp, err := d.probe(ctx, probeURL)
 		if err != nil || resp == nil {
@@ -66,7 +66,7 @@ func (d *Detector) DetectNonceMissing(ctx context.Context, authzURL string, opts
 
 	probeURL := d.buildAuthzURL(base, opts, map[string]string{
 		"response_type": "id_token",
-		"state":         "assay-nonce-missing-state",
+		"state":         "vigil-nonce-missing-state",
 		// Explicitly clear any default nonce — buildAuthzURL doesn't set
 		// one but a future change might. The strip-from-final-URL pass
 		// in buildAuthzURL only covers `state`, so we use an empty

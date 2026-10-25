@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/headless"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/headless"
 )
 
 // skipIfPoolUnavailable skips a test when no headless browser can be

@@ -14,7 +14,7 @@ import (
 
 	"golang.org/x/net/http2"
 
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // startH2Server creates an httptest server with h2 ALPN configured. Go's

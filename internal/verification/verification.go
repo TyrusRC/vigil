@@ -15,8 +15,8 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Proof is the outcome of attempting to confirm a finding.
@@ -164,9 +164,9 @@ func applyProof(f *core.Finding, proof *Proof) {
 func marker() string {
 	b := make([]byte, 6)
 	if _, err := rand.Read(b); err != nil {
-		return "assayverify"
+		return "vigilverify"
 	}
-	return "assay" + hex.EncodeToString(b)
+	return "vigil" + hex.EncodeToString(b)
 }
 
 // requestMethod returns the HTTP method recorded on a finding, defaulting to

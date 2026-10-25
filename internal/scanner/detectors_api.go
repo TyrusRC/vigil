@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/apispec"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/apispec"
 )
 
 // testDataExposure walks the JSON response for sensitive field names

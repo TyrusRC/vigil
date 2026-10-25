@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	scanhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	scanhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetectResourceIndicatorConfusion_VulnerableServer(t *testing.T) {

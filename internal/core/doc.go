@@ -1,5 +1,5 @@
 // Package core provides the fundamental types and interfaces for the
-// assay — context-aware web vulnerability assay.
+// vigil — context-aware web vulnerability vigil.
 //
 // This package defines:
 //   - Finding: represents a discovered vulnerability

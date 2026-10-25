@@ -8,14 +8,14 @@ import (
 )
 
 func TestBuildTE0Payload(t *testing.T) {
-	p := BuildTE0Payload("example.com", "/", "assaycanary")
+	p := BuildTE0Payload("example.com", "/", "vigilcanary")
 	if !strings.Contains(p, "Transfer-Encoding: chunked") {
 		t.Error("TE.0 payload must carry Transfer-Encoding: chunked")
 	}
 	if strings.Contains(p, "Content-Length: ") {
 		t.Error("TE.0 payload must not carry a Content-Length header")
 	}
-	if !strings.Contains(p, "GET /assaycanary HTTP/1.1") {
+	if !strings.Contains(p, "GET /vigilcanary HTTP/1.1") {
 		t.Error("expected the smuggled request in the chunked body")
 	}
 	if !strings.HasSuffix(p, "0\r\n\r\n") {
@@ -36,7 +36,7 @@ func TestDetector_DetectTE0_Vulnerable(t *testing.T) {
 		// A TE.0-vulnerable back-end ignores Transfer-Encoding and treats the
 		// chunked body as a new request, processing the smuggled GET → second
 		// response on the same connection.
-		if strings.Contains(req, "assaycanary") {
+		if strings.Contains(req, "vigilcanary") {
 			resp += "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 		}
 		if _, werr := conn.Write([]byte(resp)); werr != nil {

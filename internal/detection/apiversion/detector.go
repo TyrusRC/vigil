@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // versionSegmentRe matches the "/vN" path segment that announces a
@@ -33,11 +33,11 @@ var extraVersionTokens = []string{"v0", "legacy", "beta", "preview", "alpha", "i
 
 // Detector probes for sibling versions of the path prefix in targetURL.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -150,7 +150,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL string) (*Result, error
 	return res, nil
 }
 
-func buildFinding(originalURL, probedURL, sibling string, resp *assayhttp.Response) *core.Finding {
+func buildFinding(originalURL, probedURL, sibling string, resp *vigilhttp.Response) *core.Finding {
 	severity := core.SeverityMedium
 	// Older numeric versions and "internal"/"legacy" rate higher.
 	switch {

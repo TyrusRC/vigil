@@ -6,8 +6,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scoring"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scoring"
 )
 
 type htmlFinding struct {

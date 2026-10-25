@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectNullableLeak probes nullable: true fields whose names look like

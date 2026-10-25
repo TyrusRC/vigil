@@ -3,8 +3,8 @@ package passwordreset
 import (
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 func buildHostHeaderFinding(resetURL, header, attacker string, resp *http.Response) *core.Finding {

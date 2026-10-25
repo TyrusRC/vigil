@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 const (
@@ -54,7 +54,7 @@ func NewTimingAnalyzer() *TimingAnalyzer {
 // of confirmations to declare a positive result.
 func (ta *TimingAnalyzer) Analyze(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, delayPayload string,
 	expectedDelay time.Duration,
 ) *TimingResult {

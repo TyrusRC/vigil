@@ -3,9 +3,9 @@ package executor
 import (
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/matchers"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/matchers"
 )
 
 // clientForRequest returns a client clone with per-request redirect

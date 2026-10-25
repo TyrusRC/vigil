@@ -17,9 +17,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // evilOrigin is the attacker-controlled value we inject into the Origin
@@ -41,11 +41,11 @@ var stateChangePathHints = []string{
 
 // Detector probes targetURL for missing CSRF defenses.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -91,7 +91,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL, method, body string) (
 		return res, nil
 	}
 	if body == "" {
-		body = "{\"probe\":\"assay-csrf\"}"
+		body = "{\"probe\":\"vigil-csrf\"}"
 	}
 
 	contentType := "application/json"

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // RedirectResult holds the findings from DetectDOMRedirect.

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // hostFromURL extracts the hostname portion of a URL, returning an error

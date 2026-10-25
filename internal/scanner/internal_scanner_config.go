@@ -3,9 +3,9 @@ package scanner
 import (
 	"time"
 
-	"github.com/TyrusRC/assay/internal/detection/subtakeover"
-	"github.com/TyrusRC/assay/internal/scope"
-	"github.com/TyrusRC/assay/internal/session"
+	"github.com/TyrusRC/vigil/internal/detection/subtakeover"
+	"github.com/TyrusRC/vigil/internal/scope"
+	"github.com/TyrusRC/vigil/internal/session"
 )
 
 // InternalScanConfig configures the internal scanner behavior.
@@ -246,7 +246,7 @@ type InternalScanConfig struct {
 	// uses the session package default.
 	SessionCheckInterval time.Duration
 
-	// IAST — Interactive Application Security Testing. When enabled, assay
+	// IAST — Interactive Application Security Testing. When enabled, vigil
 	// starts a callback server and wraps DAST payloads with taint markers.
 	// A deployed sensor (PHP/Node/Python) reports back when a marker reaches
 	// a dangerous sink, upgrading the finding confidence to "confirmed".

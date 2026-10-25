@@ -18,8 +18,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // reflectionPaths covers both the v1 and v1alpha service identifiers.
@@ -31,11 +31,11 @@ var reflectionPaths = []string{
 
 // Detector probes targetURL's host for the gRPC reflection service.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -138,7 +138,7 @@ func extractServiceNames(body string) []string {
 	return out
 }
 
-func buildFinding(probedURL, path string, resp *assayhttp.Response, services []string) *core.Finding {
+func buildFinding(probedURL, path string, resp *vigilhttp.Response, services []string) *core.Finding {
 	finding := core.NewFinding("gRPC Server Reflection Exposed", core.SeverityMedium).At(probedURL, path)
 	finding.Tool = "grpcreflect"
 	finding.Confidence = core.ConfidenceHigh

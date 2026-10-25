@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // extendedRedirectURIVariants returns the union of the v1 variants
@@ -100,7 +100,7 @@ func (d *Detector) DetectResponseModeConfusion(ctx context.Context, authzURL str
 	// the IdP normally uses (query vs fragment) so we can detect a
 	// genuine override rather than a server that ignored our hint.
 	baselineURL := d.buildAuthzURL(base, opts, map[string]string{
-		"state": "assay-mode-baseline",
+		"state": "vigil-mode-baseline",
 	}, true)
 	baselineResp, err := d.probe(ctx, baselineURL)
 	if err != nil || baselineResp == nil || !d.acceptsAuthorize(baselineResp) {
@@ -122,7 +122,7 @@ func (d *Detector) DetectResponseModeConfusion(ctx context.Context, authzURL str
 
 		probeURL := d.buildAuthzURL(base, opts, map[string]string{
 			"response_mode": mode,
-			"state":         "assay-mode-" + mode,
+			"state":         "vigil-mode-" + mode,
 		}, true)
 
 		resp, err := d.probe(ctx, probeURL)

@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 	"golang.org/x/net/html"
 )
 

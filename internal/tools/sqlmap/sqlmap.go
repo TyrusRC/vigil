@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/tools"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/tools"
 )
 
 // Options configures SQLMap execution parameters.
@@ -207,7 +207,7 @@ func (s *SQLMap) Execute(ctx context.Context, req *tools.ToolRequest) (*tools.To
 	// Ensure output directory exists for log-file parsing.
 	outDir := req.OutputDir
 	if outDir == "" {
-		outDir, _ = os.MkdirTemp("", "assay-sqlmap-*")
+		outDir, _ = os.MkdirTemp("", "vigil-sqlmap-*")
 		defer os.RemoveAll(outDir)
 		req.OutputDir = outDir
 	}

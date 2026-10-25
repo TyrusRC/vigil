@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 func TestWriteMarkdown(t *testing.T) {
@@ -25,7 +25,7 @@ func TestWriteMarkdown(t *testing.T) {
 		t.Fatalf("WriteMarkdown error: %v", err)
 	}
 	out := buf.String()
-	for _, want := range []string{"# assay Scan Report", "## Summary", "SQL Injection", "https://example.com/?id=1", "CWE-89"} {
+	for _, want := range []string{"# vigil Scan Report", "## Summary", "SQL Injection", "https://example.com/?id=1", "CWE-89"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("markdown missing %q", want)
 		}

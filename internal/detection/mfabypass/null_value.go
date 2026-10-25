@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // DetectMFANullValue logs in, then submits MFA OTPs that should be

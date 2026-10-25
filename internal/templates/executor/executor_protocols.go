@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 // executeDNS executes a DNS query from a template.

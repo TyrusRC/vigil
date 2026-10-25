@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // DetectOptions tunes the DetectFromBaseline probe.
@@ -31,11 +31,11 @@ type DetectionResult struct {
 
 // Detector probes a target for leaked framework stack traces.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the provided HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -107,11 +107,11 @@ func (d *Detector) DetectFromBaseline(ctx context.Context, targetURL string, opt
 		}
 
 		probeURL := joinSuffix(targetURL, p.suffix)
-		var resp *assayhttp.Response
+		var resp *vigilhttp.Response
 		var perr error
 		switch p.method {
 		case "POST":
-			resp, perr = d.client.Do(probeCtx, &assayhttp.Request{
+			resp, perr = d.client.Do(probeCtx, &vigilhttp.Request{
 				Method:      "POST",
 				URL:         probeURL,
 				Body:        p.body,
@@ -179,7 +179,7 @@ func joinSuffix(target, suffix string) string {
 	return u.String()
 }
 
-func buildFinding(target, probeURL string, p probe, framework, sample string, resp *assayhttp.Response) *core.Finding {
+func buildFinding(target, probeURL string, p probe, framework, sample string, resp *vigilhttp.Response) *core.Finding {
 	f := core.NewFinding("Stack Trace Disclosure", core.SeverityMedium)
 	f.URL = target
 	f.Tool = "stacktrace-detector"

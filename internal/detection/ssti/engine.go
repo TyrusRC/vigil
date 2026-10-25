@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/payloads/ssti"
+	"github.com/TyrusRC/vigil/internal/payloads/ssti"
 )
 
 // detectRawEval tests for raw code injection (Python eval(), Node.js

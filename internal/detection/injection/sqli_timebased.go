@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // TimeBasedResult contains the result of time-based blind SQLi detection.
@@ -51,7 +51,7 @@ var timeBasedPayloads = []timeBasedPayload{
 // requires TWO consecutive delayed responses to rule out network jitter.
 func (d *SQLiDetector) DetectTimeBased(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method string,
 ) (*TimeBasedResult, error) {
 	res := &TimeBasedResult{}
@@ -136,11 +136,11 @@ func (d *SQLiDetector) DetectTimeBased(
 // DetectTimeBasedAt is the location-aware variant that uses a send function.
 func (d *SQLiDetector) DetectTimeBasedAt(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL string,
 	param string,
 	method string,
-	send func(ctx context.Context, payload string) (*assayhttp.Response, error),
+	send func(ctx context.Context, payload string) (*vigilhttp.Response, error),
 ) (*TimeBasedResult, error) {
 	res := &TimeBasedResult{}
 	if client == nil {

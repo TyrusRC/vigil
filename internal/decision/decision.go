@@ -1,4 +1,4 @@
-// Package decision is assay's template-relevance decision engine — the "Jev for
+// Package decision is vigil's template-relevance decision engine — the "Jev for
 // nuclei" pattern: given the target's detected tech, rank (and optionally cap)
 // the template set so the scan spends effort where it is relevant.
 //
@@ -11,7 +11,7 @@
 //     detected-tech tokens. Always available, no key, no network.
 //
 // Ranking only reorders by default (TopN=0 keeps every template — no coverage
-// loss). TopN>0 is an explicit operator cap (ASSAY_DECIDE_TOP) to cut the
+// loss). TopN>0 is an explicit operator cap (VIGIL_DECIDE_TOP) to cut the
 // firehose, not a silent skip.
 package decision
 
@@ -58,23 +58,23 @@ type Config struct {
 	APIKey  string
 }
 
-// FromEnv builds a Config from the environment. Enabled when ASSAY_DECIDE is
+// FromEnv builds a Config from the environment. Enabled when VIGIL_DECIDE is
 // truthy or an AI_GATEWAY_API_KEY is present.
 func FromEnv() Config {
 	key := strings.TrimSpace(os.Getenv("AI_GATEWAY_API_KEY"))
 	if key == "" {
-		key = strings.TrimSpace(os.Getenv("ASSAY_DECISION_API_KEY"))
+		key = strings.TrimSpace(os.Getenv("VIGIL_DECISION_API_KEY"))
 	}
-	baseEnv := strings.TrimSpace(os.Getenv("ASSAY_DECISION_BASE_URL"))
-	// Enable on an explicit key, ASSAY_DECIDE, or a self-hosted local engine URL.
-	enabled := truthy(os.Getenv("ASSAY_DECIDE")) || key != "" || IsLocal(baseEnv)
+	baseEnv := strings.TrimSpace(os.Getenv("VIGIL_DECISION_BASE_URL"))
+	// Enable on an explicit key, VIGIL_DECIDE, or a self-hosted local engine URL.
+	enabled := truthy(os.Getenv("VIGIL_DECIDE")) || key != "" || IsLocal(baseEnv)
 	top := 0
-	if v := strings.TrimSpace(os.Getenv("ASSAY_DECIDE_TOP")); v != "" {
+	if v := strings.TrimSpace(os.Getenv("VIGIL_DECIDE_TOP")); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			top = n
 		}
 	}
-	model := strings.TrimSpace(os.Getenv("ASSAY_DECISION_MODEL"))
+	model := strings.TrimSpace(os.Getenv("VIGIL_DECISION_MODEL"))
 	if model == "" {
 		model = defaultModel
 	}
@@ -179,7 +179,7 @@ type jevQuestion struct {
 type jevRequest struct {
 	Model string `json:"model"`
 	// Domain routes a multi-adapter engine to the right per-domain adapter
-	// (assay is a web DAST -> "web"); a single-adapter engine ignores it.
+	// (vigil is a web DAST -> "web"); a single-adapter engine ignores it.
 	Domain    string                 `json:"domain,omitempty"`
 	State     string                 `json:"state"`
 	Questions map[string]jevQuestion `json:"questions"`
@@ -262,7 +262,7 @@ func Adjudicate(ctx context.Context, cfg Config, items []Item) ([]*float64, erro
 	}
 	if !cfg.Enabled {
 		// No ML engine configured — use heuristic scoring so standalone
-		// assay users still get a baseline confidence signal.
+		// vigil users still get a baseline confidence signal.
 		return heuristicAdjudicate(items), nil
 	}
 	if cfg.APIKey == "" && !IsLocal(cfg.BaseURL) {

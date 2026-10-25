@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/detection/graphql"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/detection/graphql"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // gqlFieldInfo holds complete info about a GraphQL field for advanced checks.
@@ -169,7 +169,7 @@ func gqlScalarFieldsOfType(introResp, typeName string) []string {
 // Helpers
 // ---------------------------------------------------------------------------
 
-func gqlSend(ctx context.Context, det *graphql.Detector, cl *assayhttp.Client, ep, field, query string, ns map[string]bool) (string, bool) {
+func gqlSend(ctx context.Context, det *graphql.Detector, cl *vigilhttp.Client, ep, field, query string, ns map[string]bool) (string, bool) {
 	body, err := det.BuildGraphQLRequest(query, nil)
 	if err != nil {
 		return "", false
@@ -225,7 +225,7 @@ func gqlIsIDArg(name string) bool {
 
 // gqlSendRetry sends a query, retries once with __typename if sub-selection
 // is required, and returns the final response.
-func gqlSendRetry(ctx context.Context, det *graphql.Detector, cl *assayhttp.Client, ep, field string, ns map[string]bool, buildQuery func(sub string) string) string {
+func gqlSendRetry(ctx context.Context, det *graphql.Detector, cl *vigilhttp.Client, ep, field string, ns map[string]bool, buildQuery func(sub string) string) string {
 	sub := gqlSub(field, ns)
 	q := buildQuery(sub)
 	r, ok := gqlSend(ctx, det, cl, ep, field, q, ns)

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // paramPriority assigns a numeric priority (lower = tested first) based on
@@ -57,7 +57,7 @@ func paramPriority(p core.Parameter) int {
 }
 
 // flushPartialFindings writes the current findings snapshot to
-// <dir>/assay-partial.json. Called after each scan phase so findings
+// <dir>/vigil-partial.json. Called after each scan phase so findings
 // from earlier phases survive if a later phase hangs or the process
 // is killed. The partial file is removed on normal scan completion.
 func flushPartialFindings(mu *sync.Mutex, findings *core.Findings, dir string) {
@@ -79,7 +79,7 @@ func flushPartialFindings(mu *sync.Mutex, findings *core.Findings, dir string) {
 		return
 	}
 	_ = os.MkdirAll(dir, 0o755)
-	path := filepath.Join(dir, "assay-partial.json")
+	path := filepath.Join(dir, "vigil-partial.json")
 	if err := os.WriteFile(path, data, 0o644); err == nil {
 		fmt.Fprintf(os.Stderr, "[*] Flushed %d partial findings to %s\n", n, path)
 	}

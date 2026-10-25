@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // severityOrder is the canonical Critical-to-Info ordering used by the
@@ -21,7 +21,7 @@ func (r *Report) WriteMarkdown(w io.Writer) error {
 	res := r.ScanResult
 	st := computeStats(res.Findings)
 
-	fmt.Fprintf(w, "# assay Scan Report\n\n")
+	fmt.Fprintf(w, "# vigil Scan Report\n\n")
 	fmt.Fprintf(w, "- **Generated:** %s\n", r.GeneratedAt.Format(time.RFC3339))
 	fmt.Fprintf(w, "- **Duration:** %s\n", res.Duration.Round(time.Second))
 	if len(res.Targets) > 0 {

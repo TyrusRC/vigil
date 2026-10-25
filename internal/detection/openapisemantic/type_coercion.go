@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectTypeCoercion probes integer fields by sending the value as a quoted

@@ -15,8 +15,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/matchers"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/matchers"
 )
 func (e *Executor) executeHTTPRace(ctx context.Context, tmpl *templates.Template, httpReq *templates.HTTPRequest, targetURL string, vars map[string]interface{}) ([]*templates.ExecutionResult, error) {
 	var results []*templates.ExecutionResult

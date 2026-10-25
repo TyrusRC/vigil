@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // SendRawRequest sends a raw HTTP request over a TCP socket.

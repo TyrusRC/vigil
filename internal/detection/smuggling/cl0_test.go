@@ -17,7 +17,7 @@ func TestSmugglingType_CL0_String(t *testing.T) {
 }
 
 func TestBuildCL0Payload(t *testing.T) {
-	p := BuildCL0Payload("example.com", "/", "assaycanary")
+	p := BuildCL0Payload("example.com", "/", "vigilcanary")
 	if !strings.HasPrefix(p, "GET / HTTP/1.1\r\n") {
 		t.Errorf("expected outer GET request, got:\n%s", p)
 	}
@@ -27,7 +27,7 @@ func TestBuildCL0Payload(t *testing.T) {
 	if !strings.Contains(p, "Connection: keep-alive") {
 		t.Error("expected keep-alive so the smuggled request is processed on the same connection")
 	}
-	if !strings.Contains(p, "GET /assaycanary HTTP/1.1") {
+	if !strings.Contains(p, "GET /vigilcanary HTTP/1.1") {
 		t.Error("expected the smuggled request in the body")
 	}
 	// The Content-Length must exactly cover the smuggled body, or a compliant
@@ -89,7 +89,7 @@ func TestDetector_DetectCL0_Vulnerable(t *testing.T) {
 		// A CL.0-vulnerable back-end ignores the body's Content-Length and
 		// processes the smuggled request, emitting a second response.
 		resp := "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
-		if strings.Contains(req, "assaycanary") {
+		if strings.Contains(req, "vigilcanary") {
 			resp += "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 		}
 		if _, werr := conn.Write([]byte(resp)); werr != nil {

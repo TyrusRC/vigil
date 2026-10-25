@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func sampleFinding() *core.Finding {
@@ -50,7 +50,7 @@ func TestFindingToIssue_Labels(t *testing.T) {
 		}
 		return false
 	}
-	if !has("assay") || !has("security") {
+	if !has("vigil") || !has("security") {
 		t.Errorf("expected base labels, got %v", iss.Labels)
 	}
 	if !has("severity:critical") {

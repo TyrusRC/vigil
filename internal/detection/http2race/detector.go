@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	scanhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	scanhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector probes a state-change endpoint for race conditions by

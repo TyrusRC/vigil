@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectStateBinding probes the `state` parameter handling on the
@@ -48,7 +48,7 @@ func (d *Detector) DetectStateBinding(ctx context.Context, authzURL string, opts
 	// that binds state to client+session would either reject the second
 	// request or rotate it; a vulnerable IdP returns the same accepting
 	// behavior twice.
-	const replayState = "assay-replayable-state-0001"
+	const replayState = "vigil-replayable-state-0001"
 	first := d.buildAuthzURL(base, opts, map[string]string{"state": replayState}, true)
 	resp1, err1 := d.probe(ctx, first)
 	resp2, err2 := d.probe(ctx, first)

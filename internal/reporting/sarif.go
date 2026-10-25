@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // sarifSchema is the canonical SARIF 2.1.0 schema URL recognized by GitHub
@@ -14,7 +14,7 @@ import (
 const sarifSchema = "https://json.schemastore.org/sarif-2.1.0.json"
 
 // informationURI is the project home advertised in the SARIF tool driver.
-const informationURI = "https://github.com/TyrusRC/assay"
+const informationURI = "https://github.com/TyrusRC/vigil"
 
 // SARIF result levels (the only values GitHub code scanning recognizes).
 const (
@@ -175,7 +175,7 @@ func newSARIFResult(id string, f *core.Finding) sarifResult {
 	}
 }
 
-// sarifLevel maps an assay severity onto a SARIF result level.
+// sarifLevel maps an vigil severity onto a SARIF result level.
 func sarifLevel(s core.Severity) string {
 	switch s {
 	case core.SeverityCritical, core.SeverityHigh:

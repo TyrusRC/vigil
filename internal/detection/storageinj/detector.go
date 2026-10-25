@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/headless"
-	"github.com/TyrusRC/assay/internal/payloads/storageinj"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/headless"
+	"github.com/TyrusRC/vigil/internal/payloads/storageinj"
 )
 
 // Detector tests for client-side storage injection vulnerabilities.
@@ -198,11 +198,11 @@ func (d *Detector) checkKeysForSensitiveData(data map[string]string, storageName
 func (d *Detector) setStorage(ctx context.Context, page *headless.Page, st storageinj.StorageType, payload storageinj.Payload) error {
 	switch st {
 	case storageinj.LocalStorage:
-		return page.SetLocalStorage(ctx, "assay_test", payload.Value)
+		return page.SetLocalStorage(ctx, "vigil_test", payload.Value)
 	case storageinj.SessionStorage:
-		return page.SetSessionStorage(ctx, "assay_test", payload.Value)
+		return page.SetSessionStorage(ctx, "vigil_test", payload.Value)
 	case storageinj.Cookie:
-		return page.SetCookie(ctx, "assay_test", payload.Value)
+		return page.SetCookie(ctx, "vigil_test", payload.Value)
 	case storageinj.WindowName:
 		return page.SetWindowName(ctx, payload.Value)
 	default:

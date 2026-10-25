@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 var _ = templates.Template{} // ensure import is used

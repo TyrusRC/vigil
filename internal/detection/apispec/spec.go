@@ -16,7 +16,7 @@ import (
 	"regexp"
 	"strings"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Endpoint is the canonical record we extract from an OpenAPI document.
@@ -56,7 +56,7 @@ var pathVarRe = regexp.MustCompile(`\{([^}]+)\}`)
 // LoadFromURL fetches a spec at specURL and parses it. When the URL hosts
 // a Swagger UI it usually exposes the JSON at /openapi.json or /v3/api-docs;
 // this loader doesn't probe — callers pass the JSON URL directly.
-func LoadFromURL(ctx context.Context, client *assayhttp.Client, specURL string) (*Spec, error) {
+func LoadFromURL(ctx context.Context, client *vigilhttp.Client, specURL string) (*Spec, error) {
 	if client == nil {
 		return nil, fmt.Errorf("apispec: nil client")
 	}

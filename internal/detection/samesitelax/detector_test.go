@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // TestDetect_LaxOnSessionCookie covers the modern-browser default case:

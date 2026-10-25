@@ -5,15 +5,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/TyrusRC/assay/internal/iast"
+	"github.com/TyrusRC/vigil/internal/iast"
 	"github.com/spf13/cobra"
 )
 
 var iastCmd = &cobra.Command{
 	Use:   "iast",
 	Short: "IAST sensor management",
-	Long: `Manage assay's lightweight IAST (Interactive Application Security Testing)
-sensors. Deploy a sensor to the target application so assay can confirm
+	Long: `Manage vigil's lightweight IAST (Interactive Application Security Testing)
+sensors. Deploy a sensor to the target application so vigil can confirm
 that DAST payloads reach dangerous sinks (SQL query, system command,
 file open, etc.).
 
@@ -30,14 +30,14 @@ Languages:
   node    Node.js sensor (deploy via NODE_OPTIONS="--require sensor.js")
   python  Python sensor (deploy as sitecustomize.py or PYTHONSTARTUP)
 
-The sensor reports taint-marker hits to the assay callback server at
-the address configured by ASSAY_CALLBACK_URL (default :7880). Start the
+The sensor reports taint-marker hits to the vigil callback server at
+the address configured by VIGIL_CALLBACK_URL (default :7880). Start the
 callback server with --iast on the scan command.
 
 Examples:
-  assay iast deploy php ./target-app/
-  assay iast deploy node /tmp/
-  assay iast deploy python`,
+  vigil iast deploy php ./target-app/
+  vigil iast deploy node /tmp/
+  vigil iast deploy python`,
 	Args: cobra.RangeArgs(1, 2),
 	RunE: runIASTDeploy,
 }
@@ -58,7 +58,7 @@ var iastListCmd = &cobra.Command{
 		fmt.Println("           cp sensor.py <venv>/lib/pythonX.Y/sitecustomize.py")
 		fmt.Println("           or: PYTHONSTARTUP=/path/to/sensor.py python app.py")
 		fmt.Println()
-		fmt.Println("All sensors read ASSAY_CALLBACK_URL (default http://host.docker.internal:7880/api/v1/sink)")
+		fmt.Println("All sensors read VIGIL_CALLBACK_URL (default http://host.docker.internal:7880/api/v1/sink)")
 	},
 }
 
@@ -72,7 +72,7 @@ func runIASTDeploy(_ *cobra.Command, args []string) error {
 	lang := args[0]
 	content, ok := iast.SensorContent(lang)
 	if !ok {
-		return fmt.Errorf("unknown language %q — run 'assay iast list' for options", lang)
+		return fmt.Errorf("unknown language %q — run 'vigil iast list' for options", lang)
 	}
 
 	fname := iast.SensorLanguages[lang]

@@ -32,7 +32,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Issue identifies a webhook signature-verification weakness.
@@ -245,7 +245,7 @@ func (d *Detector) looksLikeWebhookReceiver(ctx context.Context, target string, 
 // probeMissingSig POSTs a webhook-like body with NO signature header.
 // Returns the status code and ok=true on transport success.
 func (d *Detector) probeMissingSig(ctx context.Context, target string, timeout time.Duration) (int, bool) {
-	body := `{"type":"assay.probe","data":{"object":"audit"}}`
+	body := `{"type":"vigil.probe","data":{"object":"audit"}}`
 	return d.post(ctx, target, body, nil, timeout)
 }
 
@@ -253,7 +253,7 @@ func (d *Detector) probeMissingSig(ctx context.Context, target string, timeout t
 // signature. A correctly-implemented receiver rejects (>= 400); a
 // vulnerable one returns 2xx.
 func (d *Detector) probeWrongSig(ctx context.Context, target string, timeout time.Duration) (int, bool) {
-	body := `{"type":"assay.probe","data":{"object":"audit"}}`
+	body := `{"type":"vigil.probe","data":{"object":"audit"}}`
 	headers := map[string]string{
 		"Stripe-Signature":   "t=1700000000,v1=deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 		"X-Hub-Signature-256": "sha256=deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
@@ -266,7 +266,7 @@ func (d *Detector) probeWrongSig(ctx context.Context, target string, timeout tim
 // past. Stripe rejects anything older than 5 min by default; a receiver
 // that doesn't validate timestamps will accept this.
 func (d *Detector) probeStaleTimestamp(ctx context.Context, target string, timeout time.Duration) (int, bool) {
-	body := `{"type":"assay.probe","data":{"object":"audit"}}`
+	body := `{"type":"vigil.probe","data":{"object":"audit"}}`
 	stale := time.Now().Add(-7 * 24 * time.Hour).Unix()
 	headers := map[string]string{
 		"Stripe-Signature":            fmt.Sprintf("t=%d,v1=deadbeef", stale),

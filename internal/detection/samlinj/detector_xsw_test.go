@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // baseAssertionFixture returns a minimal signed-looking <Assertion> the
@@ -96,7 +96,7 @@ func base64OracleSP(t *testing.T) *httptest.Server {
 }
 
 func newXSWDetector() *Detector {
-	c := assayhttp.NewClient().WithTimeout(2 * time.Second)
+	c := vigilhttp.NewClient().WithTimeout(2 * time.Second)
 	return New(c)
 }
 

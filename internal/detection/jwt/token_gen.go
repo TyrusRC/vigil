@@ -115,7 +115,7 @@ func (d *Detector) GenerateEmbeddedJWKToken(originalToken string) (string, error
 		"kty": "RSA",
 		"n":   base64.RawURLEncoding.EncodeToString(pub.N.Bytes()),
 		"e":   base64.RawURLEncoding.EncodeToString(eBuf),
-		"kid": "assay-forge",
+		"kid": "vigil-forge",
 	}
 	delete(parsed.Header, "kid")
 	delete(parsed.Header, "jku")

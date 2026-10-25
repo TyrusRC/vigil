@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // StoredDetector performs stored XSS detection via inject→crawl→match→confirm.
@@ -101,7 +101,7 @@ func (d *StoredDetector) injectCanaries(ctx context.Context, targetURL string, p
 			continue
 		}
 
-		canary := "assayxss" + randomHex(4)
+		canary := "vigilxss" + randomHex(4)
 		_, err := d.client.SendPayload(ctx, targetURL, p.Name, canary, method)
 		if err != nil {
 			continue
@@ -215,9 +215,9 @@ func (d *StoredDetector) confirmXSS(ctx context.Context, hits []reflectionHit, m
 		payload string
 		marker  string
 	}{
-		{`"><img src=x onerror=assayxssconfirm>`, `onerror=assayxssconfirm`},
-		{`<script>assayxssconfirm</script>`, `<script>assayxssconfirm</script>`},
-		{`'><svg/onload=assayxssconfirm>`, `onload=assayxssconfirm`},
+		{`"><img src=x onerror=vigilxssconfirm>`, `onerror=vigilxssconfirm`},
+		{`<script>vigilxssconfirm</script>`, `<script>vigilxssconfirm</script>`},
+		{`'><svg/onload=vigilxssconfirm>`, `onload=vigilxssconfirm`},
 	}
 
 	confirmed := map[string]bool{}

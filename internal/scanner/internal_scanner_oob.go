@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/oob"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/oob"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // testOOBWithClient tests a parameter using out-of-band techniques with the provided client.

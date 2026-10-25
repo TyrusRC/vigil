@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // With a client set, the robots discoverer fetches /robots.txt itself even when
@@ -21,8 +21,8 @@ func TestRobotsSitemapDiscoverer_SelfFetch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := NewRobotsSitemapDiscoverer().WithClient(assayhttp.NewClient())
-	params, err := d.Discover(context.Background(), srv.URL, &assayhttp.Response{Body: "<html>home</html>"})
+	d := NewRobotsSitemapDiscoverer().WithClient(vigilhttp.NewClient())
+	params, err := d.Discover(context.Background(), srv.URL, &vigilhttp.Response{Body: "<html>home</html>"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,8 +53,8 @@ func TestOpenAPIDiscoverer_SelfFetch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := NewOpenAPIDiscoverer().WithClient(assayhttp.NewClient())
-	params, err := d.Discover(context.Background(), srv.URL, &assayhttp.Response{Body: "<html>home</html>"})
+	d := NewOpenAPIDiscoverer().WithClient(vigilhttp.NewClient())
+	params, err := d.Discover(context.Background(), srv.URL, &vigilhttp.Response{Body: "<html>home</html>"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,8 +87,8 @@ func TestGraphQLIntrospectionDiscoverer_SelfFetch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := NewGraphQLIntrospectionDiscoverer().WithClient(assayhttp.NewClient())
-	params, err := d.Discover(context.Background(), srv.URL, &assayhttp.Response{Body: "<html>home</html>"})
+	d := NewGraphQLIntrospectionDiscoverer().WithClient(vigilhttp.NewClient())
+	params, err := d.Discover(context.Background(), srv.URL, &vigilhttp.Response{Body: "<html>home</html>"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,8 +120,8 @@ func TestJSRouteDiscoverer_SelfFetch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := NewJSRouteDiscoverer().WithClient(assayhttp.NewClient())
-	page := &assayhttp.Response{
+	d := NewJSRouteDiscoverer().WithClient(vigilhttp.NewClient())
+	page := &vigilhttp.Response{
 		Body:        `<html><head><script src="/app.js"></script></head></html>`,
 		ContentType: "text/html",
 	}
@@ -147,11 +147,11 @@ func TestJSRouteDiscoverer_SelfFetch(t *testing.T) {
 // response, fetch nothing.
 func TestDiscoverers_NoClientNoFetch(t *testing.T) {
 	r := NewRobotsSitemapDiscoverer()
-	if params, _ := r.Discover(context.Background(), "https://example.com/", &assayhttp.Response{Body: ""}); len(params) != 0 {
+	if params, _ := r.Discover(context.Background(), "https://example.com/", &vigilhttp.Response{Body: ""}); len(params) != 0 {
 		t.Errorf("robots without client must not fetch, got %+v", params)
 	}
 	o := NewOpenAPIDiscoverer()
-	if params, _ := o.Discover(context.Background(), "https://example.com/", &assayhttp.Response{Body: "<html>"}); len(params) != 0 {
+	if params, _ := o.Discover(context.Background(), "https://example.com/", &vigilhttp.Response{Body: "<html>"}); len(params) != 0 {
 		t.Errorf("openapi without client must not fetch, got %+v", params)
 	}
 }

@@ -15,18 +15,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 	"golang.org/x/net/html"
 )
 
 // Detector probes targetURL's HTML for unsafe anchor links.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 

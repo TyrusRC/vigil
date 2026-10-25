@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // XSWOptions configures the per-call timeout and lets callers override
@@ -167,7 +167,7 @@ func (d *Detector) DetectXSWBase64Oracle(ctx context.Context, samlURL, baseAsser
 		default:
 		}
 		truncated := full[:L]
-		form := "SAMLResponse=" + url.QueryEscape(truncated) + "&RelayState=assay"
+		form := "SAMLResponse=" + url.QueryEscape(truncated) + "&RelayState=vigil"
 		client := d.client.Clone().WithFollowRedirects(false)
 		resp, err := client.SendRawBody(ctx, samlURL, "POST", form, "application/x-www-form-urlencoded")
 		if err != nil || resp == nil {
@@ -233,7 +233,7 @@ func assembleSAMLResponse(assertions string) string {
 func (d *Detector) postSAML(ctx context.Context, target, payload string) (*spResponse, error) {
 	body := strings.ReplaceAll(payload, "REPLACE_DEST", target)
 	encoded := base64.StdEncoding.EncodeToString([]byte(body))
-	form := "SAMLResponse=" + url.QueryEscape(encoded) + "&RelayState=assay"
+	form := "SAMLResponse=" + url.QueryEscape(encoded) + "&RelayState=vigil"
 	client := d.client.Clone().WithFollowRedirects(false)
 	resp, err := client.SendRawBody(ctx, target, "POST", form, "application/x-www-form-urlencoded")
 	if err != nil || resp == nil {

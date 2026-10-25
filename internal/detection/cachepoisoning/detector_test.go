@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetector_Name(t *testing.T) {

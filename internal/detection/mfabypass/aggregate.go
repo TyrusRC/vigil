@@ -3,7 +3,7 @@ package mfabypass
 import (
 	"context"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectAll runs the four MFA-bypass checks in sequence and aggregates

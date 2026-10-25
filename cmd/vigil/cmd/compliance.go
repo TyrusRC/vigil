@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/compliance"
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/compliance"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // resolveFrameworks turns the --compliance spec (comma-separated names or

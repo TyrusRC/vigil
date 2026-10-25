@@ -3,7 +3,7 @@ package api
 import (
 	"io"
 
-	"github.com/TyrusRC/assay/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/reporting"
 )
 
 // formatJSON is the default report format.

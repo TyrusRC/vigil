@@ -3,18 +3,18 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/tools/arjun"
-	"github.com/TyrusRC/assay/internal/tools/commix"
-	"github.com/TyrusRC/assay/internal/tools/dalfox"
-	"github.com/TyrusRC/assay/internal/tools/feroxbuster"
-	"github.com/TyrusRC/assay/internal/tools/gau"
-	"github.com/TyrusRC/assay/internal/tools/ghauri"
-	"github.com/TyrusRC/assay/internal/tools/katana"
-	"github.com/TyrusRC/assay/internal/tools/nikto"
-	"github.com/TyrusRC/assay/internal/tools/nuclei"
-	"github.com/TyrusRC/assay/internal/tools/sqlmap"
-	"github.com/TyrusRC/assay/internal/tools/tplmap"
-	"github.com/TyrusRC/assay/internal/tools/wpscan"
+	"github.com/TyrusRC/vigil/internal/tools/arjun"
+	"github.com/TyrusRC/vigil/internal/tools/commix"
+	"github.com/TyrusRC/vigil/internal/tools/dalfox"
+	"github.com/TyrusRC/vigil/internal/tools/feroxbuster"
+	"github.com/TyrusRC/vigil/internal/tools/gau"
+	"github.com/TyrusRC/vigil/internal/tools/ghauri"
+	"github.com/TyrusRC/vigil/internal/tools/katana"
+	"github.com/TyrusRC/vigil/internal/tools/nikto"
+	"github.com/TyrusRC/vigil/internal/tools/nuclei"
+	"github.com/TyrusRC/vigil/internal/tools/sqlmap"
+	"github.com/TyrusRC/vigil/internal/tools/tplmap"
+	"github.com/TyrusRC/vigil/internal/tools/wpscan"
 	"github.com/spf13/cobra"
 )
 
@@ -22,14 +22,14 @@ import (
 var toolsCmd = &cobra.Command{
 	Use:   "tools",
 	Short: "Manage security tools",
-	Long:  `Manage and inspect security tools integrated with assay.`,
+	Long:  `Manage and inspect security tools integrated with vigil.`,
 }
 
 // toolsListCmd lists all available tools.
 var toolsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available security tools",
-	Long:  `List all security tools integrated with assay and their availability status.`,
+	Long:  `List all security tools integrated with vigil and their availability status.`,
 	Run:   runToolsList,
 }
 

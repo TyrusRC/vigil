@@ -3,7 +3,7 @@ package compliance
 import (
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func finding(vulnType string, top10 ...string) *core.Finding {

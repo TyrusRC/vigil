@@ -3,7 +3,7 @@ package passwordreset
 import (
 	"context"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectHostHeaderPoisoning posts a reset request with a hostile Host /

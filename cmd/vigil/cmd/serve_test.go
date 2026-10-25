@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/api"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/api"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 type stubRunner struct{}

@@ -15,8 +15,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scope"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scope"
 )
 
 // DefaultTimeout is the default request timeout.
@@ -102,7 +102,7 @@ func NewClient() *Client {
 		headers:         make(map[string]string),
 		timeout:         DefaultTimeout,
 		followRedirects: true,
-		userAgent:       "assay/1.0",
+		userAgent:       "vigil/1.0",
 	}
 	c.buildHTTPClient()
 	return c

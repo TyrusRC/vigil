@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/iast"
-	"github.com/TyrusRC/assay/internal/detection/xss"
-	"github.com/TyrusRC/assay/internal/payloads/paraminject"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/iast"
+	"github.com/TyrusRC/vigil/internal/detection/xss"
+	"github.com/TyrusRC/vigil/internal/payloads/paraminject"
 )
 
 // Scan performs internal vulnerability scanning on a target. It is the main
@@ -444,7 +444,7 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 
 	// Remove partial-results file — the caller writes the final report.
 	if partialDir != "" {
-		os.Remove(filepath.Join(partialDir, "assay-partial.json"))
+		os.Remove(filepath.Join(partialDir, "vigil-partial.json"))
 	}
 
 	// IAST confidence upgrade: check the callback server for sink hits and

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // tokenize splits a string into a set of unique lowercase word tokens.
@@ -149,7 +149,7 @@ func StripDynamicContent(body string) string {
 // dynamic content from both response bodies, compares status codes, and then
 // checks whether the body similarity meets the threshold. Returns false if
 // either response is nil.
-func IsSameResponse(a, b *assayhttp.Response, threshold float64) bool {
+func IsSameResponse(a, b *vigilhttp.Response, threshold float64) bool {
 	if a == nil || b == nil {
 		return false
 	}

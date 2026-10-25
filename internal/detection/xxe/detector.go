@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/xxe"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/xxe"
 )
 
 // Detector performs XXE vulnerability detection.

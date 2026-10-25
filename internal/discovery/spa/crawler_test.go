@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/headless"
+	"github.com/TyrusRC/vigil/internal/headless"
 )
 
 // skipIfPoolUnavailable creates a headless pool or skips the test when

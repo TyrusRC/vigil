@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/checkpoint"
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/techstack"
-	"github.com/TyrusRC/assay/internal/tools"
+	"github.com/TyrusRC/vigil/internal/checkpoint"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/techstack"
+	"github.com/TyrusRC/vigil/internal/tools"
 )
 
 // Scan executes the scan against all targets.

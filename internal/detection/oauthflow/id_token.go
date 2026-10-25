@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectIDTokenAlgNone checks whether a validation surface accepts an

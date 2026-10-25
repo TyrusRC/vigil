@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/headless"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/headless"
 )
 
 // Detector probes a target for postMessage handlers that act on
@@ -55,8 +55,8 @@ type DetectOptions struct {
 // DefaultOptions returns the recommended defaults.
 func DefaultOptions() DetectOptions {
 	return DetectOptions{
-		AttackerOrigin: "https://attacker.assay.invalid",
-		Payload:        "__assay_postmessage_probe_marker__",
+		AttackerOrigin: "https://attacker.vigil.invalid",
+		Payload:        "__vigil_postmessage_probe_marker__",
 		Timeout:        15 * time.Second,
 	}
 }

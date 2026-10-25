@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/emailinj"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/emailinj"
 )
 
 // Detector performs Email Header Injection vulnerability detection.
@@ -84,7 +84,7 @@ func (d *Detector) Detect(ctx context.Context, target, param, method string, opt
 	}
 
 	// Get baseline response for false positive elimination
-	baselineResp, err := d.client.SendPayload(ctx, target, param, "assay_email_baseline@safe.example.com", method)
+	baselineResp, err := d.client.SendPayload(ctx, target, param, "vigil_email_baseline@safe.example.com", method)
 	if err != nil {
 		return result, fmt.Errorf("failed to get baseline: %w", err)
 	}

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Issue is a tracker-neutral representation of a finding to be filed.
@@ -81,7 +81,7 @@ func buildBody(f *core.Finding) string {
 			fmt.Fprintf(&b, "- %s\n", r)
 		}
 	}
-	b.WriteString("\n_Filed by assay._")
+	b.WriteString("\n_Filed by vigil._")
 	return b.String()
 }
 
@@ -109,7 +109,7 @@ func classificationLine(f *core.Finding) string {
 
 // buildLabels derives tracker labels from the finding.
 func buildLabels(f *core.Finding) []string {
-	labels := []string{"assay", "security"}
+	labels := []string{"vigil", "security"}
 	if f.Severity != "" {
 		labels = append(labels, "severity:"+string(f.Severity))
 	}

@@ -3,7 +3,7 @@ package nosql
 import (
 	"regexp"
 
-	"github.com/TyrusRC/assay/internal/payloads/nosql"
+	"github.com/TyrusRC/vigil/internal/payloads/nosql"
 )
 
 // initErrorPatterns populates d.errorPatterns with the per-database

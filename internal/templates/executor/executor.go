@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/detection/oob"
-	"github.com/TyrusRC/assay/internal/headless"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/matchers"
+	"github.com/TyrusRC/vigil/internal/detection/oob"
+	"github.com/TyrusRC/vigil/internal/headless"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/matchers"
 )
 
 // Executor executes nuclei-compatible templates against targets.

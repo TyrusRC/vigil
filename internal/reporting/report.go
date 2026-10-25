@@ -6,13 +6,13 @@ import (
 	"io"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/scanner"
-	"github.com/TyrusRC/assay/internal/scoring"
+	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/scoring"
 )
 
 const (
 	reportVersion = "1.0.0"
-	toolName      = "assay"
+	toolName      = "vigil"
 )
 
 // Report represents a scan report.
@@ -49,7 +49,7 @@ func (r *Report) WriteText(w io.Writer) error {
 	result := r.ScanResult
 
 	fmt.Fprintln(w, "════════════════════════════════════════════════════════════════")
-	fmt.Fprintln(w, "                    assay SCAN REPORT                            ")
+	fmt.Fprintln(w, "                    vigil SCAN REPORT                            ")
 	fmt.Fprintln(w, "════════════════════════════════════════════════════════════════")
 	fmt.Fprintln(w)
 

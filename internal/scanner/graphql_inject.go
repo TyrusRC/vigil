@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/graphql"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/graphql"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 var cmdiPattern = regexp.MustCompile(`uid=\d+\(\w+\)\s+gid=\d+`)
@@ -30,7 +30,7 @@ type gqlArg struct {
 // into every String argument on every query and mutation. Findings are emitted
 // to findingsChan. This is the GraphQL equivalent of the parameter-injection
 // phase — it builds { fieldName(argName: "PAYLOAD") } syntax for each arg.
-func (s *InternalScanner) runGraphQLInjection(ctx context.Context, wg *sync.WaitGroup, findingsChan chan<- *core.Finding, gqlEndpoint string, scanClient *assayhttp.Client) {
+func (s *InternalScanner) runGraphQLInjection(ctx context.Context, wg *sync.WaitGroup, findingsChan chan<- *core.Finding, gqlEndpoint string, scanClient *vigilhttp.Client) {
 	det := graphql.New(scanClient)
 
 	// Full introspection to get all fields + args.
@@ -98,12 +98,12 @@ func (s *InternalScanner) runGraphQLInjection(ctx context.Context, wg *sync.Wait
 					prefix = "mutation"
 				}
 				// First try without subfields.
-				bq := fmt.Sprintf(`%s { %s(%s: "assay_baseline_test") }`, prefix, a.fieldName, a.argName)
+				bq := fmt.Sprintf(`%s { %s(%s: "vigil_baseline_test") }`, prefix, a.fieldName, a.argName)
 				bb, _ := det.BuildGraphQLRequest(bq, nil)
 				if br, err := scanClient.PostJSON(ctx, gqlEndpoint, bb); err == nil && br != nil {
 					if strings.Contains(br.Body, "must have a s") || strings.Contains(br.Body, "subfields") || strings.Contains(br.Body, "sub selection") {
 						a.needsSub = true
-						bq = fmt.Sprintf(`%s { %s(%s: "assay_baseline_test") { __typename } }`, prefix, a.fieldName, a.argName)
+						bq = fmt.Sprintf(`%s { %s(%s: "vigil_baseline_test") { __typename } }`, prefix, a.fieldName, a.argName)
 						bb, _ = det.BuildGraphQLRequest(bq, nil)
 						br, _ = scanClient.PostJSON(ctx, gqlEndpoint, bb)
 					}

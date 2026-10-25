@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +39,7 @@ func init() {
 	fpCmd.AddCommand(fpMarkCmd)
 	fpCmd.AddCommand(fpListCmd)
 
-	fpCmd.PersistentFlags().StringVar(&fpDatabase, "database", ".assay-fp.json", "Path to the FP feedback database")
+	fpCmd.PersistentFlags().StringVar(&fpDatabase, "database", ".vigil-fp.json", "Path to the FP feedback database")
 }
 
 func runFPMark(_ *cobra.Command, args []string) error {

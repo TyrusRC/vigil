@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/bac"
-	"github.com/TyrusRC/assay/internal/detection/cors"
-	"github.com/TyrusRC/assay/internal/detection/idor"
-	"github.com/TyrusRC/assay/internal/detection/xxe"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/bac"
+	"github.com/TyrusRC/vigil/internal/detection/cors"
+	"github.com/TyrusRC/vigil/internal/detection/idor"
+	"github.com/TyrusRC/vigil/internal/detection/xxe"
 )
 
 // testTypeJuggling probes login-shaped paths for PHP loose-equality

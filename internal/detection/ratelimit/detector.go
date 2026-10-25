@@ -21,13 +21,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector probes targetURL for a rate limit by sending a small burst.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 	// burstSize is how many requests we send. 12 is enough for any sane
 	// server to start signalling a limit, while staying below threshold-
 	// of-pain for a target.
@@ -39,7 +39,7 @@ type Detector struct {
 }
 
 // New returns a Detector with conservative burst defaults.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{
 		client:      client,
 		burstSize:   12,

@@ -7,19 +7,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
-	"github.com/TyrusRC/assay/internal/tools/arjun"
-	"github.com/TyrusRC/assay/internal/tools/commix"
-	"github.com/TyrusRC/assay/internal/tools/dalfox"
-	"github.com/TyrusRC/assay/internal/tools/feroxbuster"
-	"github.com/TyrusRC/assay/internal/tools/gau"
-	"github.com/TyrusRC/assay/internal/tools/ghauri"
-	"github.com/TyrusRC/assay/internal/tools/katana"
-	"github.com/TyrusRC/assay/internal/tools/nikto"
-	"github.com/TyrusRC/assay/internal/tools/nuclei"
-	"github.com/TyrusRC/assay/internal/tools/sqlmap"
-	"github.com/TyrusRC/assay/internal/tools/wpscan"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/tools/arjun"
+	"github.com/TyrusRC/vigil/internal/tools/commix"
+	"github.com/TyrusRC/vigil/internal/tools/dalfox"
+	"github.com/TyrusRC/vigil/internal/tools/feroxbuster"
+	"github.com/TyrusRC/vigil/internal/tools/gau"
+	"github.com/TyrusRC/vigil/internal/tools/ghauri"
+	"github.com/TyrusRC/vigil/internal/tools/katana"
+	"github.com/TyrusRC/vigil/internal/tools/nikto"
+	"github.com/TyrusRC/vigil/internal/tools/nuclei"
+	"github.com/TyrusRC/vigil/internal/tools/sqlmap"
+	"github.com/TyrusRC/vigil/internal/tools/wpscan"
 )
 
 // collectTargets gathers target URLs from CLI args, a file, or stdin.
@@ -176,7 +176,7 @@ func splitCSV(s string) []string {
 
 func printScanHeader(target string) {
 	fmt.Println("╔════════════════════════════════════════════════════════╗")
-	fmt.Println("║    assay - Context-aware web vulnerability assay        ║")
+	fmt.Println("║    vigil - Context-aware web vulnerability vigil        ║")
 	fmt.Println("╚════════════════════════════════════════════════════════╝")
 	fmt.Println()
 	fmt.Printf("Target: %s\n", target)

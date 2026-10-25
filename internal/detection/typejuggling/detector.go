@@ -23,9 +23,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // loginPathHints flag URLs that are plausibly login endpoints. We
@@ -42,11 +42,11 @@ var magicHashValues = []string{"0e1", "0", "0e0", "0e215962017"}
 
 // Detector probes a login URL for type-juggling auth bypass.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -77,7 +77,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL, username string) (*Res
 	}
 
 	// Random-bad baseline (definitely-wrong password).
-	badPwd := "assay-bad-" + randomToken()
+	badPwd := "vigil-bad-" + randomToken()
 	baseRespForm := d.postForm(ctx, targetURL, "username", username, "password", badPwd)
 	baseRespJSON := d.postJSON(ctx, targetURL, fmt.Sprintf(`{"username":%q,"password":%q}`, username, badPwd))
 
@@ -115,7 +115,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL, username string) (*Res
 // shorter than baseline OR contains an obvious "logged in" marker
 // (cookies, token, success). The shape divergence rules out servers
 // that 200 every login attempt with the same error page.
-func (d *Detector) tryProbe(ctx context.Context, target string, baseline *assayhttp.Response, body, contentType, kind string) *core.Finding {
+func (d *Detector) tryProbe(ctx context.Context, target string, baseline *vigilhttp.Response, body, contentType, kind string) *core.Finding {
 	if baseline == nil {
 		return nil
 	}
@@ -152,7 +152,7 @@ func pathLooksLogin(path string) bool {
 // successful authentication: a session-style cookie, a Bearer token,
 // or "success"/"welcome" text. Tightens the probe so we never claim
 // "type juggling" on servers that simply return a unique error page.
-func looksLoggedIn(resp *assayhttp.Response) bool {
+func looksLoggedIn(resp *vigilhttp.Response) bool {
 	for name, val := range resp.Headers {
 		ln := strings.ToLower(name)
 		if ln == "set-cookie" && (strings.Contains(strings.ToLower(val), "session") ||
@@ -170,7 +170,7 @@ func looksLoggedIn(resp *assayhttp.Response) bool {
 	return false
 }
 
-func (d *Detector) postForm(ctx context.Context, target string, kvs ...string) *assayhttp.Response {
+func (d *Detector) postForm(ctx context.Context, target string, kvs ...string) *vigilhttp.Response {
 	body := strings.Builder{}
 	for i := 0; i < len(kvs); i += 2 {
 		if i > 0 {
@@ -184,7 +184,7 @@ func (d *Detector) postForm(ctx context.Context, target string, kvs ...string) *
 	return resp
 }
 
-func (d *Detector) postJSON(ctx context.Context, target, body string) *assayhttp.Response {
+func (d *Detector) postJSON(ctx context.Context, target, body string) *vigilhttp.Response {
 	resp, _ := d.client.SendRawBody(ctx, target, "POST", body, "application/json")
 	return resp
 }

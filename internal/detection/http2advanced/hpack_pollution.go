@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/hpack"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectHPACKPollution opens stream 1 with a probe header (added to the
@@ -26,7 +26,7 @@ func (d *Detector) DetectHPACKPollution(ctx context.Context, opts DetectOptions)
 	}
 	defer sess.close()
 
-	const probeMarker = "assay-hpack-probe-marker-3f9e2c1a"
+	const probeMarker = "vigil-hpack-probe-marker-3f9e2c1a"
 
 	// Stream 1: GET with x-test: probeMarker → adds the entry to the
 	// HPACK dynamic table.

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // NormalizeURLForIPv4 replaces IPv6 loopback [::1] with 127.0.0.1 in

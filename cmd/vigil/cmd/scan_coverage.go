@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 // printCoverageSummary prints what was tested, what was skipped, and why.

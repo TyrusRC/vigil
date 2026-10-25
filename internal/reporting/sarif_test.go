@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 type sarifDoc struct {
@@ -91,8 +91,8 @@ func TestWriteSARIF_Structure(t *testing.T) {
 		t.Fatalf("runs = %d, want 1", len(doc.Runs))
 	}
 	driver := doc.Runs[0].Tool.Driver
-	if driver.Name != "assay" {
-		t.Errorf("driver name = %q, want assay", driver.Name)
+	if driver.Name != "vigil" {
+		t.Errorf("driver name = %q, want vigil", driver.Name)
 	}
 	if driver.InformationURI == "" {
 		t.Error("missing driver informationUri")

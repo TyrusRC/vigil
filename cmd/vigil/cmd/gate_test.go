@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func mkFindings(sevs ...core.Severity) core.Findings {

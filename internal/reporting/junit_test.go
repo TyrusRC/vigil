@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 type junitSuites struct {

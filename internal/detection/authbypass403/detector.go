@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	scanhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	scanhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector probes for 401/403 access-control bypass via well-known

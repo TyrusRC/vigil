@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // defaultTimeout is applied when DetectOptions.Timeout is zero. Each probe

@@ -48,7 +48,7 @@ func GetByOperation(op Operation) []Payload {
 // confirmations bleeding across runs; this constant is the prefix used
 // to identify and scrub the markers after the scan.
 func VerifyMarker() string {
-	return "assay-fileops-c41a6f7e-3b48-4e9f-9bda-b1e2d5c7a210"
+	return "vigil-fileops-c41a6f7e-3b48-4e9f-9bda-b1e2d5c7a210"
 }
 
 var payloads = []Payload{

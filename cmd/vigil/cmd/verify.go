@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/verification"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/verification"
 )
 
 // runVerification re-exercises findings to confirm them, reusing the scan's

@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/decision"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/decision"
 )
 
 // emit forwards findings from a detector goroutine to the shared channel.
@@ -75,7 +75,7 @@ func (s *InternalScanner) runTemplateTests(ctx context.Context, wg *sync.WaitGro
 		}
 
 		// Template-relevance decision engine (Jev / deterministic). Env-driven
-		// (ASSAY_DECIDE / AI_GATEWAY_API_KEY / ASSAY_DECIDE_TOP); feeds the
+		// (VIGIL_DECIDE / AI_GATEWAY_API_KEY / VIGIL_DECIDE_TOP); feeds the
 		// detected tech so the engine ranks templates for THIS target.
 		tsCfg.Decision = decision.FromEnv()
 		if tsCfg.Decision.Enabled && s.techHint != nil {

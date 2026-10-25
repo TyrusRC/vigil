@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/htmlinj"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/htmlinj"
 )
 
 // Detector performs HTML Injection vulnerability detection.
@@ -87,7 +87,7 @@ func (d *Detector) Detect(ctx context.Context, target, param, method string, opt
 	// copy) already appear in the page so we don't claim injection on tags
 	// that the application always renders. Without this gate, "<b>" in the
 	// stock template would make every probe a false positive.
-	baselineResp, err := d.client.SendPayload(ctx, target, param, "assay_baseline_safe", method)
+	baselineResp, err := d.client.SendPayload(ctx, target, param, "vigil_baseline_safe", method)
 	if err != nil {
 		return result, fmt.Errorf("failed to get baseline: %w", err)
 	}

@@ -6,7 +6,7 @@ import (
 
 // heuristicAdjudicate scores findings using rule-based heuristics when no
 // ML engine (haruspex/jev) is available. It provides a deterministic
-// baseline confidence for standalone assay users.
+// baseline confidence for standalone vigil users.
 //
 // Returns a probability slice aligned with items (same contract as Adjudicate).
 // nil entries mean "no opinion" — the caller treats them as pass-through.

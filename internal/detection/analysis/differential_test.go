@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestNewBooleanDifferential(t *testing.T) {
@@ -34,7 +34,7 @@ func TestBooleanDifferential_Analyze_TrueDifferential(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	bd := NewBooleanDifferential()
 
 	result := bd.Analyze(
@@ -75,7 +75,7 @@ func TestBooleanDifferential_Analyze_NoDifferential(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	bd := NewBooleanDifferential()
 
 	result := bd.Analyze(
@@ -120,7 +120,7 @@ func TestBooleanDifferential_Analyze_FalseDifferential(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	bd := NewBooleanDifferential()
 
 	result := bd.Analyze(
@@ -148,7 +148,7 @@ func TestBooleanDifferential_Analyze_ContextCancelled(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	bd := NewBooleanDifferential()
 
 	ctx, cancel := context.WithCancel(context.Background())

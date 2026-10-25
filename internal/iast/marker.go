@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	MarkerPrefix = "ASSAY_TAINT_"
+	MarkerPrefix = "VIGIL_TAINT_"
 	MarkerSuffix = "_TAINT_ASSAY"
 )
 
-var markerIDRe = regexp.MustCompile(`ASSAY_TAINT_([a-f0-9]{8})_`)
+var markerIDRe = regexp.MustCompile(`VIGIL_TAINT_([a-f0-9]{8})_`)
 
 // GenerateMarker returns a fresh marker ID and the full marker string
 // for a given sink type.

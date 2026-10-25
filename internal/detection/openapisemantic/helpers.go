@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // load resolves opts into (parsed spec, base URL) — exactly one of SpecJSON
@@ -55,7 +55,7 @@ func (d *Detector) load(ctx context.Context, opts DetectOptions) (*Spec, string,
 // sendJSON marshals body and POSTs / PUTs it as application/json. Any
 // failure to marshal bubbles up as an error — encoding failures are bugs
 // in the detector, not the target.
-func (d *Detector) sendJSON(ctx context.Context, target, method string, body map[string]interface{}) (*assayhttp.Response, error) {
+func (d *Detector) sendJSON(ctx context.Context, target, method string, body map[string]interface{}) (*vigilhttp.Response, error) {
 	if d.client == nil {
 		return nil, fmt.Errorf("openapisemantic: nil client")
 	}
@@ -102,7 +102,7 @@ func is2xx(status int) bool { return status >= 200 && status < 300 }
 // different. We compare status code and (when statuses match) the trimmed
 // body — that's the cheapest heuristic that still flags reflected SQL-y
 // payloads in echo servers while ignoring incidental whitespace.
-func responsesDiffer(a, b *assayhttp.Response) bool {
+func responsesDiffer(a, b *vigilhttp.Response) bool {
 	if a == nil || b == nil {
 		return false
 	}

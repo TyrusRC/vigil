@@ -157,7 +157,7 @@ func (p *Page) ProbePostMessageOrigin(ctx context.Context, attackerOrigin, paylo
 		attackerOrigin = "https://attacker.example"
 	}
 	if payload == "" {
-		payload = "__assay_postmessage_probe__"
+		payload = "__vigil_postmessage_probe__"
 	}
 	expr := fmt.Sprintf(`(async function() {
 		const before = {

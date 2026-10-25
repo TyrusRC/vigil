@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector audits the Host header surface of a target URL.
@@ -47,7 +47,7 @@ type DetectOptions struct {
 func DefaultOptions() DetectOptions {
 	return DetectOptions{
 		Timeout:      8 * time.Second,
-		AttackerHost: "assay-host-poison.example",
+		AttackerHost: "vigil-host-poison.example",
 	}
 }
 
@@ -83,7 +83,7 @@ func (d *Detector) Detect(ctx context.Context, target string, opts DetectOptions
 		opts.Timeout = 8 * time.Second
 	}
 	if opts.AttackerHost == "" {
-		opts.AttackerHost = "assay-host-poison.example"
+		opts.AttackerHost = "vigil-host-poison.example"
 	}
 
 	result := &DetectionResult{Findings: make([]*core.Finding, 0)}

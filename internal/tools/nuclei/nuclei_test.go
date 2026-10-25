@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/tools"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/tools"
 )
 
 func TestNew_DoesNotPanicWhenBinaryAbsent(t *testing.T) {

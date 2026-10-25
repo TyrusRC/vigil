@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // uuidPattern matches UUID-like strings in path segments.

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestSQLiDetector_DetectTimeBased_Delayed(t *testing.T) {
@@ -22,7 +22,7 @@ func TestSQLiDetector_DetectTimeBased_Delayed(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	det := NewSQLiDetector()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -50,7 +50,7 @@ func TestSQLiDetector_DetectTimeBased_NotVulnerable(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	det := NewSQLiDetector()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -87,13 +87,13 @@ func TestSQLiDetector_DetectTimeBasedAt_Delayed(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	det := NewSQLiDetector()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	send := func(ctx context.Context, payload string) (*assayhttp.Response, error) {
+	send := func(ctx context.Context, payload string) (*vigilhttp.Response, error) {
 		return client.SendPayload(ctx, server.URL+"?id=1", "id", payload, "GET")
 	}
 

@@ -17,22 +17,22 @@ the results. Findings are mapped to OWASP frameworks for easy classification.
 
 Examples:
   # Basic scan
-  assay scan https://example.com/page?id=1
+  vigil scan https://example.com/page?id=1
 
   # Scan with custom headers
-  assay scan -H "Authorization: Bearer token" https://example.com
+  vigil scan -H "Authorization: Bearer token" https://example.com
 
   # Scan POST endpoint
-  assay scan -X POST -d "username=admin" https://example.com/login
+  vigil scan -X POST -d "username=admin" https://example.com/login
 
   # Aggressive scan (level 5, risk 3)
-  assay scan --level 5 --risk 3 https://example.com/page?id=1
+  vigil scan --level 5 --risk 3 https://example.com/page?id=1
 
   # Scan from a target list file
-  assay scan -l targets.txt
+  vigil scan -l targets.txt
 
   # Scan from stdin
-  cat targets.txt | assay scan
+  cat targets.txt | vigil scan
 
 `,
 	Args: cobra.MaximumNArgs(1),
@@ -59,8 +59,8 @@ func init() {
 	scanCmd.Flags().StringVar(&formatList, "format", "", "Comma-separated report formats: text,json,html,csv,md,sarif,junit,gitlab")
 	scanCmd.Flags().StringVar(&outputDir, "output-dir", "", "Directory to write report files (required for multiple formats)")
 	scanCmd.Flags().StringVar(&failOn, "fail-on", "", "Exit non-zero (code 2) if any finding is at or above this severity: critical,high,medium,low (default: never fail)")
-	scanCmd.Flags().StringVar(&configPath, "config", "", "Path to a YAML config file (auto-detects assay.yaml in the working dir); CLI flags override file values")
-	scanCmd.Flags().StringVar(&loginURL, "login-url", "", "URL of an HTML login form; assay logs in and scans with the captured session")
+	scanCmd.Flags().StringVar(&configPath, "config", "", "Path to a YAML config file (auto-detects vigil.yaml in the working dir); CLI flags override file values")
+	scanCmd.Flags().StringVar(&loginURL, "login-url", "", "URL of an HTML login form; vigil logs in and scans with the captured session")
 	scanCmd.Flags().StringVar(&loginUser, "login-user", "", "Username to submit to the login form")
 	scanCmd.Flags().StringVar(&loginPass, "login-pass", "", "Password to submit to the login form")
 	scanCmd.Flags().StringVar(&loginUserField, "login-user-field", "", "Login form username field name (auto-detected if empty)")
@@ -68,7 +68,7 @@ func init() {
 	scanCmd.Flags().StringVar(&loginSuccess, "login-success", "", "Substring expected in the post-login response to confirm success")
 	scanCmd.Flags().BoolVar(&loginHeadless, "login-headless", false, "Log in via a real browser (for SPA/JS logins); --login-user-field/--login-pass-field act as CSS selectors")
 	scanCmd.Flags().StringVar(&lsrPath, "lsr", "", "Login sequence recording file (JSON) — multi-step login with session-alive detection and URL restrictions")
-	scanCmd.Flags().StringVar(&baselinePath, "baseline", "", "Prior assay JSON report to diff against; prints new/fixed findings")
+	scanCmd.Flags().StringVar(&baselinePath, "baseline", "", "Prior vigil JSON report to diff against; prints new/fixed findings")
 	scanCmd.Flags().BoolVar(&failOnNew, "fail-on-new", false, "With --baseline and --fail-on, gate only on findings new since the baseline")
 	scanCmd.Flags().BoolVar(&verifyFindings, "verify", false, "Safely re-exercise findings to confirm them, upgrading reproduced findings to 'confirmed' (proof-based scanning)")
 	scanCmd.Flags().StringVar(&complianceSpec, "compliance", "", "Emit a compliance assessment mapping findings to controls: pci-dss,hipaa,iso-27001 (comma-separated or 'all'). Written to --output-dir or stdout")
@@ -154,10 +154,10 @@ func init() {
 	scanCmd.Flags().StringVar(&checkpointPath, "checkpoint", "", "Record scan progress per target to this file so an interrupted scan can resume")
 	scanCmd.Flags().StringVar(&resumePath, "resume", "", "Resume from a checkpoint file: skip already-scanned targets and carry their findings forward (usually the same path as --checkpoint)")
 	scanCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what the scan would do without sending any traffic")
-	scanCmd.Flags().BoolVar(&iastEnabled, "iast", false, "Enable IAST: start the callback server for taint-marker sink confirmation (deploy a sensor to the target first — see 'assay iast deploy')")
+	scanCmd.Flags().BoolVar(&iastEnabled, "iast", false, "Enable IAST: start the callback server for taint-marker sink confirmation (deploy a sensor to the target first — see 'vigil iast deploy')")
 	scanCmd.Flags().StringVar(&iastAddr, "iast-addr", ":7880", "IAST callback server listen address")
 	scanCmd.Flags().StringVar(&minConfidence, "min-confidence", "", "Filter out findings below this confidence level: confirmed, high, medium, low (default: report all)")
 	scanCmd.Flags().StringVar(&coveragePath, "coverage", "", "Write coverage data (tested/skipped params × detectors) to this JSON file")
-	scanCmd.Flags().StringVar(&fpDatabasePath, "fp-database", "", "FP feedback database path (.assay-fp.json); known FPs get confidence=low")
+	scanCmd.Flags().StringVar(&fpDatabasePath, "fp-database", "", "FP feedback database path (.vigil-fp.json); known FPs get confidence=low")
 	scanCmd.Flags().BoolVar(&incremental, "incremental", false, "With --baseline, skip scanning endpoints whose response matches the baseline")
 }

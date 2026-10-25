@@ -3,7 +3,7 @@ package scanner
 import (
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // ProofLayer represents a verification tier in the proof-based scanning

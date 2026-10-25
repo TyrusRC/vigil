@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func TestDetector_NameAndDescription(t *testing.T) {

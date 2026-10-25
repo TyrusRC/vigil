@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/decision"
-	"github.com/TyrusRC/assay/internal/detection/oob"
-	"github.com/TyrusRC/assay/internal/headless"
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/executor"
-	"github.com/TyrusRC/assay/internal/templates/parser"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/decision"
+	"github.com/TyrusRC/vigil/internal/detection/oob"
+	"github.com/TyrusRC/vigil/internal/headless"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/executor"
+	"github.com/TyrusRC/vigil/internal/templates/parser"
 )
 
 // TemplateScanner executes nuclei-compatible templates against targets.

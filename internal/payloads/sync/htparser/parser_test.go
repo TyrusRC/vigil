@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/payloads/sync/patparser"
+	"github.com/TyrusRC/vigil/internal/payloads/sync/patparser"
 )
 
 // TestClassForPath maps a HackTricks-style path slug to an attack

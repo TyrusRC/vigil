@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // probe sends a GET with redirect-following disabled so the raw 3xx
@@ -29,7 +29,7 @@ func (d *Detector) buildAuthzURL(base *url.URL, opts DetectOptions, overrides ma
 		q.Set("redirect_uri", opts.RegisteredRedirectURI)
 	}
 	q.Set("scope", "openid")
-	q.Set("state", "assay-state-default")
+	q.Set("state", "vigil-state-default")
 	for k, v := range overrides {
 		q.Set(k, v)
 	}

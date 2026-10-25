@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 // writeHTML writes an HTML body and fails the test on a write error, keeping

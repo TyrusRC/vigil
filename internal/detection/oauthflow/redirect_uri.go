@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // DetectRedirectURIMatching probes the authorize endpoint with hostile
@@ -42,7 +42,7 @@ func (d *Detector) DetectRedirectURIMatching(ctx context.Context, authzURL strin
 
 		probeURL := d.buildAuthzURL(base, opts, map[string]string{
 			"redirect_uri": variant,
-			"state":        "assay-redir-probe",
+			"state":        "vigil-redir-probe",
 		}, true)
 
 		resp, err := d.probe(ctx, probeURL)

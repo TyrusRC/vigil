@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 const (

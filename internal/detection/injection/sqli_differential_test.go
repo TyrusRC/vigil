@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetectDifferential_QuoteBreaksResponse(t *testing.T) {
@@ -44,7 +44,7 @@ func TestDetectDifferential_QuoteBreaksResponse(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	res, err := detector.DetectDifferential(context.Background(), client, server.URL+"?username=test", "username", "GET")
@@ -71,7 +71,7 @@ func TestDetectDifferential_NoSQLi(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	res, err := detector.DetectDifferential(context.Background(), client, server.URL+"?q=hello", "q", "GET")
@@ -94,7 +94,7 @@ func TestDetectDifferential_UnstableBaseline(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	res, err := detector.DetectDifferential(context.Background(), client, server.URL+"?x=1", "x", "GET")

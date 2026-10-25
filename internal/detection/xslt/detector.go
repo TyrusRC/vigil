@@ -17,8 +17,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // vendorMarkers identify XSLT engines the payload should disclose.
@@ -35,9 +35,9 @@ var fileMarkers = []string{"root:x:0:0", "127.0.0.1\tlocalhost", "127.0.0.1 loca
 const vendorPayload = `<?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:template match="/">
-ASSAY_XSLT_VENDOR=<xsl:value-of select="system-property('xsl:vendor')"/>
-ASSAY_XSLT_VERSION=<xsl:value-of select="system-property('xsl:version')"/>
-ASSAY_XSLT_LANG=<xsl:value-of select="system-property('xsl:vendor-url')"/>
+VIGIL_XSLT_VENDOR=<xsl:value-of select="system-property('xsl:vendor')"/>
+VIGIL_XSLT_VERSION=<xsl:value-of select="system-property('xsl:version')"/>
+VIGIL_XSLT_LANG=<xsl:value-of select="system-property('xsl:vendor-url')"/>
 </xsl:template>
 </xsl:stylesheet>`
 
@@ -55,11 +55,11 @@ const baselineBody = `<?xml version="1.0"?><doc><probe>baseline</probe></doc>`
 
 // Detector probes targetURL for XSLT injection.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 type Detector struct {
@@ -24,8 +24,8 @@ func (d *Detector) Detect(ctx context.Context, registrationURL string) ([]*core.
 		return nil, nil
 	}
 
-	email := "assay_dupreg_test@test.local"
-	body := fmt.Sprintf("username=assay_dupreg&email=%s&password=TestPass123!&password_confirm=TestPass123!", email)
+	email := "vigil_dupreg_test@test.local"
+	body := fmt.Sprintf("username=vigil_dupreg&email=%s&password=TestPass123!&password_confirm=TestPass123!", email)
 	ct := "application/x-www-form-urlencoded"
 
 	first, err := d.client.SendRawBody(ctx, registrationURL, "POST", body, ct)

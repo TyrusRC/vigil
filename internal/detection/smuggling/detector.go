@@ -25,7 +25,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Detector detects HTTP Request Smuggling vulnerabilities.

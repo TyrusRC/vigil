@@ -1,4 +1,4 @@
-module github.com/TyrusRC/assay
+module github.com/TyrusRC/vigil
 
 go 1.24.0
 

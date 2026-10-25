@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/payloads/paraminject"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/payloads/paraminject"
 )
 
 // Detector probes URL parameters for PHP user-controlled-sink

@@ -3,7 +3,7 @@ package sast
 import (
 	"regexp"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 type secretPattern struct {

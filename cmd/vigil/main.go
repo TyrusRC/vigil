@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/cmd/assay/cmd"
+	"github.com/TyrusRC/vigil/cmd/vigil/cmd"
 )
 
 func main() {

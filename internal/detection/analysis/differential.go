@@ -3,7 +3,7 @@ package analysis
 import (
 	"context"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // defaultSimilarityThreshold is the default threshold for considering two
@@ -47,7 +47,7 @@ func NewBooleanDifferential() *BooleanDifferential {
 // Returns a DifferentialResult with confidence score.
 func (bd *BooleanDifferential) Analyze(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, truePayload, falsePayload string,
 ) *DifferentialResult {
 	result := &DifferentialResult{}

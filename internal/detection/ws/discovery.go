@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // wsURLPattern catches `ws://...` and `wss://...` URLs in HTML/JS bodies.

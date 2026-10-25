@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	internalhttp "github.com/TyrusRC/assay/internal/http"
-	hpppayloads "github.com/TyrusRC/assay/internal/payloads/hpp"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
+	hpppayloads "github.com/TyrusRC/vigil/internal/payloads/hpp"
 )
 
 // Detector performs HTTP Parameter Pollution vulnerability detection.

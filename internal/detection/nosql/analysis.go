@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/payloads/nosql"
+	"github.com/TyrusRC/vigil/internal/payloads/nosql"
 )
 
 // AnalyzeResponse inspects the response for error-based NoSQLi signals.

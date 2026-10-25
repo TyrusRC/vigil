@@ -8,14 +8,14 @@ import (
 )
 
 func TestBuild0CLPayload(t *testing.T) {
-	p := Build0CLPayload("example.com", "/", "assaycanary")
+	p := Build0CLPayload("example.com", "/", "vigilcanary")
 	if !strings.Contains(p, "Expect: 100-continue") {
 		t.Error("0.CL payload must carry Expect: 100-continue (the 0.CL coaxing vector)")
 	}
 	if !strings.Contains(p, "Content-Length: ") {
 		t.Error("expected a Content-Length header")
 	}
-	if !strings.Contains(p, "GET /assaycanary HTTP/1.1") {
+	if !strings.Contains(p, "GET /vigilcanary HTTP/1.1") {
 		t.Error("expected the smuggled request in the body")
 	}
 	idx := strings.Index(p, "\r\n\r\n")
@@ -37,7 +37,7 @@ func TestDetector_Detect0CL_Vulnerable(t *testing.T) {
 		resp := "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 		// A 0.CL-vulnerable back-end reads the body the front-end thought
 		// absent, processing the smuggled request → second response.
-		if strings.Contains(req, "assaycanary") {
+		if strings.Contains(req, "vigilcanary") {
 			resp += "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 		}
 		if _, werr := conn.Write([]byte(resp)); werr != nil {

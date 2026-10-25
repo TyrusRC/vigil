@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // FPFeedback tracks findings that were marked as false positives.

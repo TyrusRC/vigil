@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectShortTTLMultiIP probes the target's hostname for short-TTL or

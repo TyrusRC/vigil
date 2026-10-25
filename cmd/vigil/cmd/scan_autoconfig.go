@@ -18,7 +18,7 @@ import (
 
 // autoConfig runs BEFORE the scan. It probes the target and auto-enables
 // features by setting the package-level flag variables that applyCLIFlags
-// reads later. The goal: `assay scan <url>` with zero flags does the
+// reads later. The goal: `vigil scan <url>` with zero flags does the
 // right thing.
 func autoConfig(cmd *cobra.Command, targets []string) {
 	if len(targets) == 0 {
@@ -83,7 +83,7 @@ func autoConfig(cmd *cobra.Command, targets []string) {
 	// 6. Auto-enable checkpoint for long scans
 	if checkpointPath == "" && !cmd.Flags().Changed("checkpoint") {
 		if timeout > 5*time.Minute || len(targets) > 3 {
-			checkpointPath = filepath.Join(os.TempDir(), "assay-checkpoint.json")
+			checkpointPath = filepath.Join(os.TempDir(), "vigil-checkpoint.json")
 			resumePath = checkpointPath
 		}
 	}

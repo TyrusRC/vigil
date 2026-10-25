@@ -30,7 +30,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/hpack"
 )
@@ -227,7 +227,7 @@ func encodeHeaders(u *url.URL) []byte {
 	} else {
 		hpackBuf.writeHeader(":path", u.Path)
 	}
-	hpackBuf.writeHeader("user-agent", "assay-h2reset/1")
+	hpackBuf.writeHeader("user-agent", "vigil-h2reset/1")
 	return hpackBuf.bytes()
 }
 

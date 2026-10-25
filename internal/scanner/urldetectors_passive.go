@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/cookietoss"
-	"github.com/TyrusRC/assay/internal/detection/cspaudit"
-	"github.com/TyrusRC/assay/internal/detection/iistilde"
-	"github.com/TyrusRC/assay/internal/detection/samesitescript"
-	"github.com/TyrusRC/assay/internal/detection/wafdetect"
-	"github.com/TyrusRC/assay/internal/detection/webhooksig"
-	"github.com/TyrusRC/assay/internal/detection/xfs"
-	"github.com/TyrusRC/assay/internal/payloads/http3desync"
-	"github.com/TyrusRC/assay/internal/payloads/vhost"
-	"github.com/TyrusRC/assay/internal/payloads/webauthn"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/cookietoss"
+	"github.com/TyrusRC/vigil/internal/detection/cspaudit"
+	"github.com/TyrusRC/vigil/internal/detection/iistilde"
+	"github.com/TyrusRC/vigil/internal/detection/samesitescript"
+	"github.com/TyrusRC/vigil/internal/detection/wafdetect"
+	"github.com/TyrusRC/vigil/internal/detection/webhooksig"
+	"github.com/TyrusRC/vigil/internal/detection/xfs"
+	"github.com/TyrusRC/vigil/internal/payloads/http3desync"
+	"github.com/TyrusRC/vigil/internal/payloads/vhost"
+	"github.com/TyrusRC/vigil/internal/payloads/webauthn"
 )
 
 // This file groups the URL-level detectors that perform no parameter

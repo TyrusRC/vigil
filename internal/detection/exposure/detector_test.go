@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	internalhttp "github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/exposure"
+	"github.com/TyrusRC/vigil/internal/core"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/exposure"
 )
 
 func TestNew(t *testing.T) {

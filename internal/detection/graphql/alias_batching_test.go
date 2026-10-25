@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // vulnerableGraphQL simulates an Apollo-style server that has per-request

@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/reporting"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 // TestWriteReports_FilesPerFormat verifies that writing multiple formats to an
@@ -27,8 +27,8 @@ func TestWriteReports_FilesPerFormat(t *testing.T) {
 	}
 
 	for _, name := range []string{
-		"assay-report.html", "assay-report.csv", "assay-report.md",
-		"assay-report.sarif", "assay-report.xml", "assay-report.gitlab.json",
+		"vigil-report.html", "vigil-report.csv", "vigil-report.md",
+		"vigil-report.sarif", "vigil-report.xml", "vigil-report.gitlab.json",
 	} {
 		info, err := os.Stat(filepath.Join(dir, name))
 		if err != nil {

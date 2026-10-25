@@ -24,9 +24,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // adminWordlist is the curated probe set. Entries are root-relative
@@ -104,11 +104,11 @@ var adminWordlist = []struct {
 
 // Detector probes the target for admin/debug/internal paths.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -186,7 +186,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL string) (*Result, error
 	return res, nil
 }
 
-func buildFinding(probedURL, path, note string, severity core.Severity, resp *assayhttp.Response) *core.Finding {
+func buildFinding(probedURL, path, note string, severity core.Severity, resp *vigilhttp.Response) *core.Finding {
 	finding := core.NewFinding("Reachable Admin / Debug Endpoint", severity).At(probedURL, path)
 	finding.Tool = "adminpath"
 	finding.Confidence = core.ConfidenceHigh
@@ -210,7 +210,7 @@ func buildFinding(probedURL, path, note string, severity core.Severity, resp *as
 	return finding
 }
 
-func statusOf(r *assayhttp.Response) int {
+func statusOf(r *vigilhttp.Response) int {
 	if r == nil {
 		return 0
 	}
@@ -220,5 +220,5 @@ func statusOf(r *assayhttp.Response) int {
 func randomPath() string {
 	var b [8]byte
 	_, _ = rand.Read(b[:])
-	return "assay-noexist-" + hex.EncodeToString(b[:])
+	return "vigil-noexist-" + hex.EncodeToString(b[:])
 }

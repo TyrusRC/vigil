@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Delta is the result of comparing a baseline scan against the current scan.
@@ -57,7 +57,7 @@ func DiffFindings(baseline, current core.Findings) Delta {
 	return d
 }
 
-// LoadBaselineFindings reads a prior assay JSON report and returns its
+// LoadBaselineFindings reads a prior vigil JSON report and returns its
 // findings, for use as a diff baseline.
 func LoadBaselineFindings(path string) (core.Findings, error) {
 	data, err := os.ReadFile(path)

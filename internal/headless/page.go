@@ -116,7 +116,7 @@ func (p *Page) CapturedRoutes(ctx context.Context) ([]string, error) {
 	if p == nil || p.page == nil {
 		return nil, fmt.Errorf("headless: page not initialised")
 	}
-	raw, err := p.EvalJS(ctx, `JSON.stringify(window.__assayRoutes || [])`)
+	raw, err := p.EvalJS(ctx, `JSON.stringify(window.__vigilRoutes || [])`)
 	if err != nil {
 		return nil, err
 	}

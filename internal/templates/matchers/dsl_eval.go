@@ -256,7 +256,7 @@ func (e *DSLEngine) evaluateFunction(expr string, ctx map[string]interface{}) (i
 	fn, exists := e.functions[funcName]
 	if !exists {
 		// Nuclei templates call DSL helpers in snake_case (url_encode, to_upper,
-		// starts_with); assay registers many under camelCase. Fall back to the
+		// starts_with); vigil registers many under camelCase. Fall back to the
 		// camelCase form so Nuclei-compatible templates resolve either style.
 		if alt := snakeToCamel(funcName); alt != funcName {
 			fn, exists = e.functions[alt]

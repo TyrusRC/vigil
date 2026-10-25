@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestEngine_VerifySSTI_Confirmed(t *testing.T) {
@@ -93,7 +93,7 @@ func TestEngine_VerifyCRLF_Confirmed(t *testing.T) {
 		v := r.URL.Query().Get("redir")
 		for _, line := range strings.Split(v, "\n") {
 			line = strings.TrimSpace(strings.TrimPrefix(line, "\r"))
-			if name, val, ok := strings.Cut(line, ": "); ok && strings.HasPrefix(name, "X-Assay") {
+			if name, val, ok := strings.Cut(line, ": "); ok && strings.HasPrefix(name, "X-Vigil") {
 				w.Header().Set(name, val)
 			}
 		}

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 type gitlabDocT struct {
@@ -65,8 +65,8 @@ func TestWriteGitLab_ScanMeta(t *testing.T) {
 	if doc.Scan.Type != "dast" || doc.Scan.Status != "success" {
 		t.Errorf("scan = %+v, want type=dast status=success", doc.Scan)
 	}
-	if doc.Scan.Scanner.ID != "assay" {
-		t.Errorf("scanner id = %q, want assay", doc.Scan.Scanner.ID)
+	if doc.Scan.Scanner.ID != "vigil" {
+		t.Errorf("scanner id = %q, want vigil", doc.Scan.Scanner.ID)
 	}
 }
 

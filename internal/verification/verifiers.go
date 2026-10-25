@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 // openRedirectVerifier confirms an open redirect by injecting an off-site

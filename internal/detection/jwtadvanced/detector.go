@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	scanhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	scanhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector replays forged JWTs against a live endpoint and reports any

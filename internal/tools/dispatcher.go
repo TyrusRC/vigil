@@ -117,7 +117,7 @@ func (d *Dispatcher) autonomous(base *ToolRequest, toolName, reason string) []To
 	}
 	req := d.cloneReq(base)
 	// Mark as autonomous so tool integrations enable crawl/mining flags.
-	req.CustomArgs = append(req.CustomArgs, "--assay-autonomous")
+	req.CustomArgs = append(req.CustomArgs, "--vigil-autonomous")
 	return []ToolTask{{Tool: t, Request: req, Reason: reason}}
 }
 
@@ -168,7 +168,7 @@ func (d *Dispatcher) fallbackAll(base *ToolRequest) []ToolTask {
 	var tasks []ToolTask
 	for _, t := range d.registry.Available() {
 		req := d.cloneReq(base)
-		req.CustomArgs = append(req.CustomArgs, "--assay-autonomous")
+		req.CustomArgs = append(req.CustomArgs, "--vigil-autonomous")
 		tasks = append(tasks, ToolTask{
 			Tool:    t,
 			Request: req,
@@ -204,19 +204,19 @@ func TechMatchesAny(techs []string, substr string) bool {
 // IsAutonomous checks whether the request carries the autonomous marker.
 func IsAutonomous(req *ToolRequest) bool {
 	for _, a := range req.CustomArgs {
-		if a == "--assay-autonomous" {
+		if a == "--vigil-autonomous" {
 			return true
 		}
 	}
 	return false
 }
 
-// StripInternalFlags removes assay-internal flags before passing args
+// StripInternalFlags removes vigil-internal flags before passing args
 // to the external binary.
 func StripInternalFlags(args []string) []string {
 	out := make([]string, 0, len(args))
 	for _, a := range args {
-		if a == "--assay-autonomous" {
+		if a == "--vigil-autonomous" {
 			continue
 		}
 		out = append(out, a)

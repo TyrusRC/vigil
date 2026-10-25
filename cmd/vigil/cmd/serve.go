@@ -12,9 +12,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/TyrusRC/assay/internal/api"
-	"github.com/TyrusRC/assay/internal/scanner"
-	"github.com/TyrusRC/assay/internal/webui"
+	"github.com/TyrusRC/vigil/internal/api"
+	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/webui"
 )
 
 var (
@@ -47,14 +47,14 @@ func (scanRunner) Run(ctx context.Context, req api.ScanRequest) (*scanner.ScanRe
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Run the assay web dashboard and JSON API",
-	Long: `Start an HTTP server exposing the assay dashboard (a single-page app)
+	Short: "Run the vigil web dashboard and JSON API",
+	Long: `Start an HTTP server exposing the vigil dashboard (a single-page app)
 and its JSON API for launching scans and browsing results.
 
 Examples:
-  assay serve
-  assay serve --port 9000
-  assay serve --listen 0.0.0.0 --api-key my-secret`,
+  vigil serve
+  vigil serve --port 9000
+  vigil serve --listen 0.0.0.0 --api-key my-secret`,
 	Args: cobra.NoArgs,
 	RunE: runServe,
 }
@@ -64,13 +64,13 @@ func init() {
 	serveCmd.Flags().IntVarP(&servePort, "port", "p", 8080, "Port to listen on")
 	serveCmd.Flags().StringVar(&serveListen, "listen", "127.0.0.1", "Address to bind to (use 0.0.0.0 to expose on all interfaces)")
 	serveCmd.Flags().StringVar(&serveStateFile, "state-file", "", "Persist scan jobs to this JSON file so they survive a restart (default: in-memory only)")
-	serveCmd.Flags().StringVar(&serveAPIKey, "api-key", "", "Bearer token required for API access (also read from ASSAY_API_KEY)")
+	serveCmd.Flags().StringVar(&serveAPIKey, "api-key", "", "Bearer token required for API access (also read from VIGIL_API_KEY)")
 }
 
 func runServe(cmd *cobra.Command, _ []string) error {
 	apiKey := serveAPIKey
 	if apiKey == "" {
-		apiKey = os.Getenv("ASSAY_API_KEY")
+		apiKey = os.Getenv("VIGIL_API_KEY")
 	}
 
 	mux, apiServer, err := buildServeMux(scanRunner{}, api.ServerConfig{APIKey: apiKey})
@@ -90,11 +90,11 @@ func runServe(cmd *cobra.Command, _ []string) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		fmt.Fprintf(os.Stderr, "[*] assay dashboard on http://%s\n", addr)
+		fmt.Fprintf(os.Stderr, "[*] vigil dashboard on http://%s\n", addr)
 		if apiKey != "" {
 			fmt.Fprintln(os.Stderr, "[*] API authentication enabled (Bearer token required)")
 		} else {
-			fmt.Fprintln(os.Stderr, "[!] No --api-key set; API endpoints are unauthenticated (set ASSAY_API_KEY or pass --api-key)")
+			fmt.Fprintln(os.Stderr, "[!] No --api-key set; API endpoints are unauthenticated (set VIGIL_API_KEY or pass --api-key)")
 		}
 		if serr := srv.ListenAndServe(); serr != nil && !errors.Is(serr, http.ErrServerClosed) {
 			errCh <- serr

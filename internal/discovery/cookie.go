@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // CookieDiscoverer extracts injectable parameters from Set-Cookie response headers.

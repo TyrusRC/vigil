@@ -20,9 +20,9 @@ var (
 
 // rootCmd represents the base command.
 var rootCmd = &cobra.Command{
-	Use:   "assay",
-	Short: "Context-aware web vulnerability assay",
-	Long: `assay is a CLI-based web security scanner
+	Use:   "vigil",
+	Short: "Context-aware web vulnerability vigil",
+	Long: `vigil is a CLI-based web security scanner
 that uses context-aware and behavior-based detection to identify vulnerabilities.
 
 It integrates multiple security tools and maps findings to OWASP frameworks
@@ -30,16 +30,16 @@ including WSTG, Top 10, API Security Top 10, and ASVS.
 
 Examples:
   # Scan a single URL
-  assay scan https://example.com/page?id=1
+  vigil scan https://example.com/page?id=1
 
   # Scan with verbose output
-  assay scan -v https://example.com
+  vigil scan -v https://example.com
 
   # Scan through a proxy
-  assay scan --proxy http://127.0.0.1:8080 https://example.com
+  vigil scan --proxy http://127.0.0.1:8080 https://example.com
 
   # List available tools
-  assay tools list`,
+  vigil tools list`,
 	Version: version,
 }
 

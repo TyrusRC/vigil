@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Detector is the scanner-side wrapper around the differential probe.

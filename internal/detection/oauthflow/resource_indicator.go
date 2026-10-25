@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectResourceIndicatorConfusion probes the authorization endpoint
@@ -68,7 +68,7 @@ func (d *Detector) DetectResourceIndicatorConfusion(ctx context.Context, authzUR
 		q.Set("redirect_uri", rURI)
 	}
 	q.Set("scope", "openid")
-	q.Set("state", "assay-state-resource-multi")
+	q.Set("state", "vigil-state-resource-multi")
 	// Audience multiplication: the legitimate resource + an unrelated one.
 	q["resource"] = []string{"https://victim-api.example", "https://attacker-controlled.example"}
 	u.RawQuery = q.Encode()

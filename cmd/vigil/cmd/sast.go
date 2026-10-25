@@ -11,10 +11,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/reporting"
-	"github.com/TyrusRC/assay/internal/sast"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/sast"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 var (
@@ -44,19 +44,19 @@ to run a single engine.
 
 Examples:
   # Scan the current directory
-  assay sast .
+  vigil sast .
 
   # Scan specific paths
-  assay sast ./src ./configs
+  vigil sast ./src ./configs
 
   # Secrets only, JSON output
-  assay sast --secrets-only --format json .
+  vigil sast --secrets-only --format json .
 
   # SCA with CI gate
-  assay sast --sca-only --fail-on high .
+  vigil sast --sca-only --fail-on high .
 
   # Multiple output formats
-  assay sast --format json,html,sarif --output-dir ./reports .`,
+  vigil sast --format json,html,sarif --output-dir ./reports .`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: runSAST,
 }

@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/detection/oob"
+	"github.com/TyrusRC/vigil/internal/detection/oob"
 )
 
 // startOOBClientAsync starts OOB client initialization in the background.

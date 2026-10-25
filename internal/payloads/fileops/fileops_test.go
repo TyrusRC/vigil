@@ -58,7 +58,7 @@ func TestGetPayloads_CoverTraversalPrimitives(t *testing.T) {
 
 func TestVerifyMarker_ConsistentFormat(t *testing.T) {
 	m := VerifyMarker()
-	if !strings.HasPrefix(m, "assay-fileops-") {
+	if !strings.HasPrefix(m, "vigil-fileops-") {
 		t.Errorf("VerifyMarker must be prefixed for safe scrubbing, got %q", m)
 	}
 	if len(m) < 32 {

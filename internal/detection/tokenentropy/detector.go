@@ -26,8 +26,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // tokenNameRe matches cookie / form-field names that conventionally
@@ -50,11 +50,11 @@ const entropyFloor = 3.0
 
 // Detector probes a target for insecure-token output.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -152,7 +152,7 @@ func isSequential(s string) bool {
 // names look token-shaped. We re-parse Set-Cookie from raw because
 // the project's http.Response collapses headers into a single string
 // per name.
-func extractTokenCookies(resp *assayhttp.Response) map[string]string {
+func extractTokenCookies(resp *vigilhttp.Response) map[string]string {
 	out := map[string]string{}
 	if resp == nil {
 		return out

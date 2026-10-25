@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	internalhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	internalhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestNew(t *testing.T) {
@@ -66,8 +66,8 @@ func TestDetector_WithVerbose(t *testing.T) {
 // pass the check before the first one commits.
 //
 // The detector helpfully sends one fixed payload during the baseline
-// ("assay_race_baseline") and a different one during the burst
-// ("assay_race_burst"), so we route on the param value to get distinct
+// ("vigil_race_baseline") and a different one during the burst
+// ("vigil_race_burst"), so we route on the param value to get distinct
 // idempotency keys for each phase. That way the baseline establishes
 // "what a clean response looks like" without exhausting the resource the
 // burst will race for.

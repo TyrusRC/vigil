@@ -3,8 +3,8 @@ package executor
 import (
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/matchers"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/matchers"
 )
 
 func TestBuildVariables_BaseURLIncludesPath(t *testing.T) {

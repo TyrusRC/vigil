@@ -6,15 +6,15 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/auth"
-	"github.com/TyrusRC/assay/internal/detection/cloud"
-	"github.com/TyrusRC/assay/internal/detection/exposure"
-	"github.com/TyrusRC/assay/internal/detection/graphql"
-	"github.com/TyrusRC/assay/internal/detection/jndi"
-	"github.com/TyrusRC/assay/internal/detection/secheaders"
-	"github.com/TyrusRC/assay/internal/detection/subtakeover"
-	tlsdetect "github.com/TyrusRC/assay/internal/detection/tls"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/auth"
+	"github.com/TyrusRC/vigil/internal/detection/cloud"
+	"github.com/TyrusRC/vigil/internal/detection/exposure"
+	"github.com/TyrusRC/vigil/internal/detection/graphql"
+	"github.com/TyrusRC/vigil/internal/detection/jndi"
+	"github.com/TyrusRC/vigil/internal/detection/secheaders"
+	"github.com/TyrusRC/vigil/internal/detection/subtakeover"
+	tlsdetect "github.com/TyrusRC/vigil/internal/detection/tls"
 )
 
 // This file groups the classic OWASP-Top-10 URL-level probes:

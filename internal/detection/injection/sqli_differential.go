@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // differentialProbeValue is the clean baseline value sent to the
@@ -55,7 +55,7 @@ var differentialConfirmPairs = []differentialConfirmPair{
 // extractParamValue returns "".
 func (d *SQLiDetector) DetectDifferential(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method string,
 ) (*BooleanResult, error) {
 	res := &BooleanResult{}
@@ -151,7 +151,7 @@ func (d *SQLiDetector) DetectDifferential(
 // whether exactly one of them matches the clean baseline.
 func (d *SQLiDetector) confirmDifferential(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, cleanBody string,
 ) (confirmed bool, truePayload, falsePayload string, confidence float64) {
 	for _, cp := range differentialConfirmPairs {

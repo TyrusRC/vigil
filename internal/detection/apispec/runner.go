@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Runner exercises every endpoint in a Spec against a base URL and
@@ -16,11 +16,11 @@ import (
 // nonetheless return a 2xx (API5/API9, verb tampering at the function
 // level).
 type Runner struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // NewRunner returns a Runner backed by the project's shared HTTP client.
-func NewRunner(client *assayhttp.Client) *Runner {
+func NewRunner(client *vigilhttp.Client) *Runner {
 	return &Runner{client: client}
 }
 
@@ -139,7 +139,7 @@ func isSafeForUndocProbe(v string) bool {
 	return false
 }
 
-func buildAuthBypassFinding(url string, ep Endpoint, resp *assayhttp.Response) *core.Finding {
+func buildAuthBypassFinding(url string, ep Endpoint, resp *vigilhttp.Response) *core.Finding {
 	finding := core.NewFinding("Spec-Documented Auth Not Enforced", core.SeverityCritical).At(url, ep.Path)
 	finding.Tool = "apispec"
 	finding.Confidence = core.ConfidenceHigh

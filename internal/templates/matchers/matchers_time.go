@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 // matchTime evaluates time-based matchers for timing attacks detection.

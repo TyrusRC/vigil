@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/headless"
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/headless"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 func TestNewHeadlessExecutor(t *testing.T) {

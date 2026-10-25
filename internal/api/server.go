@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/reporting"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 func logInfo(msg string, args ...any)  { fmt.Fprintf(os.Stderr, "[INFO] "+msg+"\n", args...) }

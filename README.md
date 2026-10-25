@@ -1,10 +1,10 @@
-# assay — context-aware web vulnerability assay
+# vigil — context-aware web vulnerability vigil
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/TyrusRC/assay)](go.mod)
-[![Go Report Card](https://goreportcard.com/badge/github.com/TyrusRC/assay)](https://goreportcard.com/report/github.com/TyrusRC/assay)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/TyrusRC/vigil)](go.mod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/TyrusRC/vigil)](https://goreportcard.com/report/github.com/TyrusRC/vigil)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![GitHub last commit](https://img.shields.io/github/last-commit/TyrusRC/assay)](https://github.com/TyrusRC/assay/commits/main)
-[![Issues](https://img.shields.io/github/issues/TyrusRC/assay)](https://github.com/TyrusRC/assay/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/TyrusRC/vigil)](https://github.com/TyrusRC/vigil/commits/main)
+[![Issues](https://img.shields.io/github/issues/TyrusRC/vigil)](https://github.com/TyrusRC/vigil/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
 A Go-native, CLI web-application security scanner that combines **113
@@ -17,12 +17,12 @@ audits). Findings are mapped to OWASP **WSTG**, **Top 10 (2025)**, **API
 Security Top 10**, and compliance frameworks (**PCI DSS**, **HIPAA**,
 **SOC 2**).
 
-`assay scan https://target.com` works with **zero flags** — smart
+`vigil scan https://target.com` works with **zero flags** — smart
 defaults auto-detect the target's tech stack, API spec, SPA framework,
 and choose the right detectors and tools. No need to learn complex flag
 combinations.
 
-assay focuses on the categories Nuclei templates structurally cannot
+vigil focuses on the categories Nuclei templates structurally cannot
 reach — stateful business-logic bugs, two-identity IDOR/BOLA, race
 conditions over raw HTTP/2 frames, postMessage origin validation,
 authenticated cache deception, and more — while reusing the upstream
@@ -50,21 +50,21 @@ well.
 - **Parallel detector pipeline** — configurable param concurrency (default 5) and per-param detector concurrency (default 3). Param cap (default 200) prevents multi-hour scans on large apps.
 - **Smart tool dispatch** — native detectors find injection points in seconds, then automatically launch focused tool runs (sqlmap with `--dbms` hint, dalfox with `--param` targeting) for deep exploitation. No user interaction needed. Autonomous mode runs core tools (sqlmap, dalfox, nikto, nuclei) at full strength in parallel.
 - **Stored XSS** — full inject → crawl → match → confirm workflow
-- **Native SAST** — `assay sast ./src` for secret scanning, dependency CVEs (OSV.dev), and config security
+- **Native SAST** — `vigil sast ./src` for secret scanning, dependency CVEs (OSV.dev), and config security
 - **Form auto-submission** — smart crawl discovers pages behind form gates (`--submit-forms`)
-- **Auto template discovery** — loads `~/nuclei-templates` + `~/.local/share/assay/custom-nuclei-templates/templates` by default. Override with `--templates` or `ASSAY_TEMPLATES` env.
+- **Auto template discovery** — loads `~/nuclei-templates` + `~/.local/share/vigil/custom-nuclei-templates/templates` by default. Override with `--templates` or `ASSAY_TEMPLATES` env.
 - **Nuclei template parity** — 20 headless actions, file / workflow / code templates, unsafe-raw (smuggling), pipeline (HTTP/2 desync), interactsh OOB polling
 - **AI finding triage** — Haruspex adjudication scores each finding's "real vs noise" probability
 - **WAF bypass payloads** — per-class evasion variants: SQLi (inline comments, hex encoding, CTE WITH clause, scientific notation, whitespace alternatives, double URL encoding), SSRF (octal/hex/decimal/IPv6 IP encoding, DNS rebinding, Unicode IDNA), LFI (null byte, UTF-8 overlong, backslash), XSS (unicode normalization NFKC, SVG onload, event handler injection). Long-payload padding pushes injection past WAF body inspection limits (8KB AWS WAF, 128KB Cloudflare).
 - **Risk-gated payloads** — destructive SQL payloads (`DROP TABLE`, `xp_cmdshell`) require `--risk 3`
 - **Incremental results** — findings flush to disk after each scan phase, so early results survive if a later phase times out
-- **Authenticated API server** — `assay serve` with bearer-token auth, SSRF protection, concurrent scan limits
+- **Authenticated API server** — `vigil serve` with bearer-token auth, SSRF protection, concurrent scan limits
 
 ---
 
 ## Table of contents
 
-- [Why assay](#why-assay)
+- [Why vigil](#why-vigil)
 - [Quickstart](#quickstart)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -74,7 +74,7 @@ well.
 - [Headless / two-identity probes](#headless--two-identity-probes)
 - [External tool integrations](#external-tool-integrations)
 - [CI/CD integration](#cicd-integration)
-- [How assay compares](#how-assay-compares)
+- [How vigil compares](#how-vigil-compares)
 - [Architecture](#architecture)
 - [Project layout](#project-layout)
 - [Development](#development)
@@ -84,12 +84,12 @@ well.
 
 ---
 
-## Why assay
+## Why vigil
 
 A scanner is only as good as the categories it can express. Nuclei is
 excellent at fingerprint / CVE / regex-on-response checks, but it has
 no JavaScript runtime, no session model, and no way to compare
-behavior across two authenticated identities. assay fills exactly that
+behavior across two authenticated identities. vigil fills exactly that
 gap:
 
 - **Two-identity IDOR / BOLA.** Probe the same URL with two different
@@ -109,7 +109,7 @@ gap:
   discovered by the auto-discovery pipeline are tested in the right
   transport, not silently shoved into the query string.
 
-assay **runs Nuclei alongside** itself when the binary is on `PATH` —
+vigil **runs Nuclei alongside** itself when the binary is on `PATH` —
 you do not have to choose between the two.
 
 ---
@@ -118,38 +118,38 @@ you do not have to choose between the two.
 
 ```sh
 # install (Go 1.24+)
-go install -v github.com/TyrusRC/assay/cmd/assay@latest
+go install -v github.com/TyrusRC/vigil/cmd/vigil@latest
 
 # DAST — scan a single URL
-assay scan https://example.com/page?id=1
+vigil scan https://example.com/page?id=1
 
 # DAST — thorough scan with stored XSS and form submission
-assay scan --profile thorough --stored-xss --submit-forms https://app.example.com
+vigil scan --profile thorough --stored-xss --submit-forms https://app.example.com
 
 # DAST — authenticated scan with session keep-alive
-assay scan --login-url https://app.example.com/login \
+vigil scan --login-url https://app.example.com/login \
   --login-user admin --login-pass "$ASSAY_LOGIN_PASS" \
   --login-success "Dashboard" https://app.example.com/admin
 
 # DAST — two-identity IDOR / BOLA probe
-assay scan https://app.example.com/account/123 \
+vigil scan https://app.example.com/account/123 \
   --auth-a-header "Authorization: Bearer alice-token" \
   --auth-b-header "Authorization: Bearer bob-token"
 
 # DAST — proxy through Burp Suite
-assay scan -X POST -d "user=admin&pass=test" \
+vigil scan -X POST -d "user=admin&pass=test" \
   --proxy http://127.0.0.1:8080 -k https://example.com/login
 
 # SAST — scan a codebase for secrets, vulnerable dependencies, config issues
-assay sast ./my-project
-assay sast --sca-only ./  # dependency CVEs only
+vigil sast ./my-project
+vigil sast --sca-only ./  # dependency CVEs only
 
 # API server
-assay serve --api-key "$ASSAY_API_KEY"
+vigil serve --api-key "$ASSAY_API_KEY"
 # POST http://127.0.0.1:8080/api/scans  {"target":"https://example.com"}
 
 # CI/CD gate
-assay scan "$TARGET" --format sarif,junit --fail-on high --output-dir report
+vigil scan "$TARGET" --format sarif,junit --fail-on high --output-dir report
 ```
 
 ---
@@ -159,23 +159,23 @@ assay scan "$TARGET" --format sarif,junit --fail-on high --output-dir report
 ### `go install` (recommended)
 
 ```sh
-go install -v github.com/TyrusRC/assay/cmd/assay@latest
+go install -v github.com/TyrusRC/vigil/cmd/vigil@latest
 ```
 
 ### From source
 
 ```sh
-git clone https://github.com/TyrusRC/assay.git
-cd assay
-make build       # produces ./bin/assay
+git clone https://github.com/TyrusRC/vigil.git
+cd vigil
+make build       # produces ./bin/vigil
 make install     # optional: install into $GOBIN
 ```
 
 ### Docker
 
 ```sh
-docker build -t assay .
-docker run --rm assay scan https://example.com
+docker build -t vigil .
+docker run --rm vigil scan https://example.com
 ```
 
 ### Requirements
@@ -185,7 +185,7 @@ docker run --rm assay scan https://example.com
   the postMessage probe — `go-rod` auto-downloads one on first use,
   or pass `--chrome-path` to use a system binary.
 - *(optional)* `nuclei` and/or `sqlmap` on `PATH` to enable the
-  external-tool wrappers. assay degrades gracefully when they are
+  external-tool wrappers. vigil degrades gracefully when they are
   missing.
 
 ---
@@ -193,14 +193,14 @@ docker run --rm assay scan https://example.com
 ## Usage
 
 ```text
-assay scan [target URL] [flags]
+vigil scan [target URL] [flags]
 ```
 
 ### Targets
 
-- positional argument: `assay scan https://example.com`
-- target list file: `assay scan -l targets.txt`
-- piped from stdin: `cat targets.txt | assay scan`
+- positional argument: `vigil scan https://example.com`
+- target list file: `vigil scan -l targets.txt`
+- piped from stdin: `cat targets.txt | vigil scan`
 
 ### Authentication & transport
 
@@ -441,10 +441,10 @@ server — XXE, SSRF, CMDI, RFI, XSS (blind), second-order all participate.
 ## Static analysis (SAST)
 
 ```sh
-assay sast [path] [flags]
+vigil sast [path] [flags]
 ```
 
-assay includes a native static-analysis engine for source-code and
+vigil includes a native static-analysis engine for source-code and
 configuration auditing. It runs independently of the DAST scanner and
 produces findings in the same unified format.
 
@@ -490,10 +490,10 @@ with `privileged: true` or `network_mode: host`, `nginx.conf` with
 ## API server
 
 ```sh
-assay serve [flags]
+vigil serve [flags]
 ```
 
-Run assay as an HTTP API for programmatic scan management.
+Run vigil as an HTTP API for programmatic scan management.
 
 | Flag | Description | Default |
 |---|---|---|
@@ -540,7 +540,7 @@ sinks. Listeners that mutated `innerHTML` / `location` / `localStorage`
 was reached.
 
 ```sh
-assay scan --no-postmessage=false https://app.example.com/
+vigil scan --no-postmessage=false https://app.example.com/
 ```
 
 ### Two-identity IDOR / BOLA
@@ -552,7 +552,7 @@ High when the unauthorised access is confirmed, Medium when only the
 application precondition is observed.
 
 ```sh
-assay scan https://api.example.com/v1/users/42 \
+vigil scan https://api.example.com/v1/users/42 \
   --auth-a-cookie "session=alice" \
   --auth-b-cookie "session=bob"
 ```
@@ -561,7 +561,7 @@ assay scan https://api.example.com/v1/users/42 \
 
 ## External tool integrations
 
-assay ships 113 in-process detectors plus 8 external tool wrappers. The
+vigil ships 113 in-process detectors plus 8 external tool wrappers. The
 **smart dispatcher** runs tools automatically based on what the native
 detectors discover — no manual tool selection needed.
 
@@ -586,7 +586,7 @@ detectors discover — no manual tool selection needed.
 | **Ghauri** | wrapped | Fast SQLi detection (sqlmap alternative) | Thorough + focused |
 | **Tplmap** | wrapped | SSTI template engine detection | Thorough + focused |
 
-`assay tools list` shows availability and version. `assay tools check`
+`vigil tools list` shows availability and version. `vigil tools check`
 runs a health check. Missing binaries are not fatal — the scan proceeds
 without them. Install tools to expand coverage.
 
@@ -598,16 +598,16 @@ The CLI already carries everything a pipeline needs: distinct exit codes
 (`0` clean, `1` operational error, `2` the `--fail-on` severity gate was
 met), `sarif`/`junit`/`gitlab` report formats, and `--baseline`/
 `--fail-on-new` for incremental (diff-only) scanning. Reports land as
-`<output-dir>/assay-report.<ext>` (`.sarif`, `.xml` for JUnit,
+`<output-dir>/vigil-report.<ext>` (`.sarif`, `.xml` for JUnit,
 `.gitlab.json` for GitLab's code-quality format).
 
 **GitHub Actions** — use the packaged action (`action.yml` at the repo
-root). It builds assay from `Dockerfile` on first use (no external image
+root). It builds vigil from `Dockerfile` on first use (no external image
 registry needed) and uploads the SARIF report to code scanning automatically:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: TyrusRC/assay@main
+- uses: TyrusRC/vigil@main
   with:
     target: https://staging.example.com
     profile: normal
@@ -617,11 +617,11 @@ registry needed) and uploads the SARIF report to code scanning automatically:
 
 **GitLab CI / Jenkins / Azure DevOps** — no plugin needed; call the binary
 directly and point the platform's own report-ingestion step at
-`assay-report.xml` (JUnit) or `assay-report.gitlab.json` (GitLab
+`vigil-report.xml` (JUnit) or `vigil-report.gitlab.json` (GitLab
 code-quality):
 
 ```sh
-assay scan "$TARGET_URL" --format junit --output-dir report --fail-on high
+vigil scan "$TARGET_URL" --format junit --output-dir report --fail-on high
 ```
 A non-zero exit (1 or 2) fails the stage the normal way — `sh`/`script`
 steps already propagate it, so no wrapper plugin is required.
@@ -630,15 +630,15 @@ steps already propagate it, so no wrapper plugin is required.
 report as a pipeline artifact and gate only on *new* findings:
 
 ```sh
-assay scan "$TARGET_URL" --format json,junit --output-dir report \
-  --baseline previous-report/assay-report.json --fail-on-new --fail-on high
+vigil scan "$TARGET_URL" --format json,junit --output-dir report \
+  --baseline previous-report/vigil-report.json --fail-on-new --fail-on high
 ```
 
 ---
 
-## How assay compares
+## How vigil compares
 
-| Capability | assay | Nuclei | Burp Suite Pro | Acunetix |
+| Capability | vigil | Nuclei | Burp Suite Pro | Acunetix |
 |---|:---:|:---:|:---:|:---:|
 | **Injection classes** | 113 native detectors + 8 tools | 20+ (template) | 15+ native | 52 PerScheme |
 | **Auth / access testing** | IDOR/BOLA, BAC, 403 bypass, JWT, OAuth, MFA, session lifecycle | Template-only | Extensions | Basic |
@@ -655,12 +655,12 @@ assay scan "$TARGET_URL" --format json,junit --output-dir report \
 | **IAST** | Planned (taint markers + sink hooks) | None | None | AcuSensor |
 | **Cost** | Free (Apache 2.0) | Free (MIT) | $449/yr | $4,495+/yr |
 
-### Unique to assay
+### Unique to vigil
 
 - **Smart tool orchestration** — native detectors find injection points
   in seconds, then auto-dispatch sqlmap/dalfox/commix with the exact
   parameter and DBMS hint. No manual tool selection or flag tuning.
-- **Zero-flag scanning** — `assay scan <url>` auto-detects API specs
+- **Zero-flag scanning** — `vigil scan <url>` auto-detects API specs
   (OpenAPI/Swagger), SPA frameworks (React/Angular/Vue), and tech stack.
   Enables the right detectors, crawl mode, and tools automatically.
 - **Coverage summary** — every scan reports what was tested and what was
@@ -745,9 +745,9 @@ annotates each with a "real vs noise" probability.
 ## Project layout
 
 ```
-cmd/assay/                        CLI entry point (Cobra)
+cmd/vigil/                        CLI entry point (Cobra)
 internal/
-  api/                           HTTP JSON API server (assay serve)
+  api/                           HTTP JSON API server (vigil serve)
   auth/                          Form + headless login, session capture
   checkpoint/                    Scan resume / checkpoint persistence
   compliance/                    PCI DSS / HIPAA / SOC 2 mapping
@@ -782,7 +782,7 @@ past it.
 ## Development
 
 ```sh
-make build              # produce bin/assay
+make build              # produce bin/vigil
 make test               # unit tests
 make test-short         # skip integration / network-bound tests
 make test-race          # tests with -race
@@ -868,11 +868,11 @@ Run `make check` locally before opening a PR.
 
 ## Security policy
 
-assay is a defensive security tool. **Use it only against systems you
+vigil is a defensive security tool. **Use it only against systems you
 own or have explicit written authorisation to test.** Unauthorised
 scanning is illegal in most jurisdictions.
 
-If you find a security issue *in assay itself* (not in a target), open
+If you find a security issue *in vigil itself* (not in a target), open
 a private GitHub Security Advisory rather than a public issue.
 
 ---

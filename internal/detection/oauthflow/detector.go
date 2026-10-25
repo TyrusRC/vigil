@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // toolName is stamped on every Finding produced by this package so that
@@ -38,7 +38,7 @@ func (d *Detector) WithVerbose(v bool) *Detector {
 // DetectOptions tunes the active OAuth-flow probes.
 type DetectOptions struct {
 	// ClientID is the public client identifier sent to the authorize
-	// endpoint. Defaults to "assay-oauthflow-probe" when empty.
+	// endpoint. Defaults to "vigil-oauthflow-probe" when empty.
 	ClientID string
 	// RegisteredRedirectURI is the URI that has been pre-registered with
 	// the IdP for the ClientID. The redirect_uri partial-match probe
@@ -62,7 +62,7 @@ type DetectOptions struct {
 // DefaultOptions returns sensible defaults for an OAuth-flow audit.
 func DefaultOptions() DetectOptions {
 	return DetectOptions{
-		ClientID: "assay-oauthflow-probe",
+		ClientID: "vigil-oauthflow-probe",
 		Timeout:  8 * time.Second,
 	}
 }
@@ -89,7 +89,7 @@ func withTimeout(parent context.Context, opts DetectOptions) (context.Context, c
 // clientID returns the configured client_id or a stable default.
 func (o DetectOptions) clientID() string {
 	if o.ClientID == "" {
-		return "assay-oauthflow-probe"
+		return "vigil-oauthflow-probe"
 	}
 	return o.ClientID
 }

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/headless"
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/matchers"
+	"github.com/TyrusRC/vigil/internal/headless"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/matchers"
 )
 
 // HeadlessExecutor executes headless browser-based template steps.

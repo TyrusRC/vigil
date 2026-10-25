@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/payloads/sync/patparser"
+	"github.com/TyrusRC/vigil/internal/payloads/sync/patparser"
 )
 
 // classKeywords maps a canonical attack-class slug to the path

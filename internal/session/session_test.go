@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestSession_CookieAndReauth(t *testing.T) {
@@ -44,7 +44,7 @@ func TestSession_AliveMarker(t *testing.T) {
 	defer srv.Close()
 
 	s := New("c=1", nil, srv.URL, "Dashboard")
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	if !s.Alive(context.Background(), client) {
 		t.Error("marker present -> session must be alive")
 	}
@@ -60,7 +60,7 @@ func TestSession_Alive401IsLogout(t *testing.T) {
 	}))
 	defer srv.Close()
 	s := New("c=1", nil, srv.URL, "")
-	if s.Alive(context.Background(), assayhttp.NewClient()) {
+	if s.Alive(context.Background(), vigilhttp.NewClient()) {
 		t.Error("401 canary -> session must be logged out")
 	}
 }
@@ -86,7 +86,7 @@ func TestSession_KeepaliveReauthsOnLogout(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 400*time.Millisecond)
 	defer cancel()
-	s.Keepalive(ctx, assayhttp.NewClient(), 30*time.Millisecond, nil)
+	s.Keepalive(ctx, vigilhttp.NewClient(), 30*time.Millisecond, nil)
 
 	if atomic.LoadInt32(&reauthed) != 1 {
 		t.Error("keepalive must re-authenticate after detecting logout")

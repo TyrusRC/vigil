@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 	"golang.org/x/net/http2"
 )
 

@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // openManyStallableStreams shrinks the initial window to 1 byte then

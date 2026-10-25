@@ -6,16 +6,16 @@ import (
 	"os"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/crawl"
-	"github.com/TyrusRC/assay/internal/discovery/spa"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/crawl"
+	"github.com/TyrusRC/vigil/internal/discovery/spa"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // httpFetcher adapts the scanner's HTTP client to crawl.Fetcher, returning a
 // body only for HTML responses so the state-aware crawler ignores assets.
 type httpFetcher struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 func (h *httpFetcher) Fetch(ctx context.Context, url string) (string, error) {
@@ -32,7 +32,7 @@ func (h *httpFetcher) Fetch(ctx context.Context, url string) (string, error) {
 // httpPostFetcher adapts the scanner's HTTP client to crawl.PostFetcher for
 // form submissions during crawling.
 type httpPostFetcher struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 func (h *httpPostFetcher) Post(ctx interface{}, rawURL, contentType, body string) (string, error) {
@@ -40,7 +40,7 @@ func (h *httpPostFetcher) Post(ctx interface{}, rawURL, contentType, body string
 	if c == nil {
 		c = context.Background()
 	}
-	req := &assayhttp.Request{
+	req := &vigilhttp.Request{
 		Method:      "POST",
 		URL:         rawURL,
 		Body:        body,
@@ -57,7 +57,7 @@ func (h *httpPostFetcher) Post(ctx interface{}, rawURL, contentType, body string
 // stateCrawlURLs runs the state-aware HTTP crawler from seed and returns the
 // endpoints it discovered. When scanClient is non-nil it is used for all
 // fetches so the crawl inherits the scan's proxy, auth, and headers.
-func (s *InternalScanner) stateCrawlURLs(ctx context.Context, seed string, scanClient *assayhttp.Client) []string {
+func (s *InternalScanner) stateCrawlURLs(ctx context.Context, seed string, scanClient *vigilhttp.Client) []string {
 	client := scanClient
 	if client == nil {
 		client = s.client

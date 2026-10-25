@@ -3,7 +3,7 @@ package reporting
 import (
 	"regexp"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // reportStats holds aggregate counts derived from a finding set, used by the

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Template represents a nuclei-compatible security template.

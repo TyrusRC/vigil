@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 // doRequest builds and executes an HTTP request, returning the response,

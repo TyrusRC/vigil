@@ -6,7 +6,7 @@ import (
 )
 
 func TestBuildPollutionVectors_CoversKnownSyntaxes(t *testing.T) {
-	vs := BuildPollutionVectors("https://app.test/page", "assayPP", "POLLUTED")
+	vs := BuildPollutionVectors("https://app.test/page", "vigilPP", "POLLUTED")
 	if len(vs) == 0 {
 		t.Fatal("expected pollution vectors")
 	}
@@ -19,9 +19,9 @@ func TestBuildPollutionVectors_CoversKnownSyntaxes(t *testing.T) {
 	}
 	// Must include bracket, dotted, constructor, and hash-based syntaxes.
 	wants := []string{
-		"__proto__[assayPP]=POLLUTED",
-		"__proto__.assayPP=POLLUTED",
-		"constructor[prototype][assayPP]=POLLUTED",
+		"__proto__[vigilPP]=POLLUTED",
+		"__proto__.vigilPP=POLLUTED",
+		"constructor[prototype][vigilPP]=POLLUTED",
 		"#",
 	}
 	for _, w := range wants {

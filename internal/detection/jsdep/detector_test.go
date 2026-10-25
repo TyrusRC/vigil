@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestIdentifyLibrary_AngularDashedFilename(t *testing.T) {
@@ -111,7 +111,7 @@ func TestDetector_Detect_AngularJSWithCVE(t *testing.T) {
 	}))
 	defer targetServer.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	det := New(client, "")
 	det.WithNVD(&NVDClient{
 		Endpoint:    nvdServer.URL,
@@ -154,7 +154,7 @@ func TestDetector_Detect_NoLibrariesNoFindings(t *testing.T) {
 	}))
 	defer nvdServer.Close()
 
-	det := New(assayhttp.NewClient(), "")
+	det := New(vigilhttp.NewClient(), "")
 	det.WithNVD(&NVDClient{Endpoint: nvdServer.URL, HTTPClient: nvdServer.Client(), MinInterval: 0})
 
 	res, err := det.Detect(context.Background(), targetServer.URL)
@@ -183,7 +183,7 @@ func TestDetector_Detect_NVDFailureReturnsLibrariesQuietly(t *testing.T) {
 	}))
 	defer targetServer.Close()
 
-	det := New(assayhttp.NewClient(), "")
+	det := New(vigilhttp.NewClient(), "")
 	det.WithNVD(&NVDClient{Endpoint: nvdServer.URL, HTTPClient: nvdServer.Client(), MinInterval: 0})
 
 	res, err := det.Detect(context.Background(), targetServer.URL)

@@ -1,7 +1,7 @@
 package cachedeception
 
 import (
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectOptions configures a cache-deception probe.

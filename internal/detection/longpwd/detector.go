@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Detector is the scanner-side wrapper. It POSTs two form submissions
@@ -40,7 +40,7 @@ type DetectOptions struct {
 	Timeout       time.Duration
 	UsernameField string // form field for the username. Default: "username".
 	PasswordField string // form field for the password. Default: "password".
-	Username      string // value to submit. Default: "assay-test-user".
+	Username      string // value to submit. Default: "vigil-test-user".
 }
 
 // DefaultOptions returns sensible defaults.
@@ -49,7 +49,7 @@ func DefaultOptions() DetectOptions {
 		Timeout:       30 * time.Second,
 		UsernameField: "username",
 		PasswordField: "password",
-		Username:      "assay-test-user",
+		Username:      "vigil-test-user",
 	}
 }
 
@@ -74,7 +74,7 @@ func (d *Detector) Detect(ctx context.Context, loginURL string, opts DetectOptio
 		opts.PasswordField = "password"
 	}
 	if opts.Username == "" {
-		opts.Username = "assay-test-user"
+		opts.Username = "vigil-test-user"
 	}
 
 	pwds := GetPasswords()

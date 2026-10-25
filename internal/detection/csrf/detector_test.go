@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_FlagsMissingOriginCheck(t *testing.T) {
@@ -19,7 +19,7 @@ func TestDetect_FlagsMissingOriginCheck(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/api/v1/profile", "POST", `{"email":"x@y.test"}`)
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -42,7 +42,7 @@ func TestDetect_NoFindingWhenOriginRejected(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/api/v1/transfer", "POST", `{"amount":1}`)
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -58,7 +58,7 @@ func TestDetect_SkipsGET(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/api/v1/users", "GET", "")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -74,7 +74,7 @@ func TestDetect_SkipsNonStateChangePathWithoutBody(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	// No body, path doesn't match state-change hints → skip silently.
 	res, err := det.Detect(context.Background(), srv.URL+"/api/v1/products", "POST", "")
 	if err != nil {

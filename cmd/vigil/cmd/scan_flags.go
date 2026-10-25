@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 // All scan-command flag variables. Declared at package scope so init()
@@ -351,13 +351,13 @@ func applyCLIFlags(internalConfig *scanner.InternalScanConfig) error {
 
 // discoverTemplatePaths returns template directories that exist on disk.
 // Checked in order:
-//  1. ASSAY_TEMPLATES env var (os.PathListSeparator-separated)
+//  1. VIGIL_TEMPLATES env var (os.PathListSeparator-separated)
 //  2. ~/.local/nuclei-templates (nuclei's default store)
 //  3. ~/nuclei-templates (legacy nuclei location)
-//  4. ~/.local/share/assay/custom-nuclei-templates/templates
-//     (TyrusRC/custom-nuclei-templates clone — ships with Assay)
+//  4. ~/.local/share/vigil/custom-nuclei-templates/templates
+//     (TyrusRC/custom-nuclei-templates clone — ships with Vigil)
 func discoverTemplatePaths() []string {
-	if env := os.Getenv("ASSAY_TEMPLATES"); env != "" {
+	if env := os.Getenv("VIGIL_TEMPLATES"); env != "" {
 		return filepath.SplitList(env)
 	}
 
@@ -369,7 +369,7 @@ func discoverTemplatePaths() []string {
 	candidates := []string{
 		filepath.Join(home, ".local", "nuclei-templates"),
 		filepath.Join(home, "nuclei-templates"),
-		filepath.Join(home, ".local", "share", "assay", "custom-nuclei-templates", "templates"),
+		filepath.Join(home, ".local", "share", "vigil", "custom-nuclei-templates", "templates"),
 	}
 
 	var found []string

@@ -17,8 +17,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // SensitivePattern is one named regex bound to a severity. The first
@@ -68,11 +68,11 @@ var sensitivePatterns = []SensitivePattern{
 // Detector runs the field-name analyzer over JSON responses fetched from
 // the target endpoint.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector backed by the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 

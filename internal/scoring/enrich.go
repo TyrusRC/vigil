@@ -1,6 +1,6 @@
 package scoring
 
-import "github.com/TyrusRC/assay/internal/core"
+import "github.com/TyrusRC/vigil/internal/core"
 
 // Enrich fills the CVSS score and vector for findings that lack one. Findings
 // that already carry a non-zero CVSS (e.g. NVD via jsdep, or nuclei) are left

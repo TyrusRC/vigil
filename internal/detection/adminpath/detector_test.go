@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_FindsExposedActuator(t *testing.T) {
@@ -26,7 +26,7 @@ func TestDetect_FindsExposedActuator(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)
@@ -54,7 +54,7 @@ func TestDetect_SuppressesSoft404(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)
@@ -78,7 +78,7 @@ func TestDetect_DoesNotFlag401Or403(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)

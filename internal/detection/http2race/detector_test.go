@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	scanhttp "github.com/TyrusRC/assay/internal/http"
+	scanhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func newClient() *scanhttp.Client {

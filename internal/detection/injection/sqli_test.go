@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestSQLiDetector_Name(t *testing.T) {
@@ -281,7 +281,7 @@ func TestSQLiDetector_DetectBoolean_StringContext(t *testing.T) {
 	srv := blindSQLiServer("searchTerm")
 	defer srv.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	target := srv.URL + "/?searchTerm=test"
@@ -369,7 +369,7 @@ func TestSQLiDetector_DetectBoolean_AppendStyle(t *testing.T) {
 	srv := portswiggerCategoryServer("category")
 	defer srv.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	target := srv.URL + "/?category=Gifts"
@@ -392,7 +392,7 @@ func TestSQLiDetector_DetectBoolean_NoFalsePositive(t *testing.T) {
 	srv := stableServer()
 	defer srv.Close()
 
-	client := assayhttp.NewClient()
+	client := vigilhttp.NewClient()
 	detector := NewSQLiDetector()
 
 	target := srv.URL + "/?searchTerm=test"

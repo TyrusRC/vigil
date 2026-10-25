@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	"github.com/TyrusRC/assay/internal/detection/dedup"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/redirect"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	"github.com/TyrusRC/vigil/internal/detection/dedup"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/redirect"
 )
 
 // Detector performs Open Redirect vulnerability detection.
@@ -112,7 +112,7 @@ func (d *Detector) Detect(ctx context.Context, target, param, method string, opt
 	// already containing the same evil-domain reference. Without this,
 	// a page that benignly mentions or links to evil.com would FP.
 	baselineBody := ""
-	if br, berr := nonRedirectClient.SendPayload(ctx, target, param, "assay_redirect_baseline", method); berr == nil && br != nil {
+	if br, berr := nonRedirectClient.SendPayload(ctx, target, param, "vigil_redirect_baseline", method); berr == nil && br != nil {
 		baselineBody = br.Body
 	}
 

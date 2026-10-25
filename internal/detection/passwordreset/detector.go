@@ -17,14 +17,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // attackerHost is the canary host injected into the Host /
 // X-Forwarded-Host headers. It uses a reserved label (.example) so it
 // cannot accidentally collide with a real production host.
-const attackerHost = "assay-passwordreset-poison.example"
+const attackerHost = "vigil-passwordreset-poison.example"
 
 // toolName is the value emitted in Finding.Tool for all findings in
 // this package.

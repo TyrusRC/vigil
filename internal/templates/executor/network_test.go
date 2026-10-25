@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 func TestNewNetworkExecutor(t *testing.T) {

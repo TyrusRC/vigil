@@ -137,7 +137,7 @@ func encodeHeaders(u *url.URL, extra []hpack.HeaderField) []byte {
 	_ = enc.WriteField(hpack.HeaderField{Name: ":scheme", Value: u.Scheme})
 	_ = enc.WriteField(hpack.HeaderField{Name: ":authority", Value: u.Host})
 	_ = enc.WriteField(hpack.HeaderField{Name: ":path", Value: path})
-	_ = enc.WriteField(hpack.HeaderField{Name: "user-agent", Value: "assay-http2advanced/1"})
+	_ = enc.WriteField(hpack.HeaderField{Name: "user-agent", Value: "vigil-http2advanced/1"})
 	for _, f := range extra {
 		_ = enc.WriteField(f)
 	}

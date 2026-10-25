@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Detector probes a target for WebAuthn / FIDO2 endpoints. This is a

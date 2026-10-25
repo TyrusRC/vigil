@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	ahttp "github.com/TyrusRC/assay/internal/http"
+	ahttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_MissingAutocomplete(t *testing.T) {

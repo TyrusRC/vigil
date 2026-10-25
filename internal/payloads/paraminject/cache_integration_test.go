@@ -7,14 +7,14 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/payloads/arginject"
-	"github.com/TyrusRC/assay/internal/payloads/esi"
-	"github.com/TyrusRC/assay/internal/payloads/fileops"
-	"github.com/TyrusRC/assay/internal/payloads/javareflect"
-	"github.com/TyrusRC/assay/internal/payloads/nodejsinject"
-	"github.com/TyrusRC/assay/internal/payloads/paraminject"
-	"github.com/TyrusRC/assay/internal/payloads/phpinject"
-	"github.com/TyrusRC/assay/internal/payloads/solrinject"
+	"github.com/TyrusRC/vigil/internal/payloads/arginject"
+	"github.com/TyrusRC/vigil/internal/payloads/esi"
+	"github.com/TyrusRC/vigil/internal/payloads/fileops"
+	"github.com/TyrusRC/vigil/internal/payloads/javareflect"
+	"github.com/TyrusRC/vigil/internal/payloads/nodejsinject"
+	"github.com/TyrusRC/vigil/internal/payloads/paraminject"
+	"github.com/TyrusRC/vigil/internal/payloads/phpinject"
+	"github.com/TyrusRC/vigil/internal/payloads/solrinject"
 )
 
 // TestSharedBaselineCacheAcrossDetectors confirms that a single

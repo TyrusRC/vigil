@@ -12,7 +12,7 @@ import (
 func writeTempConfig(t *testing.T, body string) string {
 	t.Helper()
 	dir := t.TempDir()
-	path := filepath.Join(dir, "assay.yaml")
+	path := filepath.Join(dir, "vigil.yaml")
 	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
 		t.Fatalf("write temp config: %v", err)
 	}
@@ -68,8 +68,8 @@ func TestResolveConfigPath(t *testing.T) {
 		t.Errorf("explicit path: got (%q,%v)", p, ok)
 	}
 	// Auto-detect picks the first existing default.
-	exists := func(name string) bool { return name == "assay.yml" }
-	if p, ok := resolveConfigPath("", exists); !ok || p != "assay.yml" {
+	exists := func(name string) bool { return name == "vigil.yml" }
+	if p, ok := resolveConfigPath("", exists); !ok || p != "vigil.yml" {
 		t.Errorf("auto-detect: got (%q,%v)", p, ok)
 	}
 	// Nothing found.

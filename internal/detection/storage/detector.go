@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // sessionCookiePatterns contains substrings that indicate a session-related cookie.

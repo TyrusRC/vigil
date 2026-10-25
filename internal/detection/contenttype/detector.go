@@ -24,18 +24,18 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // Detector probes targetURL for content-type confusion.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -85,7 +85,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL string) (*Result, error
 		return res, nil
 	}
 
-	canary := "assay_" + randomToken()
+	canary := "vigil_" + randomToken()
 	jsonBody := `{"probe": "` + canary + `"}`
 
 	jsonResp, err := d.client.SendRawBody(ctx, targetURL, "POST", jsonBody, "application/json")
@@ -138,7 +138,7 @@ func (d *Detector) Detect(ctx context.Context, targetURL string) (*Result, error
 	return res, nil
 }
 
-func buildFinding(target string, alt alternativeParser, resp *assayhttp.Response) *core.Finding {
+func buildFinding(target string, alt alternativeParser, resp *vigilhttp.Response) *core.Finding {
 	finding := core.NewFinding("Content-Type Confusion", core.SeverityMedium).At(target, alt.contentType)
 	finding.Tool = "contenttype"
 	finding.Confidence = core.ConfidenceMedium

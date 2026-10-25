@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
-// gitlabReportVersion is the GitLab security report schema version assay emits.
+// gitlabReportVersion is the GitLab security report schema version vigil emits.
 const gitlabReportVersion = "15.0.4"
 
 // gitlabTimeLayout is the timestamp format GitLab expects (no timezone).
@@ -98,7 +98,7 @@ func newGitLabVuln(f *core.Finding) gitlabVuln {
 }
 
 // gitlabIdentifiers builds the identifier list; GitLab requires at least one,
-// and treats the first as primary. A stable assay rule id leads, followed by
+// and treats the first as primary. A stable vigil rule id leads, followed by
 // any CWE identifiers.
 func gitlabIdentifiers(f *core.Finding) []gitlabIdent {
 	idents := []gitlabIdent{{Type: toolName, Name: f.Type, Value: ruleID(f.Type)}}
@@ -114,7 +114,7 @@ func gitlabIdentifiers(f *core.Finding) []gitlabIdent {
 	return idents
 }
 
-// gitlabSeverity maps an assay severity to GitLab's capitalized scale.
+// gitlabSeverity maps an vigil severity to GitLab's capitalized scale.
 func gitlabSeverity(s core.Severity) string {
 	switch s {
 	case core.SeverityCritical:

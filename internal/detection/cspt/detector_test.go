@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetector_FindsInlineSink(t *testing.T) {
@@ -23,7 +23,7 @@ func TestDetector_FindsInlineSink(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := New(assayhttp.NewClient())
+	d := New(vigilhttp.NewClient())
 	res, err := d.Detect(context.Background(), srv.URL)
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)
@@ -54,7 +54,7 @@ func TestDetector_FindsExternalScriptSink(t *testing.T) {
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
 
-	d := New(assayhttp.NewClient())
+	d := New(vigilhttp.NewClient())
 	res, err := d.Detect(context.Background(), srv.URL)
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)
@@ -77,7 +77,7 @@ func TestDetector_CleanPageNoFindings(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := New(assayhttp.NewClient())
+	d := New(vigilhttp.NewClient())
 	res, err := d.Detect(context.Background(), srv.URL)
 	if err != nil {
 		t.Fatalf("Detect error: %v", err)
@@ -107,7 +107,7 @@ func TestDetector_NonHTMLIgnored(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	d := New(assayhttp.NewClient())
+	d := New(vigilhttp.NewClient())
 	res, err := d.Detect(context.Background(), srv.URL)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

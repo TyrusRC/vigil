@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // blindSQLiSimilarityThreshold is the Jaccard cutoff for considering
@@ -60,7 +60,7 @@ var booleanPayloadPairs = []booleanPayloadPair{
 // primitive is what closes the gap.
 func (d *SQLiDetector) DetectBoolean(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method string,
 ) (*BooleanResult, error) {
 	res := &BooleanResult{}

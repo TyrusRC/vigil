@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_FlagsTargetBlankWithoutRel(t *testing.T) {
@@ -20,7 +20,7 @@ func TestDetect_FlagsTargetBlankWithoutRel(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -49,7 +49,7 @@ func TestDetect_DedupesIdenticalHrefs(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -66,7 +66,7 @@ func TestDetect_NoHTMLNoFindings(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, _ := det.Detect(context.Background(), srv.URL+"/")
 	if len(res.Findings) != 0 {
 		t.Errorf("expected 0 findings on JSON, got %d", len(res.Findings))
@@ -85,7 +85,7 @@ func TestDetect_SkipsMailtoAndTel(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, _ := det.Detect(context.Background(), srv.URL+"/")
 	if len(res.Findings) != 0 {
 		t.Errorf("expected 0 findings on non-http hrefs, got %d", len(res.Findings))

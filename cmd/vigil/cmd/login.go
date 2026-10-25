@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/auth"
-	"github.com/TyrusRC/assay/internal/headless"
+	"github.com/TyrusRC/vigil/internal/auth"
+	"github.com/TyrusRC/vigil/internal/headless"
 )
 
 // performLogin runs a login when --login-url is set and returns the captured

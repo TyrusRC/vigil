@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // fakeReflectionServer simulates a gRPC-Web server that returns a
@@ -34,7 +34,7 @@ func TestDetect_FindsReflectionService(t *testing.T) {
 	srv := fakeReflectionServer()
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -57,7 +57,7 @@ func TestDetect_NotGRPCContentTypeNoFinding(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -73,7 +73,7 @@ func TestDetect_NoFindingOnNotFound(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)

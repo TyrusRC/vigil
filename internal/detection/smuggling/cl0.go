@@ -69,7 +69,7 @@ func (d *Detector) DetectCL0(ctx context.Context, target, path string) *Result {
 		return result
 	}
 
-	canary := "assaycanary"
+	canary := "vigilcanary"
 	probe := BuildCL0Payload(host, path, canary)
 	result.Request = probe
 

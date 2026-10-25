@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // writeOversizeSettings emits a single SETTINGS frame stuffed with 1024

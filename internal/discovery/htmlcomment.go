@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // HTMLCommentDiscoverer extracts parameter hints from HTML comments.

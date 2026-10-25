@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
-	"github.com/TyrusRC/assay/internal/templates"
-	"github.com/TyrusRC/assay/internal/templates/parser"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates/parser"
 )
 
 // BenchmarkParseTemplates benchmarks template parsing speed
@@ -33,8 +33,8 @@ func BenchmarkParseTemplates(b *testing.B) {
 	}
 }
 
-// BenchmarkAssayExecution benchmarks assay template execution
-func BenchmarkAssayExecution(b *testing.B) {
+// BenchmarkVigilExecution benchmarks vigil template execution
+func BenchmarkVigilExecution(b *testing.B) {
 	// Create test server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Server", "Apache/2.4.41")
@@ -144,7 +144,7 @@ func createBenchmarkTemplates() []*templates.Template {
 	}
 }
 
-// TestComparePerformance runs a performance comparison between assay and nuclei
+// TestComparePerformance runs a performance comparison between vigil and nuclei
 func TestComparePerformance(t *testing.T) {
 	nucleiPath, err := exec.LookPath("nuclei")
 	if err != nil {
@@ -195,9 +195,9 @@ http:
 
 	iterations := 10
 
-	// Benchmark assay
-	t.Log("=== assay Template Scanner ===")
-	assayTimes := make([]time.Duration, iterations)
+	// Benchmark vigil
+	t.Log("=== vigil Template Scanner ===")
+	vigilTimes := make([]time.Duration, iterations)
 	s, _ := scanner.NewTemplateScanner(nil)
 	p := parser.New()
 	tmpl, _ := p.ParseFile(tmplPath)
@@ -206,15 +206,15 @@ http:
 		start := time.Now()
 		target, _ := core.NewTarget(server.URL)
 		result, _ := s.Scan(context.Background(), target, []*templates.Template{tmpl})
-		assayTimes[i] = time.Since(start)
+		vigilTimes[i] = time.Since(start)
 		if i == 0 {
 			t.Logf("  Findings: %d, Match: %v", len(result.Findings), len(result.Findings) > 0)
 		}
 	}
 
-	avgAssay := averageDuration(assayTimes)
-	t.Logf("  Average time: %v", avgAssay)
-	t.Logf("  Min: %v, Max: %v", minDuration(assayTimes), maxDuration(assayTimes))
+	avgVigil := averageDuration(vigilTimes)
+	t.Logf("  Average time: %v", avgVigil)
+	t.Logf("  Min: %v, Max: %v", minDuration(vigilTimes), maxDuration(vigilTimes))
 
 	// Benchmark Nuclei
 	t.Log("\n=== Nuclei ===")
@@ -245,12 +245,12 @@ http:
 
 	// Comparison
 	t.Log("\n=== Performance Comparison ===")
-	if avgAssay < avgNuclei {
-		speedup := float64(avgNuclei) / float64(avgAssay)
-		t.Logf("  assay is %.2fx faster than Nuclei", speedup)
+	if avgVigil < avgNuclei {
+		speedup := float64(avgNuclei) / float64(avgVigil)
+		t.Logf("  vigil is %.2fx faster than Nuclei", speedup)
 	} else {
-		speedup := float64(avgAssay) / float64(avgNuclei)
-		t.Logf("  Nuclei is %.2fx faster than assay", speedup)
+		speedup := float64(avgVigil) / float64(avgNuclei)
+		t.Logf("  Nuclei is %.2fx faster than vigil", speedup)
 	}
 }
 
@@ -304,8 +304,8 @@ func TestMultiTemplateComparison(t *testing.T) {
 		}
 	}
 
-	// Test assay
-	t.Log("\n=== assay with multiple templates ===")
+	// Test vigil
+	t.Log("\n=== vigil with multiple templates ===")
 	s, _ := scanner.NewTemplateScanner(&scanner.TemplateScanConfig{
 		Concurrency: 10,
 	})
@@ -313,8 +313,8 @@ func TestMultiTemplateComparison(t *testing.T) {
 	start := time.Now()
 	target, _ := core.NewTarget(server.URL)
 	result, _ := s.Scan(context.Background(), target, tmpls)
-	assayTime := time.Since(start)
-	t.Logf("  Time: %v", assayTime)
+	vigilTime := time.Since(start)
+	t.Logf("  Time: %v", vigilTime)
 	t.Logf("  Templates run: %d", result.TemplatesRun)
 	t.Logf("  Findings: %d", len(result.Findings))
 
@@ -336,12 +336,12 @@ func TestMultiTemplateComparison(t *testing.T) {
 
 	// Comparison
 	t.Log("\n=== Multi-Template Performance Comparison ===")
-	if assayTime < nucleiTime {
-		speedup := float64(nucleiTime) / float64(assayTime)
-		t.Logf("  assay is %.2fx faster than Nuclei", speedup)
+	if vigilTime < nucleiTime {
+		speedup := float64(nucleiTime) / float64(vigilTime)
+		t.Logf("  vigil is %.2fx faster than Nuclei", speedup)
 	} else {
-		speedup := float64(assayTime) / float64(nucleiTime)
-		t.Logf("  Nuclei is %.2fx faster than assay", speedup)
+		speedup := float64(vigilTime) / float64(nucleiTime)
+		t.Logf("  Nuclei is %.2fx faster than vigil", speedup)
 	}
 }
 

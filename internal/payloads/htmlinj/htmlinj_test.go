@@ -77,9 +77,9 @@ func TestCorePayloadsPresent(t *testing.T) {
 
 	// Verify required payloads are present
 	expectedSubstrings := []string{
-		"<b>assay</b>",
+		"<b>vigil</b>",
 		"<img src=x>",
-		"<div id=assay>",
+		"<div id=vigil>",
 		"<a href=x>click</a>",
 	}
 

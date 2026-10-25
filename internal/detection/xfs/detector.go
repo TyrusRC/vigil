@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Detector wraps Analyze in the scanner-side Detector convention.

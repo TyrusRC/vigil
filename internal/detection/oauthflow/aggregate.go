@@ -3,7 +3,7 @@ package oauthflow
 import (
 	"context"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // DetectAll runs every sub-check and aggregates the findings. Errors

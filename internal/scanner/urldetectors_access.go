@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/fileupload"
-	"github.com/TyrusRC/assay/internal/detection/hosthdr"
-	"github.com/TyrusRC/assay/internal/detection/loginj"
-	"github.com/TyrusRC/assay/internal/detection/oauth"
-	"github.com/TyrusRC/assay/internal/detection/pathnorm"
-	"github.com/TyrusRC/assay/internal/detection/racecond"
-	"github.com/TyrusRC/assay/internal/detection/storageinj"
-	"github.com/TyrusRC/assay/internal/detection/verbtamper"
-	"github.com/TyrusRC/assay/internal/detection/ws"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/fileupload"
+	"github.com/TyrusRC/vigil/internal/detection/hosthdr"
+	"github.com/TyrusRC/vigil/internal/detection/loginj"
+	"github.com/TyrusRC/vigil/internal/detection/oauth"
+	"github.com/TyrusRC/vigil/internal/detection/pathnorm"
+	"github.com/TyrusRC/vigil/internal/detection/racecond"
+	"github.com/TyrusRC/vigil/internal/detection/storageinj"
+	"github.com/TyrusRC/vigil/internal/detection/verbtamper"
+	"github.com/TyrusRC/vigil/internal/detection/ws"
 )
 
 // testStorageInj tests for client-side storage injection vulnerabilities.

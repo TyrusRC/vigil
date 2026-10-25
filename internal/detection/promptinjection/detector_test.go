@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // vulnerableLLM responds to every chat-shaped payload by echoing
@@ -67,7 +67,7 @@ func TestDetect_FlagsCompliantModelOnSentinelEcho(t *testing.T) {
 	srv := vulnerableLLM()
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/api/chat")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -81,7 +81,7 @@ func TestDetect_NoFindingOnHardenedModel(t *testing.T) {
 	srv := hardenedLLM()
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/api/chat")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -97,7 +97,7 @@ func TestDetect_SkipsNon2xxNon404(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, _ := det.Detect(context.Background(), srv.URL+"/api/chat")
 	if len(res.Findings) != 0 {
 		t.Errorf("expected 0 findings when LLM returns 401, got %d", len(res.Findings))

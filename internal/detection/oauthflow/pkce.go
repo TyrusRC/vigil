@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // DetectPKCEDowngrade verifies that an IdP advertising / accepting PKCE
@@ -44,7 +44,7 @@ func (d *Detector) DetectPKCEDowngrade(ctx context.Context, authzURL, tokenURL s
 	authReq := d.buildAuthzURL(base, opts, map[string]string{
 		"code_challenge":        "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
 		"code_challenge_method": "S256",
-		"state":                 "assay-pkce-probe",
+		"state":                 "vigil-pkce-probe",
 	}, true)
 
 	authResp, err := d.probe(ctx, authReq)

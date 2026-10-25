@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	internalctx "github.com/TyrusRC/assay/internal/detection/context"
-	"github.com/TyrusRC/assay/internal/detection/dedup"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/xss"
+	"github.com/TyrusRC/vigil/internal/core"
+	internalctx "github.com/TyrusRC/vigil/internal/detection/context"
+	"github.com/TyrusRC/vigil/internal/detection/dedup"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/xss"
 )
 
 // Pre-compiled regexes for context analysis to avoid per-call compilation.

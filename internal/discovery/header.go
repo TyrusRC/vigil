@@ -3,8 +3,8 @@ package discovery
 import (
 	"context"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // injectableHeaders is the list of HTTP headers commonly used in injection attacks.

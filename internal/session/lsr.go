@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// LoginSequence is a recorded login flow that assay replays to acquire
+// LoginSequence is a recorded login flow that vigil replays to acquire
 // an authenticated session. The JSON format mirrors the Acunetix LSR
 // schema (navigate/change/click/submit actions, a detection rule to
 // verify the session is alive, and a restriction list of URLs the

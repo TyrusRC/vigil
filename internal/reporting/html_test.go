@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
 func TestWriteHTML_RichReport(t *testing.T) {
@@ -27,7 +27,7 @@ func TestWriteHTML_RichReport(t *testing.T) {
 		t.Fatalf("WriteHTML error: %v", err)
 	}
 	out := buf.String()
-	for _, want := range []string{"<!DOCTYPE html>", "assay", "SQL Injection", "Critical", "CWE-89", "9.8", "Highest CVSS"} {
+	for _, want := range []string{"<!DOCTYPE html>", "vigil", "SQL Injection", "Critical", "CWE-89", "9.8", "Highest CVSS"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("HTML missing %q", want)
 		}

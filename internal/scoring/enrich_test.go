@@ -3,7 +3,7 @@ package scoring
 import (
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func TestEnrich_FillsZeroCVSS(t *testing.T) {

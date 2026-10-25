@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	httpx "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 // sstiVerifier confirms server-side template injection by injecting an
@@ -99,16 +99,16 @@ func (crlfVerifier) Verify(ctx context.Context, f *core.Finding, client *httpx.C
 	token := marker()
 	// Raw CR/LF; SendPayload percent-encodes them once for the query string,
 	// and a vulnerable app decodes them back into a header break.
-	payload := "\r\nX-Assay-Verify: " + token
+	payload := "\r\nX-Vigil-Verify: " + token
 	resp, err := client.SendPayload(ctx, f.URL, f.Parameter, payload, requestMethod(f))
 	if err != nil || resp == nil {
 		return nil, err
 	}
-	if resp.RawHeaders.Get("X-Assay-Verify") == token {
+	if resp.RawHeaders.Get("X-Vigil-Verify") == token {
 		return &Proof{
 			Confirmed: true,
 			Method:    "header-injection",
-			Detail:    "injected CRLF added the response header X-Assay-Verify",
+			Detail:    "injected CRLF added the response header X-Vigil-Verify",
 		}, nil
 	}
 	return &Proof{Confirmed: false}, nil

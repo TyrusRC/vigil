@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // detectorTool is the canonical Finding.Tool value emitted by this package.
@@ -14,11 +14,11 @@ const detectorTool = "openapisemantic-detector"
 // Detector probes an OpenAPI-described service for semantic mismatches
 // between the published schema and what the server actually enforces.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector bound to the supplied HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 

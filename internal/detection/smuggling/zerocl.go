@@ -54,7 +54,7 @@ func (d *Detector) Detect0CL(ctx context.Context, target, path string) *Result {
 		return result
 	}
 
-	probe := Build0CLPayload(host, path, "assaycanary")
+	probe := Build0CLPayload(host, path, "vigilcanary")
 	result.Request = probe
 
 	probeRaw, _, err := SendRawRequest(ctx, addr, probe, d.config.Timeout)

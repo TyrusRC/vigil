@@ -18,7 +18,7 @@ func cdnSessionSemicolon(base *url.URL) []probeURL {
 	out := make([]probeURL, 0, len(keys))
 	for _, k := range keys {
 		out = append(out, probeURL{
-			URL:      withRawPath(base, path+";"+k+"=assay-cdn-poison"),
+			URL:      withRawPath(base, path+";"+k+"=vigil-cdn-poison"),
 			Strategy: StrategyCDNSessionSemicolon,
 		})
 	}
@@ -42,7 +42,7 @@ func cdnQueryStrip(base *url.URL) []probeURL {
 	for _, p := range params {
 		cp := *base
 		q := cp.Query()
-		q.Set(p, "assay-cdn-poison")
+		q.Set(p, "vigil-cdn-poison")
 		cp.RawQuery = q.Encode()
 		out = append(out, probeURL{
 			URL:      cp.String(),

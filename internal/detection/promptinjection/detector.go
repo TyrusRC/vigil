@@ -24,8 +24,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // candidatePaths is the curated wordlist of LLM-style endpoints.
@@ -49,11 +49,11 @@ var pathHints = []string{
 
 // Detector probes for prompt-injection in LLM-backed endpoints.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -193,8 +193,8 @@ type payload struct {
 // prompt-injection corpus, Greshake et al. "Not what you've signed up
 // for" (USENIX 2023), Microsoft's responsible-AI red-team guide.
 func buildPayloads() []payload {
-	canary := "assay_pi_" + randomToken()
-	canary2 := "assay_pi2_" + randomToken()
+	canary := "vigil_pi_" + randomToken()
+	canary2 := "vigil_pi2_" + randomToken()
 	out := []payload{
 		{
 			desc:   "ignore-previous-instructions sentinel echo",

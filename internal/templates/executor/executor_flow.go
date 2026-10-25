@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TyrusRC/assay/internal/templates"
+	"github.com/TyrusRC/vigil/internal/templates"
 )
 
 // executeWithFlow executes a template using the flow field for multi-protocol orchestration.

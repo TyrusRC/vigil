@@ -3,7 +3,7 @@ package scoring
 import (
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func TestDefaultVector_ByCWE(t *testing.T) {

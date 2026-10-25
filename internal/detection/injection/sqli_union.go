@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/detection/analysis"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/detection/analysis"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 const (
 	unionMaxColumns    = 30
-	unionMarker        = "assay_union_7x3m"
+	unionMarker        = "vigil_union_7x3m"
 	unionSimilarityThr = 0.9
 )
 
@@ -45,7 +45,7 @@ var dbVariants = []dbVariant{
 // reflected column.
 func (d *SQLiDetector) DetectUnion(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method string,
 ) (*UnionResult, error) {
 	res := &UnionResult{}
@@ -101,7 +101,7 @@ func (d *SQLiDetector) DetectUnion(
 // number of columns in the query.
 func (d *SQLiDetector) findColumnCount(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, originalValue, baselineBody string,
 	v dbVariant,
 ) int {
@@ -168,11 +168,11 @@ func (d *SQLiDetector) findColumnCount(
 
 func (d *SQLiDetector) sendOrderBy(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, originalValue string,
 	n int,
 	v dbVariant,
-) (*assayhttp.Response, error) {
+) (*vigilhttp.Response, error) {
 	payload := fmt.Sprintf("%s' ORDER BY %d%s", originalValue, n, v.commentEnd)
 	return client.SendPayload(ctx, targetURL, param, payload, method)
 }
@@ -181,7 +181,7 @@ func (d *SQLiDetector) sendOrderBy(
 // is different from a syntax error but not an error page.
 func (d *SQLiDetector) confirmUnion(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, originalValue, baselineBody string,
 	colCount int,
 	v dbVariant,
@@ -232,7 +232,7 @@ func (d *SQLiDetector) buildUnionPayload(originalValue string, colCount, markerC
 // which column is reflected in the response body.
 func (d *SQLiDetector) findReflectedColumn(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, originalValue string,
 	colCount int,
 	v dbVariant,
@@ -268,7 +268,7 @@ func (d *SQLiDetector) findReflectedColumn(
 // version-detection functions in the reflected column.
 func (d *SQLiDetector) detectDBFromUnion(
 	ctx context.Context,
-	client *assayhttp.Client,
+	client *vigilhttp.Client,
 	targetURL, param, method, originalValue string,
 	colCount, reflectedCol int,
 	v dbVariant,

@@ -43,7 +43,7 @@ type fileConfig struct {
 
 // defaultConfigFiles are auto-detected in the working directory when --config
 // is not given. The first that exists is loaded.
-var defaultConfigFiles = []string{"assay.yaml", "assay.yml", ".assay.yaml"}
+var defaultConfigFiles = []string{"vigil.yaml", "vigil.yml", ".vigil.yaml"}
 
 // loadFileConfig reads and parses a YAML config file. Unknown keys are
 // rejected so typos surface as errors rather than being silently ignored.
@@ -136,7 +136,7 @@ func applyFileConfig(cmd *cobra.Command, fc *fileConfig) error {
 	loginPass = pickString(changed("login-pass"), loginPass, fc.LoginPass)
 
 	if fc.LoginPass != "" || fc.Cookie != "" {
-		fmt.Fprintln(os.Stderr, "[!] Warning: credentials read from config file; prefer ASSAY_LOGIN_PASS env var and keep config files out of version control")
+		fmt.Fprintln(os.Stderr, "[!] Warning: credentials read from config file; prefer VIGIL_LOGIN_PASS env var and keep config files out of version control")
 	}
 	loginUserField = pickString(changed("login-user-field"), loginUserField, fc.LoginUserField)
 	loginPassField = pickString(changed("login-pass-field"), loginPassField, fc.LoginPassField)

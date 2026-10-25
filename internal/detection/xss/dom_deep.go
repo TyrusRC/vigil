@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/headless"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/headless"
 )
 
 // DeepDOMDetector drives a headless browser to confirm DOM-based XSS
@@ -36,7 +36,7 @@ func NewDeepDOMDetector(pool *headless.Pool) *DeepDOMDetector {
 }
 
 func defaultDOMPayloads() []DOMPayload {
-	canary := "assayXSS" // string we look for in dialog/console
+	canary := "vigilXSS" // string we look for in dialog/console
 	return []DOMPayload{
 		// URL-fragment injection — DOM reads location.hash
 		{Payload: fmt.Sprintf(`<img src=x onerror=alert('%s')>`, canary), Context: "url_fragment", Canary: canary},

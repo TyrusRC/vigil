@@ -3,8 +3,8 @@ package idor
 import (
 	"fmt"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // calculateConfidence calculates confidence level based on evidence.

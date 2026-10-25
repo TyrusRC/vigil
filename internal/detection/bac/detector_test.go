@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	httpx "github.com/TyrusRC/assay/internal/http"
+	httpx "github.com/TyrusRC/vigil/internal/http"
 )
 
 const secretBody = "TOP SECRET account balance and personal data for the legitimate owner only ............"

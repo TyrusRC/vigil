@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_FlagsAcceptingSP(t *testing.T) {
@@ -25,7 +25,7 @@ func TestDetect_FlagsAcceptingSP(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -43,7 +43,7 @@ func TestDetect_NoFindingOnStrictSP(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, _ := det.Detect(context.Background(), srv.URL+"/")
 	if len(res.Findings) != 0 {
 		t.Errorf("expected 0 findings on strict SP, got %d", len(res.Findings))

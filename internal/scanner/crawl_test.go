@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 func mustTarget(t *testing.T, raw string) *core.Target {

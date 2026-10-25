@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_FlagsExpansionLeak(t *testing.T) {
@@ -24,7 +24,7 @@ func TestDetect_FlagsExpansionLeak(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/users/1")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -41,7 +41,7 @@ func TestDetect_NoFindingWhenExpansionIgnored(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/users/1")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -63,7 +63,7 @@ func TestDetect_NoFindingWhenExpansionGrowsButNoSensitive(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	det := New(assayhttp.NewClient())
+	det := New(vigilhttp.NewClient())
 	res, err := det.Detect(context.Background(), srv.URL+"/users/1")
 	if err != nil {
 		t.Fatalf("Detect: %v", err)

@@ -9,7 +9,7 @@
 package idor
 
 import (
-	"github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/http"
 )
 
 // analyzeForIDOR compares the baseline and test responses and assembles

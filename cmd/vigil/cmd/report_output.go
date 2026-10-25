@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/reporting"
 )
 
 var validFormats = map[string]string{
@@ -74,7 +74,7 @@ func writeReports(report *reporting.Report, formats []string, outputDir string) 
 		return fmt.Errorf("create output dir: %w", err)
 	}
 	for _, f := range formats {
-		path := filepath.Join(outputDir, "assay-report."+validFormats[f])
+		path := filepath.Join(outputDir, "vigil-report."+validFormats[f])
 		file, err := os.Create(path)
 		if err != nil {
 			return fmt.Errorf("create %s: %w", path, err)

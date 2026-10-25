@@ -18,8 +18,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // candidatePaths is the wordlist of common SSE endpoints. Entries are
@@ -44,11 +44,11 @@ var candidatePaths = []string{
 
 // Detector probes the host for unauthenticated SSE endpoints.
 type Detector struct {
-	client *assayhttp.Client
+	client *vigilhttp.Client
 }
 
 // New returns a Detector wired to the project's shared HTTP client.
-func New(client *assayhttp.Client) *Detector {
+func New(client *vigilhttp.Client) *Detector {
 	return &Detector{client: client}
 }
 
@@ -119,7 +119,7 @@ func isSSEResponse(contentType, body string) bool {
 		strings.HasPrefix(t, ":")
 }
 
-func buildFinding(probedURL, path string, resp *assayhttp.Response) *core.Finding {
+func buildFinding(probedURL, path string, resp *vigilhttp.Response) *core.Finding {
 	finding := core.NewFinding("Unauthenticated Server-Sent Events Stream", core.SeverityHigh).At(probedURL, path)
 	finding.Tool = "sse"
 	finding.Confidence = core.ConfidenceHigh

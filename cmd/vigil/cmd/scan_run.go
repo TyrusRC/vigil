@@ -13,12 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/decision"
-	"github.com/TyrusRC/assay/internal/reporting"
-	"github.com/TyrusRC/assay/internal/scanner"
-	"github.com/TyrusRC/assay/internal/scope"
-	"github.com/TyrusRC/assay/internal/session"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/decision"
+	"github.com/TyrusRC/vigil/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/scope"
+	"github.com/TyrusRC/vigil/internal/session"
 	"github.com/spf13/cobra"
 )
 func printDryRun(targets []string, cfg *scanner.InternalScanConfig) {
@@ -187,9 +187,9 @@ func runScan(cmd *cobra.Command, args []string) error {
 	s := scanner.New()
 	defer s.Close()
 
-	// CLI flag wins over env; missing flag falls back to ASSAY_LOGIN_PASS.
+	// CLI flag wins over env; missing flag falls back to VIGIL_LOGIN_PASS.
 	if loginPass == "" {
-		if env := os.Getenv("ASSAY_LOGIN_PASS"); env != "" {
+		if env := os.Getenv("VIGIL_LOGIN_PASS"); env != "" {
 			loginPass = env
 		}
 	}

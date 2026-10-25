@@ -128,9 +128,9 @@ func TestLocalEngineKeylessOmitsAuth(t *testing.T) {
 
 func TestFromEnvLocalBaseEnablesKeyless(t *testing.T) {
 	t.Setenv("AI_GATEWAY_API_KEY", "")
-	t.Setenv("ASSAY_DECISION_API_KEY", "")
-	t.Setenv("ASSAY_DECIDE", "")
-	t.Setenv("ASSAY_DECISION_BASE_URL", "http://127.0.0.1:3000")
+	t.Setenv("VIGIL_DECISION_API_KEY", "")
+	t.Setenv("VIGIL_DECIDE", "")
+	t.Setenv("VIGIL_DECISION_BASE_URL", "http://127.0.0.1:3000")
 	c := FromEnv()
 	if !c.Enabled || c.APIKey != "" || c.BaseURL != "http://127.0.0.1:3000" {
 		t.Fatalf("local base must enable keyless: %+v", c)
@@ -138,15 +138,15 @@ func TestFromEnvLocalBaseEnablesKeyless(t *testing.T) {
 }
 
 func TestFromEnv(t *testing.T) {
-	t.Setenv("ASSAY_DECISION_BASE_URL", "")
+	t.Setenv("VIGIL_DECISION_BASE_URL", "")
 	t.Setenv("AI_GATEWAY_API_KEY", "")
-	t.Setenv("ASSAY_DECISION_API_KEY", "")
-	t.Setenv("ASSAY_DECIDE", "")
+	t.Setenv("VIGIL_DECISION_API_KEY", "")
+	t.Setenv("VIGIL_DECIDE", "")
 	if FromEnv().Enabled {
 		t.Fatal("should be disabled with no env")
 	}
 	t.Setenv("AI_GATEWAY_API_KEY", "k")
-	t.Setenv("ASSAY_DECIDE_TOP", "5")
+	t.Setenv("VIGIL_DECIDE_TOP", "5")
 	c := FromEnv()
 	if !c.Enabled || c.TopN != 5 || c.APIKey != "k" || c.Model != defaultModel {
 		t.Fatalf("unexpected config: %+v", c)

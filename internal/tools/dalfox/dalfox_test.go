@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/tools"
+	"github.com/TyrusRC/vigil/internal/tools"
 )
 
 func TestBuildArgs(t *testing.T) {

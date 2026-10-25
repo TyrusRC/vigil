@@ -3,7 +3,7 @@ package graphql
 import (
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // VulnerabilityType represents the type of GraphQL vulnerability.

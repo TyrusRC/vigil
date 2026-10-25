@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/dedup"
-	"github.com/TyrusRC/assay/internal/http"
-	"github.com/TyrusRC/assay/internal/payloads/protopollution"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/dedup"
+	"github.com/TyrusRC/vigil/internal/http"
+	"github.com/TyrusRC/vigil/internal/payloads/protopollution"
 )
 
 // errorPatterns matches response content that indicates prototype pollution
@@ -155,9 +155,9 @@ func (d *Detector) analyzeResponse(baseline, injected, payload string) bool {
 		}
 	}
 
-	// Check if the marker value "assay" appeared in response when it was not in baseline
-	if strings.Contains(payload, "assay") {
-		if strings.Contains(injected, "assay") && !strings.Contains(baseline, "assay") {
+	// Check if the marker value "vigil" appeared in response when it was not in baseline
+	if strings.Contains(payload, "vigil") {
+		if strings.Contains(injected, "vigil") && !strings.Contains(baseline, "vigil") {
 			return true
 		}
 	}

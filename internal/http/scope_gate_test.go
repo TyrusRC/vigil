@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/TyrusRC/assay/internal/scope"
+	"github.com/TyrusRC/vigil/internal/scope"
 )
 
 func TestClient_Do_ScopeGate(t *testing.T) {

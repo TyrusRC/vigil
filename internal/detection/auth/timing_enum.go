@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // TimingEnumOptions configures the statistical timing-enumeration probe.

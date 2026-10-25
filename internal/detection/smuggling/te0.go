@@ -57,7 +57,7 @@ func (d *Detector) DetectTE0(ctx context.Context, target, path string) *Result {
 		return result
 	}
 
-	probe := BuildTE0Payload(host, path, "assaycanary")
+	probe := BuildTE0Payload(host, path, "vigilcanary")
 	result.Request = probe
 
 	probeRaw, _, err := SendRawRequest(ctx, addr, probe, d.config.Timeout)

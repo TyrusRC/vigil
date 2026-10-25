@@ -9,14 +9,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
-	"github.com/TyrusRC/assay/internal/detection/graphql"
-	assayhttp "github.com/TyrusRC/assay/internal/http"
+	"github.com/TyrusRC/vigil/internal/core"
+	"github.com/TyrusRC/vigil/internal/detection/graphql"
+	vigilhttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 // runGraphQLAdvancedChecks runs IDOR, SSRF, stored XSS, DoS, authenticated
 // CMDI, and information-disclosure checks against a GraphQL endpoint.
-func (s *InternalScanner) runGraphQLAdvancedChecks(ctx context.Context, findingsChan chan<- *core.Finding, gqlEndpoint string, scanClient *assayhttp.Client) {
+func (s *InternalScanner) runGraphQLAdvancedChecks(ctx context.Context, findingsChan chan<- *core.Finding, gqlEndpoint string, scanClient *vigilhttp.Client) {
 	det := graphql.New(scanClient)
 	introQuery := det.BuildIntrospectionQuery()
 	body, err := det.BuildGraphQLRequest(introQuery, nil)
@@ -52,7 +52,7 @@ func (s *InternalScanner) runGraphQLAdvancedChecks(ctx context.Context, findings
 // IDOR — sequential ID enumeration on query fields
 // ---------------------------------------------------------------------------
 
-func (s *InternalScanner) checkGQLIDOR(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool, introResp string) {
+func (s *InternalScanner) checkGQLIDOR(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool, introResp string) {
 	for _, f := range fields {
 		if f.isMut {
 			continue
@@ -116,7 +116,7 @@ var gqlSSRFArgNames = map[string]bool{
 	"fetch": true, "load": true, "src": true, "source": true,
 }
 
-func (s *InternalScanner) checkGQLSSRF(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
+func (s *InternalScanner) checkGQLSSRF(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
 	for _, f := range fields {
 		select {
 		case <-ctx.Done():
@@ -209,7 +209,7 @@ var gqlWritableArgNames = map[string]bool{
 	"input": true, "html": true, "note": true, "value": true,
 }
 
-func (s *InternalScanner) checkGQLStoredXSS(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool, introResp string) {
+func (s *InternalScanner) checkGQLStoredXSS(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool, introResp string) {
 	xssPayload := `<img src=x onerror=alert(1)>`
 
 	for _, f := range fields {
@@ -306,7 +306,7 @@ func emitGQLStoredXSS(ctx context.Context, ch chan<- *core.Finding, ep, mutName,
 // DoS — batch alias query (no complexity limit)
 // ---------------------------------------------------------------------------
 
-func (s *InternalScanner) checkGQLDepthLimit(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
+func (s *InternalScanner) checkGQLDepthLimit(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
 	var listField *gqlFieldInfo
 	for i, f := range fields {
 		if !f.isMut && (f.retKind == "LIST" || f.retKind == "OBJECT") {
@@ -377,7 +377,7 @@ func (s *InternalScanner) checkGQLDepthLimit(ctx context.Context, ch chan<- *cor
 // Authenticated CMDI — mutations with cmd + credential arguments
 // ---------------------------------------------------------------------------
 
-func (s *InternalScanner) checkGQLAuthCMDI(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
+func (s *InternalScanner) checkGQLAuthCMDI(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
 	creds := [][2]string{{"admin", "admin"}, {"admin", "password"}, {"test", "test"}}
 
 	for _, f := range fields {
@@ -456,7 +456,7 @@ var gqlInfoDiscNames = map[string]bool{
 	"metrics": true, "environment": true,
 }
 
-func (s *InternalScanner) checkGQLInfoDisc(ctx context.Context, ch chan<- *core.Finding, ep string, cl *assayhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
+func (s *InternalScanner) checkGQLInfoDisc(ctx context.Context, ch chan<- *core.Finding, ep string, cl *vigilhttp.Client, det *graphql.Detector, fields []gqlFieldInfo, ns map[string]bool) {
 	for _, f := range fields {
 		if f.isMut {
 			continue

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	ahttp "github.com/TyrusRC/assay/internal/http"
+	ahttp "github.com/TyrusRC/vigil/internal/http"
 )
 
 func TestDetect_SessionSurvives(t *testing.T) {

@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/TyrusRC/assay/internal/core"
+	"github.com/TyrusRC/vigil/internal/core"
 )
 
 // Framework identifies a compliance standard.

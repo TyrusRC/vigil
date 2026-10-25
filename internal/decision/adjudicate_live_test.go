@@ -7,11 +7,11 @@ import (
 )
 
 // TestAdjudicateLive is a functional check against a running Haruspex engine
-// (ASSAY_DECISION_BASE_URL or the loopback default). It skips when no engine is
+// (VIGIL_DECISION_BASE_URL or the loopback default). It skips when no engine is
 // reachable, so it is safe in CI. It asserts the fail-open Adjudicate client
 // separates a confirmed finding from pure noise.
 func TestAdjudicateLive(t *testing.T) {
-	base := os.Getenv("ASSAY_DECISION_BASE_URL")
+	base := os.Getenv("VIGIL_DECISION_BASE_URL")
 	if base == "" {
 		base = "http://127.0.0.1:3000"
 	}
