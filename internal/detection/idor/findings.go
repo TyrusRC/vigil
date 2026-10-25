@@ -83,5 +83,6 @@ func (d *Detector) createFinding(targetURL string, param IDParameter, evidence *
 		"https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/",
 		"https://cwe.mitre.org/data/definitions/639.html",
 	}
+	finding.WithProof("", targetURL, "", resp.StatusCode, resp.Body)
 	return finding
 }

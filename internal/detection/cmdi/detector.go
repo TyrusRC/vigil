@@ -311,5 +311,6 @@ func (d *Detector) createFinding(target, param string, payload cmdi.Payload, res
 		[]string{"CWE-78"},       // OS Command Injection
 	)
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }

@@ -238,5 +238,6 @@ func (d *Detector) createFinding(target string, payload cachepoisoning.Payload, 
 		[]string{"CWE-444"},
 	)
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }

@@ -203,5 +203,6 @@ func (d *Detector) createFinding(target, param string, payload protopollution.Pa
 		[]string{"CWE-1321"},
 	)
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }

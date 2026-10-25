@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/TyrusRC/vigil/internal/core"
-	"github.com/TyrusRC/vigil/internal/iast"
 	"github.com/TyrusRC/vigil/internal/detection/xss"
+	"github.com/TyrusRC/vigil/internal/iast"
 	"github.com/TyrusRC/vigil/internal/payloads/paraminject"
+	"github.com/TyrusRC/vigil/internal/tui"
 )
 
 // Scan performs internal vulnerability scanning on a target. It is the main
@@ -273,13 +274,25 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	var findingsMu sync.Mutex
 	var collectWg sync.WaitGroup
 	collectWg.Add(1)
+	findingIdx := 0
 	go func() {
 		defer collectWg.Done()
 		for finding := range findingsChan {
+			// Auto-proof: if the detector didn't set Request/Response,
+			// build a compact proof from the finding's existing fields.
+			if finding.Request == "" && finding.Evidence != "" {
+				finding.Request = fmt.Sprintf("%s param=%s\nPayload in evidence below",
+					finding.URL, finding.Parameter)
+			}
 			findingsMu.Lock()
 			collectedFindings = append(collectedFindings, finding)
+			findingIdx++
+			idx := findingIdx
 			findingsMu.Unlock()
 			prog.IncrementFindings(1)
+			// Real-time notification: show each finding as it's discovered.
+			tui.FindingInline(idx, string(finding.Severity), finding.Type,
+				finding.URL, finding.Parameter, finding.Evidence)
 		}
 	}()
 

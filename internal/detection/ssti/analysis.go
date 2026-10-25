@@ -190,6 +190,7 @@ func (d *Detector) createFinding(target, param string, payload ssti.Payload, res
 		[]string{"CWE-94", "CWE-1336"}, // Code Injection, Template Injection
 	)
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }
 

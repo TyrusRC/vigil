@@ -183,5 +183,6 @@ func (d *Detector) createFinding(target, param string, payload ldap.Payload, res
 		[]string{"CWE-90"},       // Improper Neutralization of Special Elements in LDAP Query
 	)
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }

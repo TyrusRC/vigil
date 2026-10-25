@@ -415,5 +415,6 @@ func (d *Detector) createFinding(target, param string, payload ssrf.Payload, res
 	)
 	finding.APITop10 = []string{"API7:2023"} // Server Side Request Forgery
 
+	finding.WithProof("", target, "", resp.StatusCode, resp.Body)
 	return finding
 }
