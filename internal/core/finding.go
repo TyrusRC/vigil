@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -126,19 +127,51 @@ func (f *Finding) SetEvidence(evidence, request, response string) *Finding {
 	return f
 }
 
-// WithProof attaches a compact request/response proof to the finding.
-// Builds a curl-style request line and truncated response for the report.
-func (f *Finding) WithProof(method, url, payload string, statusCode int, responseBody string) *Finding {
+// WithProof attaches a reproducible curl command and the server response.
+// The user can copy-paste the curl command to reproduce the finding.
+func (f *Finding) WithProof(method, targetURL, payload string, statusCode int, responseBody string) *Finding {
 	if method == "" {
 		method = "GET"
 	}
-	f.Request = fmt.Sprintf("%s %s\nPayload: %s", method, url, payload)
-	maxBody := 500
+
+	// Build a reproducible curl command
+	param := f.Parameter
+	if param == "" {
+		param = "PARAM"
+	}
+	payloadDisplay := payload
+	if payloadDisplay == "" {
+		payloadDisplay = f.Evidence
+		if idx := strings.Index(payloadDisplay, "\n"); idx > 0 {
+			payloadDisplay = payloadDisplay[:idx]
+		}
+	}
+	if strings.HasPrefix(payloadDisplay, "Payload: ") {
+		payloadDisplay = payloadDisplay[9:]
+	}
+
+	if method == "GET" {
+		// GET: payload in query string
+		sep := "?"
+		if strings.Contains(targetURL, "?") {
+			sep = "&"
+		}
+		f.Request = fmt.Sprintf("curl '%s%s%s=%s'", targetURL, sep, param, payloadDisplay)
+	} else {
+		// POST: payload in body
+		f.Request = fmt.Sprintf("curl -X %s '%s' -d '%s=%s'", method, targetURL, param, payloadDisplay)
+	}
+
+	// Truncated response showing the server behavior
+	maxBody := 300
 	body := responseBody
 	if len(body) > maxBody {
-		body = body[:maxBody] + "\n... (truncated)"
+		body = body[:maxBody] + "..."
 	}
-	f.Response = fmt.Sprintf("HTTP %d\n%s", statusCode, body)
+	// Single-line the response for compact display
+	body = strings.ReplaceAll(body, "\n", " ")
+	body = strings.ReplaceAll(body, "\r", "")
+	f.Response = fmt.Sprintf("HTTP %d → %s", statusCode, strings.TrimSpace(body))
 	return f
 }
 

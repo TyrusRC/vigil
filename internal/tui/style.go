@@ -90,20 +90,63 @@ func SubPhase(msg string) {
 	fmt.Fprintf(os.Stderr, "    %s\n", styleDim.Render(msg))
 }
 
+// FindingCard holds all data for an inline finding display.
+type FindingCard struct {
+	Idx       int
+	Severity  string
+	Type      string
+	URL       string
+	Param     string
+	Evidence  string
+	Request   string
+	Response  string
+	Verified  bool
+}
+
 // FindingInline prints a single finding as a compact inline card.
 func FindingInline(idx int, severity, findingType, url, param, evidence string) {
-	badge := SeverityBadge(severity)
-	num := styleDim.Render(fmt.Sprintf("#%d", idx))
-	ftype := styleBold.Render(findingType)
-	u := styleURL.Render(url)
+	PrintFindingCard(FindingCard{
+		Idx: idx, Severity: severity, Type: findingType,
+		URL: url, Param: param, Evidence: evidence,
+	})
+}
 
+// PrintFindingCard renders a finding with full request/response detail.
+func PrintFindingCard(c FindingCard) {
+	badge := SeverityBadge(c.Severity)
+	num := styleDim.Render(fmt.Sprintf("#%d", c.Idx))
+	ftype := styleBold.Render(c.Type)
+
+	// Clear progress line first
+	fmt.Fprint(os.Stderr, "\r\033[K")
 	fmt.Fprintf(os.Stderr, "\n  %s %s %s\n", num, badge, ftype)
-	fmt.Fprintf(os.Stderr, "     %s\n", u)
-	if param != "" {
-		fmt.Fprintf(os.Stderr, "     param: %s\n", styleParam.Render(param))
+	fmt.Fprintf(os.Stderr, "     %s\n", styleURL.Render(c.URL))
+	if c.Param != "" {
+		fmt.Fprintf(os.Stderr, "     param: %s\n", styleParam.Render(c.Param))
 	}
-	if evidence != "" {
-		ev := evidence
+	if c.Verified {
+		fmt.Fprintf(os.Stderr, "     %s\n", styleSuccess.Render("verified"))
+	}
+	if c.Request != "" {
+		req := c.Request
+		if len(req) > 300 {
+			req = req[:300] + "..."
+		}
+		fmt.Fprintf(os.Stderr, "     %s %s\n",
+			styleBold.Render("REQ:"),
+			styleDim.Render(strings.ReplaceAll(req, "\n", " ")))
+	}
+	if c.Response != "" {
+		resp := c.Response
+		if len(resp) > 300 {
+			resp = resp[:300] + "..."
+		}
+		fmt.Fprintf(os.Stderr, "     %s %s\n",
+			styleBold.Render("RES:"),
+			styleDim.Render(strings.ReplaceAll(resp, "\n", " ")))
+	}
+	if c.Evidence != "" && c.Request == "" {
+		ev := c.Evidence
 		if len(ev) > 200 {
 			ev = ev[:200] + "..."
 		}

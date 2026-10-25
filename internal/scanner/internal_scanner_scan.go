@@ -278,11 +278,24 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	go func() {
 		defer collectWg.Done()
 		for finding := range findingsChan {
-			// Auto-proof: if the detector didn't set Request/Response,
-			// build a compact proof from the finding's existing fields.
-			if finding.Request == "" && finding.Evidence != "" {
-				finding.Request = fmt.Sprintf("%s param=%s\nPayload in evidence below",
-					finding.URL, finding.Parameter)
+			// Auto-proof: if the detector didn't set Request, build a
+			// reproducible curl command from the finding's fields.
+			if finding.Request == "" && finding.URL != "" {
+				param := finding.Parameter
+				if param == "" {
+					param = "input"
+				}
+				payload := finding.Evidence
+				if idx := strings.Index(payload, "\n"); idx > 0 {
+					payload = payload[:idx]
+				}
+				if strings.HasPrefix(payload, "Payload: ") {
+					payload = payload[9:]
+				}
+				if len(payload) > 100 {
+					payload = payload[:100]
+				}
+				finding.Request = fmt.Sprintf("curl '%s?%s=%s'", finding.URL, param, payload)
 			}
 			findingsMu.Lock()
 			collectedFindings = append(collectedFindings, finding)
@@ -290,9 +303,17 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 			idx := findingIdx
 			findingsMu.Unlock()
 			prog.IncrementFindings(1)
-			// Real-time notification: show each finding as it's discovered.
-			tui.FindingInline(idx, string(finding.Severity), finding.Type,
-				finding.URL, finding.Parameter, finding.Evidence)
+			tui.PrintFindingCard(tui.FindingCard{
+				Idx:      idx,
+				Severity: string(finding.Severity),
+				Type:     finding.Type,
+				URL:      finding.URL,
+				Param:    finding.Parameter,
+				Evidence: finding.Evidence,
+				Request:  finding.Request,
+				Response: finding.Response,
+				Verified: finding.Verified,
+			})
 		}
 	}()
 
