@@ -31,12 +31,15 @@ func NewProgress(totalParams int, enabled bool) *Progress {
 // IncrementTested atomically increments the tested parameter count and prints progress.
 func (p *Progress) IncrementTested() {
 	tested := atomic.AddInt64(&p.testedParams, 1)
-	if p.enabled {
-		elapsed := time.Since(p.startTime).Round(time.Second)
-		phase := p.currentPhase.Load().(string)
-		fmt.Fprintf(os.Stderr, "\r[%s] %s | %d/%d params | %d findings found",
-			elapsed, phase, tested, p.totalParams, atomic.LoadInt64(&p.findingsCount))
+	elapsed := time.Since(p.startTime).Round(time.Second)
+	phase := p.currentPhase.Load().(string)
+	total := p.totalParams
+	pct := 0
+	if total > 0 {
+		pct = int(tested * 100 / total)
 	}
+	fmt.Fprintf(os.Stderr, "\r[%s] %s | %d/%d params (%d%%) | %d findings found",
+		elapsed, phase, tested, total, pct, atomic.LoadInt64(&p.findingsCount))
 }
 
 // IncrementFindings atomically adds the given count to the findings counter.

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
+	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/TyrusRC/vigil/internal/scoring"
 )
@@ -77,31 +79,65 @@ func (r *Report) WriteText(w io.Writer) error {
 	fmt.Fprintf(w, "  Tools Run: %d | Skipped: %d\n", result.ToolsRun, result.ToolsSkipped)
 	fmt.Fprintln(w)
 
-	// Findings
+	// Findings grouped by severity
 	if len(result.Findings) > 0 {
 		fmt.Fprintln(w, "FINDINGS:")
 		fmt.Fprintln(w, "---------")
-		for i, finding := range result.Findings {
-			fmt.Fprintf(w, "\n[%d] %s (%s)\n", i+1, finding.Type, finding.Severity)
-			fmt.Fprintf(w, "    ID:  %s\n", finding.ID)
-			fmt.Fprintf(w, "    URL: %s\n", finding.URL)
-			if finding.Parameter != "" {
-				fmt.Fprintf(w, "    Parameter: %s\n", finding.Parameter)
-			}
-			if finding.Description != "" {
-				fmt.Fprintf(w, "    Description: %s\n", finding.Description)
-			}
-			if finding.Tool != "" {
-				fmt.Fprintf(w, "    Tool: %s\n", finding.Tool)
-			}
-			if len(finding.WSTG) > 0 {
-				fmt.Fprintf(w, "    WSTG: %v\n", finding.WSTG)
-			}
-			if len(finding.Top10) > 0 {
-				fmt.Fprintf(w, "    OWASP Top 10: %v\n", finding.Top10)
-			}
-			if len(finding.CWE) > 0 {
-				fmt.Fprintf(w, "    CWE: %v\n", finding.CWE)
+		severityOrder := []core.Severity{core.SeverityCritical, core.SeverityHigh, core.SeverityMedium, core.SeverityLow, core.SeverityInfo}
+		idx := 0
+		for _, sev := range severityOrder {
+			for _, finding := range result.Findings {
+				if finding.Severity != sev {
+					continue
+				}
+				idx++
+				fmt.Fprintf(w, "\n[%d] %s (%s)\n", idx, finding.Type, finding.Severity)
+				fmt.Fprintf(w, "    URL: %s\n", finding.URL)
+				if finding.Parameter != "" {
+					fmt.Fprintf(w, "    Parameter: %s\n", finding.Parameter)
+				}
+				if finding.Description != "" {
+					fmt.Fprintf(w, "    Description: %s\n", finding.Description)
+				}
+				if finding.Evidence != "" {
+					ev := finding.Evidence
+					if len(ev) > 500 {
+						ev = ev[:500] + "..."
+					}
+					fmt.Fprintf(w, "    Evidence: %s\n", ev)
+				}
+				if finding.Request != "" {
+					req := finding.Request
+					if len(req) > 800 {
+						req = req[:800] + "\n    ... (truncated)"
+					}
+					fmt.Fprintf(w, "    Request:\n")
+					for _, line := range strings.Split(req, "\n") {
+						fmt.Fprintf(w, "      %s\n", line)
+					}
+				}
+				if finding.Response != "" {
+					resp := finding.Response
+					if len(resp) > 800 {
+						resp = resp[:800] + "\n    ... (truncated)"
+					}
+					fmt.Fprintf(w, "    Response:\n")
+					for _, line := range strings.Split(resp, "\n") {
+						fmt.Fprintf(w, "      %s\n", line)
+					}
+				}
+				if finding.Tool != "" {
+					fmt.Fprintf(w, "    Tool: %s\n", finding.Tool)
+				}
+				if len(finding.CWE) > 0 {
+					fmt.Fprintf(w, "    CWE: %v\n", finding.CWE)
+				}
+				if len(finding.WSTG) > 0 {
+					fmt.Fprintf(w, "    WSTG: %v\n", finding.WSTG)
+				}
+				if finding.Verified {
+					fmt.Fprintf(w, "    Verified: yes\n")
+				}
 			}
 		}
 	} else {

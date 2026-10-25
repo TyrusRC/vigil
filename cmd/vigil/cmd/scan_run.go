@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"syscall"
@@ -408,6 +409,27 @@ func runScan(cmd *cobra.Command, args []string) error {
 	}
 
 	report := reporting.NewReport(result)
+
+	// Auto-save: when findings exist and no --output-dir was specified,
+	// write JSON + text reports to a timestamped directory so results
+	// are never lost. The text report still goes to stdout as before.
+	autoDir := outputDir
+	if autoDir == "" && len(result.Findings) > 0 {
+		ts := result.StartTime.Format("2006-01-02T150405")
+		autoDir = fmt.Sprintf("vigil-report-%s", ts)
+		if err := os.MkdirAll(autoDir, 0o755); err == nil {
+			autoFormats := []string{"json", "html"}
+			for _, af := range autoFormats {
+				path := filepath.Join(autoDir, "vigil-report."+validFormats[af])
+				if f, ferr := os.Create(path); ferr == nil {
+					writeOne(report, af, f)
+					f.Close()
+				}
+			}
+			fmt.Fprintf(os.Stderr, "[+] Auto-saved report to %s/\n", autoDir)
+		}
+	}
+
 	if err := writeReports(report, formats, outputDir); err != nil {
 		return err
 	}
