@@ -111,45 +111,32 @@ func FindingInline(idx int, severity, findingType, url, param, evidence string) 
 	})
 }
 
-// PrintFindingCard renders a finding with full request/response detail.
+// PrintFindingCard renders a compact finding card for the terminal.
+// Full request/response detail is in the web UI — terminal shows a summary.
 func PrintFindingCard(c FindingCard) {
+	if !enabled {
+		// Headless: one-line output
+		fmt.Fprintf(os.Stderr, "  [%s] %s | %s param=%s\n",
+			strings.ToUpper(c.Severity), c.Type, c.URL, c.Param)
+		return
+	}
 	badge := SeverityBadge(c.Severity)
 	num := styleDim.Render(fmt.Sprintf("#%d", c.Idx))
-	ftype := styleBold.Render(c.Type)
 
-	// Clear progress line first
 	fmt.Fprint(os.Stderr, "\r\033[K")
-	fmt.Fprintf(os.Stderr, "\n  %s %s %s\n", num, badge, ftype)
-	fmt.Fprintf(os.Stderr, "     %s\n", styleURL.Render(c.URL))
+	fmt.Fprintf(os.Stderr, "\n  %s %s %s\n", num, badge, styleBold.Render(c.Type))
+	fmt.Fprintf(os.Stderr, "     %s", styleURL.Render(c.URL))
 	if c.Param != "" {
-		fmt.Fprintf(os.Stderr, "     param: %s\n", styleParam.Render(c.Param))
+		fmt.Fprintf(os.Stderr, "  %s", styleParam.Render(c.Param))
 	}
-	if c.Verified {
-		fmt.Fprintf(os.Stderr, "     %s\n", styleSuccess.Render("verified"))
-	}
-	if c.Request != "" {
-		req := c.Request
-		if len(req) > 300 {
-			req = req[:300] + "..."
-		}
-		fmt.Fprintf(os.Stderr, "     %s %s\n",
-			styleBold.Render("REQ:"),
-			styleDim.Render(strings.ReplaceAll(req, "\n", " ")))
-	}
-	if c.Response != "" {
-		resp := c.Response
-		if len(resp) > 300 {
-			resp = resp[:300] + "..."
-		}
-		fmt.Fprintf(os.Stderr, "     %s %s\n",
-			styleBold.Render("RES:"),
-			styleDim.Render(strings.ReplaceAll(resp, "\n", " ")))
-	}
-	if c.Evidence != "" && c.Request == "" {
+	fmt.Fprintln(os.Stderr)
+	// Show evidence one-liner (the key proof, not raw HTTP)
+	if c.Evidence != "" {
 		ev := c.Evidence
-		if len(ev) > 200 {
-			ev = ev[:200] + "..."
+		if len(ev) > 120 {
+			ev = ev[:120] + "..."
 		}
+		ev = strings.ReplaceAll(ev, "\n", " ")
 		fmt.Fprintf(os.Stderr, "     %s\n", styleDim.Render(ev))
 	}
 }

@@ -81,10 +81,8 @@ func runScan(cmd *cobra.Command, args []string) error {
 			captureProxy := capture.New("")
 			captureAddr, captureErr := captureProxy.Start(0)
 			if captureErr == nil {
-				// Tools will use this proxy via HTTP_PROXY env
 				os.Setenv("HTTP_PROXY", "http://"+captureAddr)
 				os.Setenv("HTTPS_PROXY", "http://"+captureAddr)
-				fmt.Fprintf(os.Stderr, "  Capture proxy: %s\n", captureAddr)
 			}
 			mux.HandleFunc("/api/history", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -114,7 +112,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 						fmt.Fprintf(os.Stderr, "[!] Web UI server error: %v\n", serveErr)
 					}
 				}()
-				fmt.Fprintf(os.Stderr, "  Web UI: %s\n\n", uiURL)
+				fmt.Fprintf(os.Stderr, "  Web UI: http://localhost:%d\n\n", uiPort)
 				webui.OpenBrowser(uiURL)
 			} else {
 				fmt.Fprintf(os.Stderr, "[!] Web UI failed: %v (scan continues without UI)\n", listenErr)

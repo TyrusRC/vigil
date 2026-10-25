@@ -180,13 +180,15 @@ func (f *Finding) WithProof(method, targetURL, payload string, statusCode int, r
 	}
 	f.Request = reqBuilder.String()
 
-	// Build raw HTTP response (Burp-style)
-	maxBody := 2000
-	body := responseBody
-	if len(body) > maxBody {
-		body = body[:maxBody] + "\n\n[...truncated...]"
+	// Build raw HTTP response (Burp-style) — skip if no real response
+	if statusCode > 0 && responseBody != "" {
+		maxBody := 2000
+		body := responseBody
+		if len(body) > maxBody {
+			body = body[:maxBody] + "\n\n[...truncated...]"
+		}
+		f.Response = fmt.Sprintf("HTTP/1.1 %d\nContent-Length: %d\n\n%s", statusCode, len(responseBody), body)
 	}
-	f.Response = fmt.Sprintf("HTTP/1.1 %d\nContent-Length: %d\n\n%s", statusCode, len(responseBody), body)
 	return f
 }
 

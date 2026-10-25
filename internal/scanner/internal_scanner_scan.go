@@ -275,6 +275,7 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	var collectWg sync.WaitGroup
 	collectWg.Add(1)
 	findingIdx := 0
+	notifiedKeys := make(map[string]bool)
 	go func() {
 		defer collectWg.Done()
 		for finding := range findingsChan {
@@ -303,18 +304,19 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 			idx := findingIdx
 			findingsMu.Unlock()
 			prog.IncrementFindings(1)
-			// Real-time: TUI card + web UI event bus
-			tui.PrintFindingCard(tui.FindingCard{
-				Idx:      idx,
-				Severity: string(finding.Severity),
-				Type:     finding.Type,
-				URL:      finding.URL,
-				Param:    finding.Parameter,
-				Evidence: finding.Evidence,
-				Request:  finding.Request,
-				Response: finding.Response,
-				Verified: finding.Verified,
-			})
+			// Dedup TUI notifications: same type+param shows once
+			notifyKey := finding.Type + "|" + finding.Parameter
+			if !notifiedKeys[notifyKey] {
+				notifiedKeys[notifyKey] = true
+				tui.PrintFindingCard(tui.FindingCard{
+					Idx:      idx,
+					Severity: string(finding.Severity),
+					Type:     finding.Type,
+					URL:      finding.URL,
+					Param:    finding.Parameter,
+					Evidence: finding.Evidence,
+				})
+			}
 			if s.config.OnFinding != nil {
 				s.config.OnFinding(finding)
 			}
