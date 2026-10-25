@@ -127,51 +127,66 @@ func (f *Finding) SetEvidence(evidence, request, response string) *Finding {
 	return f
 }
 
-// WithProof attaches a reproducible curl command and the server response.
-// The user can copy-paste the curl command to reproduce the finding.
+// WithProof attaches the raw HTTP request and response like Burp's proxy history.
+// Shows the full wire format: request line + headers + body, response status + headers + body.
 func (f *Finding) WithProof(method, targetURL, payload string, statusCode int, responseBody string) *Finding {
 	if method == "" {
 		method = "GET"
 	}
 
-	// Build a reproducible curl command
+	// Build raw HTTP request (Burp-style)
 	param := f.Parameter
 	if param == "" {
-		param = "PARAM"
+		param = "input"
 	}
-	payloadDisplay := payload
-	if payloadDisplay == "" {
-		payloadDisplay = f.Evidence
-		if idx := strings.Index(payloadDisplay, "\n"); idx > 0 {
-			payloadDisplay = payloadDisplay[:idx]
+	payloadVal := payload
+	if payloadVal == "" {
+		payloadVal = f.Evidence
+		if idx := strings.Index(payloadVal, "\n"); idx > 0 {
+			payloadVal = payloadVal[:idx]
 		}
 	}
-	if strings.HasPrefix(payloadDisplay, "Payload: ") {
-		payloadDisplay = payloadDisplay[9:]
+	if strings.HasPrefix(payloadVal, "Payload: ") {
+		payloadVal = payloadVal[9:]
 	}
 
+	var reqBuilder strings.Builder
 	if method == "GET" {
-		// GET: payload in query string
 		sep := "?"
 		if strings.Contains(targetURL, "?") {
 			sep = "&"
 		}
-		f.Request = fmt.Sprintf("curl '%s%s%s=%s'", targetURL, sep, param, payloadDisplay)
+		fullURL := fmt.Sprintf("%s%s%s=%s", targetURL, sep, param, payloadVal)
+		reqBuilder.WriteString(fmt.Sprintf("%s %s HTTP/1.1\n", method, fullURL))
 	} else {
-		// POST: payload in body
-		f.Request = fmt.Sprintf("curl -X %s '%s' -d '%s=%s'", method, targetURL, param, payloadDisplay)
+		reqBuilder.WriteString(fmt.Sprintf("%s %s HTTP/1.1\n", method, targetURL))
 	}
+	// Parse host from URL
+	if idx := strings.Index(targetURL, "://"); idx > 0 {
+		hostPart := targetURL[idx+3:]
+		if slashIdx := strings.Index(hostPart, "/"); slashIdx > 0 {
+			hostPart = hostPart[:slashIdx]
+		}
+		reqBuilder.WriteString(fmt.Sprintf("Host: %s\n", hostPart))
+	}
+	reqBuilder.WriteString("User-Agent: vigil/1.0\n")
+	reqBuilder.WriteString("Accept: */*\n")
+	if method == "POST" || method == "PUT" || method == "PATCH" {
+		body := fmt.Sprintf("%s=%s", param, payloadVal)
+		reqBuilder.WriteString("Content-Type: application/x-www-form-urlencoded\n")
+		reqBuilder.WriteString(fmt.Sprintf("Content-Length: %d\n", len(body)))
+		reqBuilder.WriteString("\n")
+		reqBuilder.WriteString(body)
+	}
+	f.Request = reqBuilder.String()
 
-	// Truncated response showing the server behavior
-	maxBody := 300
+	// Build raw HTTP response (Burp-style)
+	maxBody := 2000
 	body := responseBody
 	if len(body) > maxBody {
-		body = body[:maxBody] + "..."
+		body = body[:maxBody] + "\n\n[...truncated...]"
 	}
-	// Single-line the response for compact display
-	body = strings.ReplaceAll(body, "\n", " ")
-	body = strings.ReplaceAll(body, "\r", "")
-	f.Response = fmt.Sprintf("HTTP %d → %s", statusCode, strings.TrimSpace(body))
+	f.Response = fmt.Sprintf("HTTP/1.1 %d\nContent-Length: %d\n\n%s", statusCode, len(responseBody), body)
 	return f
 }
 

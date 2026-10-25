@@ -55,9 +55,17 @@ function CodeBlock({ content, highlights = [] }) {
   return <pre className="code-block" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
-function CurlBlock({ curl }) {
+function CurlBlock({ request, url, param }) {
   const [copied, setCopied] = useState(false)
-  if (!curl) return null
+  if (!request) return null
+  // Extract the full URL from the raw request's first line
+  const firstLine = (request || '').split('\n')[0] || ''
+  const match = firstLine.match(/^(GET|POST|PUT|PATCH|DELETE)\s+(\S+)/)
+  const method = match ? match[1] : 'GET'
+  const fullUrl = match ? match[2] : url || ''
+  const curl = method === 'GET'
+    ? `curl '${fullUrl}'`
+    : `curl -X ${method} '${fullUrl}'`
   const copy = () => {
     navigator.clipboard.writeText(curl).then(() => {
       setCopied(true)
@@ -113,7 +121,7 @@ function FindingDetail({ finding }) {
           <>
             {f.request ? <CodeBlock content={f.request} highlights={highlights} /> :
               <p style={{ color: 'var(--ink-muted)' }}>No request captured.</p>}
-            <CurlBlock curl={f.request} />
+            <CurlBlock request={f.request} url={f.url} param={f.parameter} />
           </>
         )}
         {tab === 'response' && (

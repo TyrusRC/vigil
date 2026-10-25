@@ -279,7 +279,7 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 		defer collectWg.Done()
 		for finding := range findingsChan {
 			// Auto-proof: if the detector didn't set Request, build a
-			// reproducible curl command from the finding's fields.
+			// raw HTTP request from the finding's fields.
 			if finding.Request == "" && finding.URL != "" {
 				param := finding.Parameter
 				if param == "" {
@@ -292,10 +292,10 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 				if strings.HasPrefix(payload, "Payload: ") {
 					payload = payload[9:]
 				}
-				if len(payload) > 100 {
-					payload = payload[:100]
+				if len(payload) > 200 {
+					payload = payload[:200]
 				}
-				finding.Request = fmt.Sprintf("curl '%s?%s=%s'", finding.URL, param, payload)
+				finding.WithProof("GET", finding.URL, payload, 0, "")
 			}
 			findingsMu.Lock()
 			collectedFindings = append(collectedFindings, finding)
