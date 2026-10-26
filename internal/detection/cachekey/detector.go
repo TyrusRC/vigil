@@ -106,7 +106,7 @@ func (d *Detector) probeSemicolonCloaking(ctx context.Context, u *url.URL, opts 
 	if !ok {
 		return false
 	}
-	poison := "ASSAYCACHEKEYPOISON"
+	poison := "VIGILCACHEKEYPOISON"
 	baseline, err := d.get(ctx, u.String(), opts.Timeout)
 	if err != nil {
 		return false
@@ -130,7 +130,7 @@ func (d *Detector) probeDuplicateParam(ctx context.Context, u *url.URL, opts Det
 	if !ok {
 		return false
 	}
-	poison := "ASSAYCACHEKEYPOISON"
+	poison := "VIGILCACHEKEYPOISON"
 	baseline, err := d.get(ctx, u.String(), opts.Timeout)
 	if err != nil {
 		return false

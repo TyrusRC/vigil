@@ -9,7 +9,7 @@ import (
 
 const (
 	MarkerPrefix = "VIGIL_TAINT_"
-	MarkerSuffix = "_TAINT_ASSAY"
+	MarkerSuffix = "_TAINT_VIGIL"
 )
 
 var markerIDRe = regexp.MustCompile(`VIGIL_TAINT_([a-f0-9]{8})_`)

@@ -732,7 +732,7 @@ func TestInternalScanner_ApplicableTests_QueryParam(t *testing.T) {
 		"sqli", "xss", "cmdi", "ssrf", "lfi", "xxe", "nosql", "ssti",
 		"redirect", "crlf", "ldap", "xpath", "headerinj", "csti", "rfi", "csvinj",
 		"cssinj", "deser", "domclobber", "emailinj",
-		"hpp", "htmlinj", "ssi",
+		"hpp", "htmlinj", "ssi", "fmtstr",
 	}
 	if len(tests) != len(expectedNames) {
 		t.Errorf("applicableTests(query) returned %d tests, want %d", len(tests), len(expectedNames))

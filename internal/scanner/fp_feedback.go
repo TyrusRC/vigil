@@ -57,6 +57,14 @@ func (fp *FPFeedback) MarkFP(finding *core.Finding, reason string) {
 	}
 }
 
+// UnmarkFP removes a finding from the false-positive database, e.g. when an
+// operator restores a finding they previously dismissed. No-op if absent.
+func (fp *FPFeedback) UnmarkFP(finding *core.Finding) {
+	fp.mu.Lock()
+	defer fp.mu.Unlock()
+	delete(fp.database, finding.DeduplicationKey())
+}
+
 // IsFP returns true when the finding matches a known false positive.
 func (fp *FPFeedback) IsFP(finding *core.Finding) bool {
 	fp.mu.RLock()

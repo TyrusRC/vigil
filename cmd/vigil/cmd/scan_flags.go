@@ -134,6 +134,7 @@ var (
 	headlessMode         bool
 	uiPort               int
 	noUI                 bool
+	captureTraffic       bool
 )
 
 // applyCLIFlags merges parsed CLI flag state into the internalConfig.

@@ -213,6 +213,14 @@ func (s *Scanner) Scan(ctx context.Context) (*ScanResult, error) {
 				}
 
 				toolResult, err := tt.Tool.Execute(scanCtx, tt.Request)
+
+				// Save every tool's raw output to <output-dir>/<tool>.log,
+				// even on error/timeout so partial output is kept. This is
+				// the shared path for all tools — not per-tool native files.
+				if toolResult != nil {
+					writeToolLog(config.OutputDir, tt.Tool.Name(), toolResult)
+				}
+
 				if err != nil {
 					errorsChan <- fmt.Sprintf("%s: %v", tt.Tool.Name(), err)
 					return

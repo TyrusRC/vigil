@@ -163,4 +163,5 @@ func init() {
 	scanCmd.Flags().BoolVar(&headlessMode, "headless", false, "Plain text output for automation (no web UI, no colors). Auto-detected when stdout is not a TTY")
 	scanCmd.Flags().IntVar(&uiPort, "port", 6274, "Web UI port (default 6274)")
 	scanCmd.Flags().BoolVar(&noUI, "no-ui", false, "Skip web UI, print to terminal only")
+	scanCmd.Flags().BoolVar(&captureTraffic, "capture", false, "Record full request/response traffic for the web UI's Traffic view. Routes every external tool through a local proxy — adds latency, so off by default")
 }

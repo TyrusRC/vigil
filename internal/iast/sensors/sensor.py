@@ -1,22 +1,22 @@
-"""assay IAST sensor for Python.
+"""vigil IAST sensor for Python.
 
 Deploy: set PYTHONSTARTUP=/path/to/sensor.py or copy as sitecustomize.py.
-Set ASSAY_CALLBACK_URL to the assay IAST server.
+Set VIGIL_CALLBACK_URL to the vigil IAST server.
 """
 
 import os, json, traceback, urllib.request
 from datetime import datetime
 
-CALLBACK = os.environ.get('ASSAY_CALLBACK_URL', 'http://host.docker.internal:7880/api/v1/sink')
-PREFIX = 'ASSAY_TAINT_'
-SUFFIX = '_TAINT_ASSAY'
+CALLBACK = os.environ.get('VIGIL_CALLBACK_URL', 'http://host.docker.internal:7880/api/v1/sink')
+PREFIX = 'VIGIL_TAINT_'
+SUFFIX = '_TAINT_VIGIL'
 
 def _check(value, sink_type):
     s = str(value)
     if PREFIX not in s or SUFFIX not in s:
         return
     import re
-    m = re.search(r'ASSAY_TAINT_([a-f0-9]{8})_', s)
+    m = re.search(r'VIGIL_TAINT_([a-f0-9]{8})_', s)
     marker_id = m.group(1) if m else ''
     stack = ' -> '.join(f'{f.filename}:{f.lineno}' for f in traceback.extract_stack()[-5:])
     data = json.dumps({

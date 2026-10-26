@@ -1,19 +1,19 @@
 /**
- * assay IAST sensor for Node.js.
+ * vigil IAST sensor for Node.js.
  *
  * Deploy: NODE_OPTIONS="--require /path/to/sensor.js" node app.js
- * Set ASSAY_CALLBACK_URL to the assay IAST server.
+ * Set VIGIL_CALLBACK_URL to the vigil IAST server.
  */
 
-const CALLBACK = process.env.ASSAY_CALLBACK_URL || 'http://host.docker.internal:7880/api/v1/sink';
-const PREFIX = 'ASSAY_TAINT_';
-const SUFFIX = '_TAINT_ASSAY';
+const CALLBACK = process.env.VIGIL_CALLBACK_URL || 'http://host.docker.internal:7880/api/v1/sink';
+const PREFIX = 'VIGIL_TAINT_';
+const SUFFIX = '_TAINT_VIGIL';
 const http = require('http');
 
 function check(value, sinkType) {
     const s = String(value);
     if (!s.includes(PREFIX) || !s.includes(SUFFIX)) return;
-    const m = s.match(/ASSAY_TAINT_([a-f0-9]{8})_/);
+    const m = s.match(/VIGIL_TAINT_([a-f0-9]{8})_/);
     const markerId = m ? m[1] : '';
     const stack = new Error().stack.split('\n').slice(2, 7).join(' -> ');
     const data = JSON.stringify({

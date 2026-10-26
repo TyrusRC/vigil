@@ -22,9 +22,9 @@ import (
 	"github.com/TyrusRC/vigil/internal/reporting"
 	"github.com/TyrusRC/vigil/internal/scanner"
 	"github.com/TyrusRC/vigil/internal/scope"
+	"github.com/TyrusRC/vigil/internal/session"
 	uitui "github.com/TyrusRC/vigil/internal/tui"
 	"github.com/TyrusRC/vigil/internal/webui"
-	"github.com/TyrusRC/vigil/internal/session"
 	"github.com/spf13/cobra"
 )
 
@@ -77,12 +77,38 @@ func runScan(cmd *cobra.Command, args []string) error {
 				}
 				w.Write(data)
 			})
-			// Capture proxy — routes all tool traffic for full req/res recording.
+			// Triage feedback — the web UI posts here when an operator marks a
+			// finding a false positive (or restores it). The mark is written to
+			// the FP database so a future `vigil scan --fp-database <path>`
+			// downgrades the same (type,url,param) to low confidence. Writes to
+			// --fp-database when set, else the conventional .vigil-fp.json.
+			fpPath := fpDatabasePath
+			if fpPath == "" {
+				fpPath = ".vigil-fp.json"
+			}
+			var fpMu sync.Mutex
+			mux.HandleFunc("/api/fp", fpMarkHandler(fpPath, &fpMu, func(id string) *core.Finding {
+				findingsMu.Lock()
+				defer findingsMu.Unlock()
+				for _, f := range liveFindings {
+					if f.ID == id {
+						return f
+					}
+				}
+				return nil
+			}))
+			// Capture proxy — records full req/res for the Traffic view. Opt-in
+			// (--capture): routing every external tool through it disables
+			// keep-alives and buffers bodies, which slows the scan, so the
+			// default scan does not force traffic through it. The Store is
+			// always created so /api/history returns [] cleanly when off.
 			captureProxy := capture.New("")
-			captureAddr, captureErr := captureProxy.Start(0)
-			if captureErr == nil {
-				os.Setenv("HTTP_PROXY", "http://"+captureAddr)
-				os.Setenv("HTTPS_PROXY", "http://"+captureAddr)
+			if captureTraffic {
+				captureAddr, captureErr := captureProxy.Start(0)
+				if captureErr == nil {
+					os.Setenv("HTTP_PROXY", "http://"+captureAddr)
+					os.Setenv("HTTPS_PROXY", "http://"+captureAddr)
+				}
 			}
 			mux.HandleFunc("/api/history", func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
@@ -112,7 +138,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 						fmt.Fprintf(os.Stderr, "[!] Web UI server error: %v\n", serveErr)
 					}
 				}()
-				fmt.Fprintf(os.Stderr, "  Web UI: http://localhost:%d\n\n", uiPort)
+				fmt.Fprintf(os.Stderr, "  Web UI: %s\n\n", uiURL)
 				webui.OpenBrowser(uiURL)
 			} else {
 				fmt.Fprintf(os.Stderr, "[!] Web UI failed: %v (scan continues without UI)\n", listenErr)
@@ -181,6 +207,16 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Scan directory: the single place tool logs, native tool output files,
+	// and the auto-saved report all land. Use --output-dir when given, else a
+	// timestamped dir so a run's artifacts — including every tool's raw log —
+	// are never lost. Decided up front so tools write logs here as they run,
+	// not into a directory chosen after the scan already finished.
+	scanDir := outputDir
+	if scanDir == "" {
+		scanDir = fmt.Sprintf("vigil-report-%s", time.Now().Format("2006-01-02T150405"))
+	}
+
 	config := &scanner.Config{
 		Timeout:        timeout,
 		Concurrency:    concurrency,
@@ -192,7 +228,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 		Method:         method,
 		ProxyURL:       proxy,
 		Insecure:       insecure,
-		OutputDir:      output,
+		OutputDir:      scanDir,
 		CheckpointPath: checkpointPath,
 		ResumePath:     resumePath,
 	}
@@ -387,23 +423,20 @@ func runScan(cmd *cobra.Command, args []string) error {
 
 	report := reporting.NewReport(result)
 
-	// Auto-save: when findings exist and no --output-dir was specified,
-	// write JSON + text reports to a timestamped directory so results
-	// are never lost. The text report still goes to stdout as before.
-	autoDir := outputDir
-	if autoDir == "" && len(result.Findings) > 0 {
-		ts := result.StartTime.Format("2006-01-02T150405")
-		autoDir = fmt.Sprintf("vigil-report-%s", ts)
-		if err := os.MkdirAll(autoDir, 0o755); err == nil {
+	// Auto-save: when no --output-dir was specified, write JSON + HTML reports
+	// into the same scanDir the tool logs already went to, so results are never
+	// lost. The text report still goes to stdout as before.
+	if outputDir == "" && len(result.Findings) > 0 {
+		if err := os.MkdirAll(scanDir, 0o755); err == nil {
 			autoFormats := []string{"json", "html"}
 			for _, af := range autoFormats {
-				path := filepath.Join(autoDir, "vigil-report."+validFormats[af])
+				path := filepath.Join(scanDir, "vigil-report."+validFormats[af])
 				if f, ferr := os.Create(path); ferr == nil {
 					writeOne(report, af, f)
 					f.Close()
 				}
 			}
-			printTUIAutoSave(autoDir + "/")
+			printTUIAutoSave(scanDir + "/")
 		}
 	}
 

@@ -108,10 +108,10 @@ http:
 		}
 	}
 
-	avgAssay := averageDuration(vigilTimes)
+	avgVigil := averageDuration(vigilTimes)
 	t.Logf("  Iterations: %d", iterations)
 	t.Logf("  Matches: %d/%d", vigilMatches, iterations)
-	t.Logf("  Average: %v", avgAssay)
+	t.Logf("  Average: %v", avgVigil)
 	t.Logf("  Min: %v", minDuration(vigilTimes))
 	t.Logf("  Max: %v", maxDuration(vigilTimes))
 
@@ -153,14 +153,14 @@ http:
 	t.Log("║           Performance Summary            ║")
 	t.Log("╚══════════════════════════════════════════╝")
 
-	t.Logf("  vigil avg:   %v", avgAssay)
+	t.Logf("  vigil avg:   %v", avgVigil)
 	t.Logf("  Nuclei avg: %v", avgNuclei)
 
-	if avgAssay < avgNuclei {
-		speedup := float64(avgNuclei) / float64(avgAssay)
+	if avgVigil < avgNuclei {
+		speedup := float64(avgNuclei) / float64(avgVigil)
 		t.Logf("\n  ✓ vigil is %.1fx faster than Nuclei", speedup)
 	} else {
-		speedup := float64(avgAssay) / float64(avgNuclei)
+		speedup := float64(avgVigil) / float64(avgNuclei)
 		t.Logf("\n  ✗ Nuclei is %.1fx faster than vigil", speedup)
 	}
 
@@ -237,8 +237,8 @@ func TestMultiTemplateFairComparison(t *testing.T) {
 		vigilFindings = len(result.Findings)
 	}
 
-	avgAssay := vigilTotalTime / time.Duration(iterations)
-	t.Logf("  Average: %v (%d findings)", avgAssay, vigilFindings)
+	avgVigil := vigilTotalTime / time.Duration(iterations)
+	t.Logf("  Average: %v (%d findings)", avgVigil, vigilFindings)
 
 	// Nuclei
 	t.Log("\n=== Nuclei ===")
@@ -266,11 +266,11 @@ func TestMultiTemplateFairComparison(t *testing.T) {
 
 	// Summary
 	t.Log("\n=== Summary ===")
-	if avgAssay < avgNuclei {
-		speedup := float64(avgNuclei) / float64(avgAssay)
+	if avgVigil < avgNuclei {
+		speedup := float64(avgNuclei) / float64(avgVigil)
 		t.Logf("  vigil is %.1fx faster with %d templates", speedup, numTemplates)
 	} else {
-		speedup := float64(avgAssay) / float64(avgNuclei)
+		speedup := float64(avgVigil) / float64(avgNuclei)
 		t.Logf("  Nuclei is %.1fx faster with %d templates", speedup, numTemplates)
 	}
 }

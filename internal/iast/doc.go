@@ -25,7 +25,7 @@
 //	        vigil upgrades finding confidence to "confirmed"
 //
 // The taint marker is a deterministic string wrapper around the original
-// payload: VIGIL_TAINT_<id>_<sink>_<payload>_TAINT_ASSAY. The id is an
+// payload: VIGIL_TAINT_<id>_<sink>_<payload>_TAINT_VIGIL. The id is an
 // 8-character hex string generated per probe. Sensors match on the
 // prefix/suffix pair and extract the id to correlate with the original
 // DAST finding.
