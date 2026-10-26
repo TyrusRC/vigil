@@ -168,6 +168,14 @@ func (s *Scanner) Scan(ctx context.Context) (*ScanResult, error) {
 	registry := tools.NewRegistry(registeredTools)
 	dispatcher := tools.NewDispatcher(registry, config.Verbose, config.Thorough)
 
+	// Count registered tools that cannot run (binary not installed) so the
+	// report shows "N skipped" rather than silently omitting them.
+	for _, t := range registeredTools {
+		if !t.IsAvailable() {
+			result.ToolsSkipped++
+		}
+	}
+
 	for _, target := range targets {
 		select {
 		case <-scanCtx.Done():
@@ -214,11 +222,11 @@ func (s *Scanner) Scan(ctx context.Context) (*ScanResult, error) {
 
 				toolResult, err := tt.Tool.Execute(scanCtx, tt.Request)
 
-				// Save every tool's raw output to <output-dir>/<tool>.log,
-				// even on error/timeout so partial output is kept. This is
-				// the shared path for all tools — not per-tool native files.
+				// Record every tool run (raw output + parsed metadata) as one
+				// line in <output-dir>/tools.jsonl, even on error/timeout so
+				// partial output is kept. One structured file for all tools.
 				if toolResult != nil {
-					writeToolLog(config.OutputDir, tt.Tool.Name(), toolResult)
+					writeToolLog(config.OutputDir, tt.Request.Target, tt.Tool.Name(), toolResult)
 				}
 
 				if err != nil {

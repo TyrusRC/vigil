@@ -250,6 +250,9 @@ func TestLooksCacheable(t *testing.T) {
 		{"private kills it", map[string]string{"Cache-Control": "private, max-age=300"}, false},
 		{"empty headers", map[string]string{}, false},
 		{"max-age=0", map[string]string{"Cache-Control": "max-age=0"}, false},
+		{"public but max-age=0 (revalidate)", map[string]string{"Cache-Control": "public, max-age=0"}, false},
+		{"public but no-cache", map[string]string{"Cache-Control": "public, no-cache"}, false},
+		{"public max-age=0 overridden by vendor hit", map[string]string{"Cache-Control": "public, max-age=0", "X-Cache": "HIT"}, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -257,6 +260,33 @@ func TestLooksCacheable(t *testing.T) {
 				t.Errorf("looksCacheable(%v) = %v, want %v", tc.headers, got, tc.want)
 			}
 		})
+	}
+}
+
+// TestDetect_SuppressesSPACatchAll is the regression test for the dominant
+// false positive: a single-page app that serves the same index page for every
+// path (including non-routed ones). Without the negative-control check the
+// detector emitted a finding for every probe URL.
+func TestDetect_SuppressesSPACatchAll(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Catch-all: identical index for EVERY path, like an Angular/React SPA.
+		w.Header().Set("Cache-Control", "public, max-age=0")
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(privateBody))
+	}))
+	defer srv.Close()
+
+	d := New(internalhttp.NewClient().WithFollowRedirects(false))
+	opts := DefaultOptions()
+	opts.MaxProbes = 30
+
+	res, err := d.Detect(context.Background(), srv.URL+"/account", opts)
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+	if len(res.Findings) != 0 {
+		t.Fatalf("SPA catch-all must yield 0 findings, got %d: %+v", len(res.Findings), res.Findings)
 	}
 }
 

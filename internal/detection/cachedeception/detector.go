@@ -3,7 +3,10 @@ package cachedeception
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/TyrusRC/vigil/internal/core"
 	internalhttp "github.com/TyrusRC/vigil/internal/http"
@@ -61,6 +64,20 @@ func (d *Detector) Detect(ctx context.Context, target string, opts DetectOptions
 		return result, nil
 	}
 
+	// Negative control: request a plain, non-routed path with no deceptive
+	// extension or separator. If the server returns the baseline body for THIS
+	// too, it serves the same page for every path (an SPA catch-all or a
+	// soft-404). "The deceptive URL returns the baseline body" is then
+	// vacuously true for every probe and says nothing about web cache
+	// deception — emitting a finding per probe is a pure false positive (the
+	// dominant FP against single-page apps). Bail instead.
+	if ctrlURL := controlURL(target); ctrlURL != "" {
+		if ctrl, cerr := d.authedClient.Get(ctx, ctrlURL); cerr == nil &&
+			ctrl.StatusCode >= 200 && ctrl.StatusCode < 400 && bodySimilar(ctrl.Body, baselineBody) {
+			return result, nil
+		}
+	}
+
 	probes := generateProbeURLs(target, opts.Strategies, opts.Extensions, opts.MaxProbes)
 	result.TestedPayloads = len(probes)
 
@@ -97,6 +114,22 @@ func (d *Detector) Detect(ctx context.Context, target string, opts DetectOptions
 	}
 
 	return result, nil
+}
+
+// controlURL builds a negative-control URL on the same origin as target: a
+// plain path segment with no cacheable extension and no path separator trick,
+// pointing at something that should not exist. A server that returns the
+// baseline body for this is serving a catch-all page for every path. Returns
+// "" if target can't be parsed.
+func controlURL(target string) string {
+	u, err := url.Parse(target)
+	if err != nil || u.Host == "" {
+		return ""
+	}
+	u.Path = "/vigil-wcd-control-" + strconv.FormatInt(time.Now().UnixNano(), 36)
+	u.RawQuery = ""
+	u.Fragment = ""
+	return u.String()
 }
 
 // canRunUnauthVerify reports whether we can stand up an unauthenticated

@@ -38,11 +38,25 @@ func looksCacheable(headers map[string]string) bool {
 		return false
 	}
 
-	// Hard positives — cache vendor announcing itself.
+	// Hard positives — cache vendor announcing itself (a proven cache hit
+	// overrides the freshness check below).
 	for _, name := range cacheVendorHeaders {
 		if v := headerValue(headers, name); v != "" {
 			return true
 		}
+	}
+
+	// Must-revalidate-on-every-use is NOT a deception risk: a shared cache
+	// re-checks with the origin (which re-authenticates) instead of silently
+	// serving the stored private copy. "public, max-age=0" and "no-cache" both
+	// force this, so they are negatives even though the response is "public".
+	// This was the dominant false positive against SPAs that serve a catch-all
+	// 200 with "Cache-Control: public, max-age=0" for every path.
+	if strings.Contains(cclower, "no-cache") {
+		return false
+	}
+	if strings.Contains(cclower, "max-age=0") && !hasPositiveMaxAge(cclower) {
+		return false
 	}
 
 	// Hard positive — explicit "public" or any positive max-age.
