@@ -503,6 +503,11 @@ JSON API that exposes **every** scanner feature. The same API also drives the
 MCP server, so a human (browser), a script (REST) and an agent (MCP) all use
 one control surface. `vigil web --no-open` doubles as a headless API server.
 
+The New Scan and Settings screens drive the **complete** scan configuration
+from the browser — profile, per-detector on/off/auto for every detector,
+authenticated scanning and the two-identity IDOR probe, template and API-spec
+imports, custom headers, and intensity/crawl tuning — so nothing is CLI-only.
+
 | Flag | Description | Default |
 |---|---|---|
 | `--port N` | Listen port | `8080` |
