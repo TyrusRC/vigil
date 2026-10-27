@@ -59,7 +59,7 @@ well.
 - **WAF bypass payloads** — per-class evasion variants: SQLi (inline comments, hex encoding, CTE WITH clause, scientific notation, whitespace alternatives, double URL encoding), SSRF (octal/hex/decimal/IPv6 IP encoding, DNS rebinding, Unicode IDNA), LFI (null byte, UTF-8 overlong, backslash), XSS (unicode normalization NFKC, SVG onload, event handler injection). Long-payload padding pushes injection past WAF body inspection limits (8KB AWS WAF, 128KB Cloudflare).
 - **Risk-gated payloads** — destructive SQL payloads (`DROP TABLE`, `xp_cmdshell`) require `--risk 3`
 - **Incremental results** — findings flush to disk after each scan phase, so early results survive if a later phase times out
-- **Authenticated API server** — `vigil serve` with bearer-token auth, SSRF protection, concurrent scan limits
+- **Web console, full API & MCP** — `vigil web` opens a multi-page console (dashboard, targets, scans, live triage, reports, compliance, settings) backed by an authenticated JSON API that exposes every feature; `vigil mcp` serves the same operations to AI agents over the Model Context Protocol
 
 ---
 
@@ -71,7 +71,8 @@ well.
 - [Usage](#usage)
 - [Detection coverage (DAST)](#detection-coverage-dast)
 - [Static analysis (SAST)](#static-analysis-sast)
-- [API server](#api-server)
+- [Web dashboard & API](#web-dashboard--api)
+- [MCP server](#mcp-server)
 - [Headless / two-identity probes](#headless--two-identity-probes)
 - [External tool integrations](#external-tool-integrations)
 - [CI/CD integration](#cicd-integration)
@@ -489,42 +490,92 @@ with `privileged: true` or `network_mode: host`, `nginx.conf` with
 
 ---
 
-## API server
+## Web dashboard & API
 
 ```sh
-vigil serve [flags]
+vigil web [flags]
 ```
 
-Run vigil as an HTTP API for programmatic scan management.
+Start the HTTP server and open the bundled web console in your default
+browser. The console is a multi-page SPA — Dashboard, Targets, Scans, scan
+detail (live findings triage, reports, compliance) and Settings — backed by a
+JSON API that exposes **every** scanner feature. The same API also drives the
+MCP server, so a human (browser), a script (REST) and an agent (MCP) all use
+one control surface. `vigil web --no-open` doubles as a headless API server.
 
 | Flag | Description | Default |
 |---|---|---|
 | `--port N` | Listen port | `8080` |
-| `--listen ADDR` | Bind address | `127.0.0.1` |
-| `--api-key KEY` | Bearer token for API authentication (also `VIGIL_API_KEY` env) | |
+| `--listen ADDR` | Bind address; `localhost` binds loopback on both IPv4 and IPv6 | `localhost` |
+| `--api-key KEY` | Bearer token for API authentication (also `VIGIL_API_KEY` env) | auto-generated |
+| `--no-auth` | Disable API authentication entirely (trusted isolated hosts only) | `false` |
+| `--state-file PATH` | Persist scans/targets/settings to disk so they survive a restart | in-memory |
+| `--no-open` | Don't open a browser (headless / server use) | `false` |
+
+Authentication is **on by default**: if no `--api-key`/`VIGIL_API_KEY` is set,
+a random key is generated, printed once, and baked into the opened browser URL
+(`?key=…`). The SPA reads it and sends it as a bearer token; SSE and report
+downloads carry it as a query param.
 
 ### Endpoints
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/health` | Health check (no auth required) |
-| `POST` | `/api/scans` | Create a new scan (`{"target":"https://..."}`) |
+| `GET` | `/api/health` | Health check (no auth) |
+| `GET` | `/api/version` | Server name and version (no auth) |
+| `POST` | `/api/scans` | Create a scan (`{"target":"…","config":{…}}`) |
 | `GET` | `/api/scans` | List scans (paginated: `?offset=0&limit=25`) |
-| `GET` | `/api/scans/{id}` | Get scan status and findings |
-| `GET` | `/api/scans/{id}/report?format=json` | Download report |
+| `GET` | `/api/scans/{id}` | Scan status + summary |
+| `DELETE` | `/api/scans/{id}` | Cancel a running scan |
+| `GET` | `/api/scans/{id}/progress` | Live progress |
+| `GET` | `/api/scans/{id}/findings` | Findings of a completed scan |
+| `GET` | `/api/scans/{id}/events` | Server-Sent Events: live findings |
+| `GET` | `/api/scans/{id}/report?format=` | Download report (json, sarif, html, markdown, csv, …) |
+| `GET` | `/api/scans/{id}/compliance?framework=` | Assess against pci-dss, hipaa or iso-27001 |
+| `POST` | `/api/scans/{id}/findings/{fid}/fp` | Mark/clear a finding as a false positive |
+| `GET` | `/api/profiles` | Scan profiles |
+| `GET` | `/api/config/defaults` | Controllable detector names + profiles |
+| `GET` | `/api/tools` | External tools and their availability |
+| `GET`/`PUT` | `/api/settings` | Default scan config applied to new scans |
+| `GET`/`POST` | `/api/targets` | List / create saved targets |
+| `DELETE` | `/api/targets/{id}` | Remove a saved target |
+| `POST` | `/api/targets/{id}/scan` | Scan a saved target |
+
+The `config` object in a scan request mirrors the full scanner configuration:
+transport (rate, concurrency, timeout, headers, cookie, user-agent, method,
+TLS), scope, auth/identity, crawl, templates, and a `detectors` map that
+toggles any detector by short name (unknown names are rejected).
 
 ### Security
 
-- Binds to `127.0.0.1` by default — pass `--listen 0.0.0.0:8080` to
-  expose externally.
-- When `--api-key` is set, all endpoints except `/api/health` require
-  `Authorization: Bearer <key>` (constant-time comparison).
-- Scan targets are validated: `http`/`https` only, private/loopback
-  IPs rejected (SSRF protection with IPv6-mapped IPv4 normalization).
-- Concurrent scans are limited to 3 by default.
-- Job store evicts oldest completed jobs after 1000 entries.
-- A bundled web dashboard is served at `/` when the embedded SPA assets
-  are present.
+- Binds to loopback (`localhost`, both IPv4 and IPv6) by default — pass
+  `--listen 0.0.0.0` to expose externally (requires an API key).
+- Authentication is required by default; every endpoint except `/api/health`
+  and `/api/version` requires the key (constant-time comparison). `--no-auth`
+  opts out for a trusted isolated host.
+- Scan targets are validated: `http`/`https` only, private/loopback IPs
+  rejected (SSRF protection with IPv6-mapped IPv4 normalization).
+- Concurrent scans are limited to 3 by default; the job store evicts the
+  oldest completed jobs after 1000 entries.
+
+## MCP server
+
+```sh
+vigil mcp [--state-file PATH]
+```
+
+Expose vigil's control surface over the [Model Context
+Protocol](https://modelcontextprotocol.io) so MCP-speaking agents can drive
+scans. `vigil mcp` serves over **stdio** (an agent spawns the process); a
+running `vigil web` also serves the same tools over **streamable HTTP** at
+`/mcp`, behind the same API key. Both transports are thin wrappers over the
+REST service, so there is no behavioural drift between them.
+
+Tools: `scan_start`, `scan_status`, `scan_list`, `scan_findings`,
+`scan_report`, `scan_cancel`, `list_profiles`, `config_defaults`,
+`list_tools`, `compliance_assess`, `fp_mark`, `target_list`, `target_scan`.
+Point `--state-file` at the same file a `vigil web` uses to share scan state
+between them.
 
 ---
 
@@ -749,7 +800,7 @@ annotates each with a "real vs noise" probability.
 ```
 cmd/vigil/                        CLI entry point (Cobra)
 internal/
-  api/                           HTTP JSON API server (vigil serve)
+  api/                           HTTP JSON API server (vigil web)
   auth/                          Form + headless login, session capture
   checkpoint/                    Scan resume / checkpoint persistence
   compliance/                    PCI DSS / HIPAA / SOC 2 mapping

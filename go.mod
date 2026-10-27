@@ -1,19 +1,23 @@
 module github.com/TyrusRC/vigil
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/antchfx/htmlquery v1.3.5
 	github.com/antchfx/xmlquery v1.5.0
 	github.com/antchfx/xpath v1.3.5
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/go-rod/rod v0.116.2
 	github.com/gobwas/ws v1.4.0
 	github.com/google/uuid v1.6.0
 	github.com/miekg/dns v1.1.56
+	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/projectdiscovery/interactsh v1.2.4
 	github.com/projectdiscovery/wappalyzergo v0.2.64
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/net v0.48.0
+	github.com/ysmood/gson v0.7.3
+	golang.org/x/net v0.50.0
+	golang.org/x/term v0.40.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -33,7 +37,6 @@ require (
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/caddyserver/certmagic v0.19.2 // indirect
 	github.com/charmbracelet/glamour v0.8.0 // indirect
-	github.com/charmbracelet/lipgloss v0.13.0 // indirect
 	github.com/charmbracelet/x/ansi v0.3.2 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.4 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
@@ -49,10 +52,10 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-github/v30 v30.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -99,6 +102,8 @@ require (
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
+	github.com/segmentio/asm v1.1.3 // indirect
+	github.com/segmentio/encoding v0.5.4 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.7 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
@@ -116,10 +121,10 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/weppos/publicsuffix-go v0.30.1-0.20230422193905-8fecedd899db // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	github.com/ysmood/fetchup v0.2.3 // indirect
 	github.com/ysmood/goob v0.4.0 // indirect
 	github.com/ysmood/got v0.40.0 // indirect
-	github.com/ysmood/gson v0.7.3 // indirect
 	github.com/ysmood/leakless v0.9.0 // indirect
 	github.com/yuin/goldmark v1.7.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.3 // indirect
@@ -132,17 +137,15 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.25.0 // indirect
 	goftp.io/server/v2 v2.0.1 // indirect
-	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
-	golang.org/x/mod v0.30.0 // indirect
-	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/term v0.38.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
-	golang.org/x/tools v0.39.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 	gopkg.in/corvus-ch/zbase32.v1 v1.0.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
 )

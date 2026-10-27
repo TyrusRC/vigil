@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -49,32 +50,80 @@ func isWSL() bool {
 
 // OpenBrowser opens the given URL in the default browser.
 func OpenBrowser(url string) error {
-	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "linux":
-		switch {
-		case isWSL():
-			// WSL2: hand the URL to the Windows host so it opens in the
-			// Windows default browser. wslview (from wslu) is cleanest;
-			// explorer.exe is always present as a fallback.
-			if _, err := exec.LookPath("wslview"); err == nil {
-				cmd = exec.Command("wslview", url)
-			} else {
-				cmd = exec.Command("explorer.exe", url)
-			}
-		default:
-			if _, err := exec.LookPath("xdg-open"); err == nil {
-				cmd = exec.Command("xdg-open", url)
-			} else {
-				cmd = exec.Command("sensible-browser", url)
-			}
+		if isWSL() {
+			return openWSL(url)
 		}
+		return startFirst([][]string{{"xdg-open", url}, {"sensible-browser", url}})
 	case "darwin":
-		cmd = exec.Command("open", url)
+		return exec.Command("open", url).Start()
 	case "windows":
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+		return exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
 	default:
-		cmd = exec.Command("xdg-open", url)
+		return exec.Command("xdg-open", url).Start()
 	}
-	return cmd.Start()
+}
+
+// openWSL opens the URL from a WSL session. The dashboard binds loopback, which
+// a Linux (WSLg) browser can reach but the Windows host browser cannot — so
+// when a GUI is present prefer a Linux browser, and fall back to launching the
+// Windows host browser only when headless (no DISPLAY).
+//
+// For the Windows launchers, distros vary in what's reachable: some ship
+// wslview (from wslu), and whether Windows dirs are on $PATH depends on
+// interop/appendWindowsPath. So try each in turn — including explorer.exe /
+// powershell.exe by absolute path, which the WSL interop layer still runs when
+// they're off $PATH — and use the first that starts.
+func openWSL(url string) error {
+	var candidates [][]string
+	if os.Getenv("DISPLAY") != "" || os.Getenv("WAYLAND_DISPLAY") != "" {
+		candidates = append(candidates,
+			[]string{"xdg-open", url},
+			[]string{"sensible-browser", url},
+		)
+	}
+	candidates = append(candidates, []string{"wslview", url})
+	candidates = append(candidates, []string{"explorer.exe", url})
+	for _, exe := range windowsExes("Windows/explorer.exe") {
+		candidates = append(candidates, []string{exe, url})
+	}
+	candidates = append(candidates, []string{"powershell.exe", "-NoProfile", "-Command", "Start-Process", url})
+	for _, exe := range windowsExes("Windows/System32/WindowsPowerShell/v1.0/powershell.exe") {
+		candidates = append(candidates, []string{exe, "-NoProfile", "-Command", "Start-Process", url})
+	}
+	candidates = append(candidates, []string{"cmd.exe", "/c", "start", "", url})
+	return startFirst(candidates)
+}
+
+// windowsExes resolves a Windows-relative path (e.g. "Windows/explorer.exe")
+// against the mounted Windows drives, returning the ones that exist.
+func windowsExes(rel string) []string {
+	var out []string
+	roots, _ := filepath.Glob("/mnt/*/" + rel)
+	for _, r := range roots {
+		if st, err := os.Stat(r); err == nil && !st.IsDir() {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// startFirst starts the first candidate command that launches without error.
+func startFirst(candidates [][]string) error {
+	var lastErr error
+	for _, c := range candidates {
+		if len(c) == 0 {
+			continue
+		}
+		if err := exec.Command(c[0], c[1:]...).Start(); err == nil {
+			return nil
+		} else {
+			lastErr = err
+		}
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no browser launcher available")
+	}
+	return lastErr
 }

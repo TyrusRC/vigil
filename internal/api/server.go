@@ -1,21 +1,26 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/TyrusRC/vigil/internal/reporting"
+	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/scanner"
+	"github.com/TyrusRC/vigil/internal/tools"
 )
 
 func logInfo(msg string, args ...any)  { fmt.Fprintf(os.Stderr, "[INFO] "+msg+"\n", args...) }
@@ -41,17 +46,28 @@ type ServerConfig struct {
 	// AllowPrivateTargets disables the SSRF protection that blocks scans against
 	// private/link-local IP addresses. Intended for internal-network scanners.
 	AllowPrivateTargets bool
+	// DataDir, when set, is where targets/settings/FP state is persisted. Empty
+	// keeps those stores in-memory.
+	DataDir string
+	// ToolsProvider returns the external tools for GET /api/tools. Supplied by
+	// the cmd layer (which owns the tool constructors) to avoid an import cycle.
+	ToolsProvider func() []tools.Tool
+	// Version is reported by GET /api/version. Empty reports "dev".
+	Version string
 }
 
 // Server is the HTTP JSON API for scans.
 type Server struct {
-	store   *Store
-	runner  Runner
-	mux     *http.ServeMux
-	wg      sync.WaitGroup
-	scanSem chan struct{}
-	config  ServerConfig
-	events  *ScanEventBus
+	store    *Store
+	runner   Runner
+	mux      *http.ServeMux
+	wg       sync.WaitGroup
+	scanSem  chan struct{}
+	config   ServerConfig
+	events   *ScanEventBus
+	targets  *TargetStore
+	settings *SettingsStore
+	fpPath   string
 }
 
 // NewServer builds a Server backed by runner. The returned Server's Handler
@@ -71,6 +87,30 @@ func NewServerWithStore(runner Runner, store *Store, cfg ServerConfig) *Server {
 		config:  cfg,
 		events:  NewScanEventBus(),
 	}
+
+	// Persisted side-stores live under DataDir (empty ⇒ in-memory). A load
+	// error is non-fatal: fall back to in-memory so the server still starts.
+	var targetPath, settingsPath string
+	if cfg.DataDir != "" {
+		targetPath = filepath.Join(cfg.DataDir, "vigil-targets.json")
+		settingsPath = filepath.Join(cfg.DataDir, "vigil-settings.json")
+		s.fpPath = filepath.Join(cfg.DataDir, ".vigil-fp.json")
+	} else {
+		s.fpPath = ".vigil-fp.json"
+	}
+	ts, err := NewTargetStore(targetPath)
+	if err != nil {
+		logWarn("targets store: %v; using in-memory", err)
+		ts, _ = NewTargetStore("")
+	}
+	ss, err := NewSettingsStore(settingsPath)
+	if err != nil {
+		logWarn("settings store: %v; using in-memory", err)
+		ss, _ = NewSettingsStore("")
+	}
+	s.targets = ts
+	s.settings = ss
+
 	s.routes()
 	return s
 }
@@ -99,24 +139,189 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("DELETE /api/scans/{id}", s.requireAuth(s.handleCancelScan))
 	s.mux.HandleFunc("GET /api/scans/{id}/progress", s.requireAuth(s.handleGetProgress))
 	s.mux.HandleFunc("GET /api/scans/{id}/report", s.requireAuth(s.handleGetReport))
+	s.mux.HandleFunc("GET /api/scans/{id}/findings", s.requireAuth(s.handleGetFindings))
 	s.mux.HandleFunc("GET /api/scans/{id}/events", s.handleSSE)
+	s.mux.HandleFunc("GET /api/profiles", s.requireAuth(s.handleProfiles))
+	s.mux.HandleFunc("GET /api/config/defaults", s.requireAuth(s.handleConfigDefaults))
+	s.mux.HandleFunc("GET /api/version", s.handleVersion)
+	s.mux.HandleFunc("GET /api/tools", s.requireAuth(s.handleTools))
+
+	// Finding-level operations.
+	s.mux.HandleFunc("POST /api/scans/{id}/findings/{fid}/fp", s.requireAuth(s.handleMarkFP))
+	s.mux.HandleFunc("GET /api/scans/{id}/compliance", s.requireAuth(s.handleCompliance))
+
+	// Settings (default scan config for new scans).
+	s.mux.HandleFunc("GET /api/settings", s.requireAuth(s.handleGetSettings))
+	s.mux.HandleFunc("PUT /api/settings", s.requireAuth(s.handlePutSettings))
+
+	// Targets (persistent, re-scannable).
+	s.mux.HandleFunc("GET /api/targets", s.requireAuth(s.handleListTargets))
+	s.mux.HandleFunc("POST /api/targets", s.requireAuth(s.handleCreateTarget))
+	s.mux.HandleFunc("DELETE /api/targets/{id}", s.requireAuth(s.handleDeleteTarget))
+	s.mux.HandleFunc("POST /api/targets/{id}/scan", s.requireAuth(s.handleScanTarget))
+}
+
+func (s *Server) handleVersion(w http.ResponseWriter, _ *http.Request) {
+	v := s.config.Version
+	if v == "" {
+		v = "dev"
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"name": "vigil", "version": v})
+}
+
+func (s *Server) handleTools(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, s.ToolList())
+}
+
+// findFinding locates a finding by id within a completed scan.
+func (s *Server) findFinding(scanID, findingID string) (*core.Finding, bool) {
+	job, ok := s.store.Get(scanID)
+	if !ok || job.Result() == nil {
+		return nil, false
+	}
+	for _, f := range job.Result().Findings {
+		if f.ID == findingID {
+			return f, true
+		}
+	}
+	return nil, false
+}
+
+func (s *Server) handleMarkFP(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		FP     bool   `json:"fp"`
+		Reason string `json:"reason"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
+	count, err := s.MarkFP(r.PathValue("id"), r.PathValue("fid"), body.FP, body.Reason)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true, "count": count})
+}
+
+func (s *Server) handleCompliance(w http.ResponseWriter, r *http.Request) {
+	assessment, err := s.Compliance(r.PathValue("id"), r.URL.Query().Get("framework"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = assessment.WriteJSON(w)
+}
+
+func (s *Server) handleGetSettings(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, s.settings.Get())
+}
+
+func (s *Server) handlePutSettings(w http.ResponseWriter, r *http.Request) {
+	var cfg ScanConfig
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&cfg); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
+	if err := s.settings.Put(cfg); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid settings: "+err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, cfg)
+}
+
+func (s *Server) handleListTargets(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, s.targets.List())
+}
+
+func (s *Server) handleCreateTarget(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		URL   string `json:"url"`
+		Label string `json:"label"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
+	body.URL = strings.TrimSpace(body.URL)
+	if body.URL == "" {
+		writeError(w, http.StatusBadRequest, "url is required")
+		return
+	}
+	if err := s.validateTarget(body.URL); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, s.targets.Create(body.URL, body.Label))
+}
+
+func (s *Server) handleDeleteTarget(w http.ResponseWriter, r *http.Request) {
+	if !s.targets.Delete(r.PathValue("id")) {
+		writeError(w, http.StatusNotFound, "target not found")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+func (s *Server) handleScanTarget(w http.ResponseWriter, r *http.Request) {
+	// Optional config body; an empty body means "use settings defaults".
+	var req ScanRequest
+	_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req)
+	job, err := s.ScanTarget(r.Context(), r.PathValue("id"), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusAccepted, job)
+}
+
+// profileNames are the scan profiles GetProfile recognizes (others → normal).
+var profileNames = []string{"quick", "normal", "thorough", "passive"}
+
+func (s *Server) handleProfiles(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, s.Profiles())
+}
+
+func (s *Server) handleConfigDefaults(w http.ResponseWriter, _ *http.Request) {
+	detectors, profiles := s.ConfigDefaults()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"detectors": detectors,
+		"profiles":  profiles,
+	})
+}
+
+func (s *Server) handleGetFindings(w http.ResponseWriter, r *http.Request) {
+	findings, err := s.Findings(r.PathValue("id"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, findings)
 }
 
 // requireAuth wraps a handler with bearer-token checking when an API key is
 // configured. Health is left open so load balancers can probe without a key.
+// authorized reports whether the request carries the configured API key. The
+// key may arrive as an "Authorization: Bearer <key>" header or, for clients
+// that cannot set headers (EventSource, a browser following the opened URL), as
+// a "key" query parameter. When no key is configured, every request is allowed.
+func (s *Server) authorized(r *http.Request) bool {
+	if s.config.APIKey == "" {
+		return true
+	}
+	got := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if got == "" {
+		got = r.URL.Query().Get("key")
+	}
+	return subtle.ConstantTimeCompare([]byte(got), []byte(s.config.APIKey)) == 1
+}
+
 func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if s.config.APIKey != "" {
-			auth := r.Header.Get("Authorization")
-			if !strings.HasPrefix(auth, "Bearer ") {
-				writeError(w, http.StatusUnauthorized, "missing or invalid API key")
-				return
-			}
-			got := strings.TrimPrefix(auth, "Bearer ")
-			if subtle.ConstantTimeCompare([]byte(got), []byte(s.config.APIKey)) != 1 {
-				writeError(w, http.StatusUnauthorized, "missing or invalid API key")
-				return
-			}
+		if !s.authorized(r) {
+			writeError(w, http.StatusUnauthorized, "missing or invalid API key")
+			return
 		}
 		next(w, r)
 	}
@@ -132,21 +337,30 @@ func (s *Server) handleCreateScan(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid JSON body")
 		return
 	}
-	req.Target = strings.TrimSpace(req.Target)
-	if req.Target == "" {
-		writeError(w, http.StatusBadRequest, "target is required")
+	job, err := s.StartScan(r.Context(), req)
+	if err != nil {
+		writeServiceError(w, err)
 		return
 	}
-
-	if err := s.validateTarget(req.Target); err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	job := s.store.Create(req)
-	logInfo("scan %s queued for %s", job.ID, req.Target)
-	s.start(r.Context(), job.ID, req)
 	writeJSON(w, http.StatusAccepted, job)
+}
+
+// writeServiceError maps a service-layer sentinel error to an HTTP response.
+// ErrInvalidRequest → 400 (its message is client-safe), ErrNotFound → 404,
+// ErrNotCompleted → 409, ErrNotRunning → 409, anything else → 500.
+func writeServiceError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, ErrInvalidRequest):
+		writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), ErrInvalidRequest.Error()+": "))
+	case errors.Is(err, ErrNotFound):
+		writeError(w, http.StatusNotFound, "not found")
+	case errors.Is(err, ErrNotCompleted):
+		writeError(w, http.StatusConflict, "scan has not completed")
+	case errors.Is(err, ErrNotRunning):
+		writeError(w, http.StatusConflict, "scan is not running")
+	default:
+		writeError(w, http.StatusInternalServerError, "internal error")
+	}
 }
 
 // validateTarget checks the scan target for scheme and SSRF safety.
@@ -217,29 +431,23 @@ func (e *validationError) Error() string { return e.msg }
 
 func (s *Server) handleListScans(w http.ResponseWriter, r *http.Request) {
 	offset, limit := parsePagination(r)
-	writeJSON(w, http.StatusOK, s.store.ListPaged(offset, limit))
+	writeJSON(w, http.StatusOK, s.ListScans(offset, limit))
 }
 
 func (s *Server) handleGetScan(w http.ResponseWriter, r *http.Request) {
-	job, ok := s.store.Get(r.PathValue("id"))
-	if !ok {
-		writeError(w, http.StatusNotFound, "scan not found")
+	job, err := s.GetScan(r.PathValue("id"))
+	if err != nil {
+		writeServiceError(w, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, job)
 }
 
 func (s *Server) handleCancelScan(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	if _, ok := s.store.Get(id); !ok {
-		writeError(w, http.StatusNotFound, "scan not found")
+	if err := s.CancelScan(r.PathValue("id")); err != nil {
+		writeServiceError(w, err)
 		return
 	}
-	if !s.store.Cancel(id) {
-		writeError(w, http.StatusConflict, "scan is not running")
-		return
-	}
-	logInfo("scan %s cancelled by operator", id)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "cancelled"})
 }
 
@@ -265,30 +473,16 @@ func (s *Server) handleGetProgress(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetReport(w http.ResponseWriter, r *http.Request) {
-	job, ok := s.store.Get(r.PathValue("id"))
-	if !ok {
-		writeError(w, http.StatusNotFound, "scan not found")
+	// Render to a buffer first so a mid-render error can still return a proper
+	// status instead of a half-written body with headers already sent.
+	var buf bytes.Buffer
+	contentType, err := s.Report(r.PathValue("id"), r.URL.Query().Get("format"), &buf)
+	if err != nil {
+		writeServiceError(w, err)
 		return
 	}
-	if job.Status != StatusCompleted || job.result == nil {
-		writeError(w, http.StatusConflict, "scan has not completed")
-		return
-	}
-	format := r.URL.Query().Get("format")
-	if format == "" {
-		format = "json"
-	}
-	contentType, ok := reportContentType(format)
-	if !ok {
-		writeError(w, http.StatusBadRequest, "unknown report format: "+format)
-		return
-	}
-	report := reporting.NewReport(job.result)
 	w.Header().Set("Content-Type", contentType)
-	if err := writeReport(w, report, format); err != nil {
-		// Headers are already sent; nothing more we can safely do.
-		return
-	}
+	_, _ = buf.WriteTo(w)
 }
 
 // start launches the scan asynchronously, transitioning job state as it runs.
@@ -319,14 +513,24 @@ func (s *Server) start(reqCtx context.Context, id string, req ScanRequest) {
 
 		logInfo("scan %s started for %s (profile=%s)", id, req.Target, req.Profile)
 
+		// Stream findings live to SSE subscribers as they are discovered.
+		var found int32
+		req.OnFinding = func(f *core.Finding) {
+			n := atomic.AddInt32(&found, 1)
+			s.events.Publish(ScanEvent{Type: EventFinding, ScanID: id, Finding: f})
+			s.store.setProgress(id, ScanProgress{Phase: "scanning", FindingsCount: int(n)})
+		}
+
 		result, err := s.runner.Run(ctx, req)
 		if ctx.Err() != nil {
 			logInfo("scan %s cancelled", id)
+			s.events.Publish(ScanEvent{Type: EventError, ScanID: id, Error: "cancelled"})
 			return
 		}
 		if err != nil {
 			logError("scan %s failed: %v", id, err)
 			s.store.setFailed(id, err.Error())
+			s.events.Publish(ScanEvent{Type: EventError, ScanID: id, Error: err.Error()})
 			return
 		}
 		summary := result.Summary()
@@ -336,6 +540,7 @@ func (s *Server) start(reqCtx context.Context, id string, req ScanRequest) {
 		})
 		logInfo("scan %s completed: %d findings", id, summary.TotalFindings)
 		s.store.setCompleted(id, result)
+		s.events.Publish(ScanEvent{Type: EventComplete, ScanID: id})
 	}()
 }
 

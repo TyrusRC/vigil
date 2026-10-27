@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/scanner"
 )
 
@@ -40,10 +41,17 @@ type ScanProgress struct {
 // DefaultMaxJobs is the default upper bound on stored jobs before eviction.
 const DefaultMaxJobs = 1000
 
-// ScanRequest is the payload to start a scan.
+// ScanRequest is the payload to start a scan. Config, when present, drives the
+// full scanner configuration (transport, scope, auth, detector toggles, …);
+// Profile is a back-compatible shortcut equivalent to Config.Profile.
 type ScanRequest struct {
-	Target  string `json:"target"`
-	Profile string `json:"profile,omitempty"`
+	Target  string      `json:"target"`
+	Profile string      `json:"profile,omitempty"`
+	Config  *ScanConfig `json:"config,omitempty"`
+
+	// OnFinding, when set by the server, streams each finding as it is
+	// discovered (wired to the scan's event bus for SSE). Never serialized.
+	OnFinding func(*core.Finding) `json:"-"`
 }
 
 // ScanJob tracks one scan's lifecycle and (when finished) its result.
@@ -71,7 +79,7 @@ func (j *ScanJob) Result() *scanner.ScanResult {
 }
 
 // Store is a concurrency-safe registry of scan jobs. When path is non-empty the
-// job metadata is persisted to disk after each change, so `vigil serve` survives
+// job metadata is persisted to disk after each change, so `vigil web` survives
 // a restart (the in-memory raw result is not persisted — status, summary and
 // listing are).
 type Store struct {

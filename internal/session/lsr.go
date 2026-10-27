@@ -104,12 +104,18 @@ func ReplayLSR(ctx context.Context, lsr *LoginSequence) (cookies string, err err
 			collectCookies(resp, jar)
 
 		case "wait":
-			// Pause between actions.
+			// Pause between actions; abort if the scan is cancelled.
 			d, _ := time.ParseDuration(action.Value)
 			if d == 0 {
 				d = 500 * time.Millisecond
 			}
-			time.Sleep(d)
+			t := time.NewTimer(d)
+			select {
+			case <-t.C:
+			case <-ctx.Done():
+				t.Stop()
+				return "", ctx.Err()
+			}
 
 		case "click", "type", "script":
 			// Headless-only — skip silently in HTTP-only mode.

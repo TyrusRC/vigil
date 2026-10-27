@@ -8,6 +8,10 @@ import (
 // handleSSE streams scan events to the client via Server-Sent Events.
 // GET /api/scans/{id}/events
 func (s *Server) handleSSE(w http.ResponseWriter, r *http.Request) {
+	if !s.authorized(r) {
+		http.Error(w, `{"error":"missing or invalid API key"}`, http.StatusUnauthorized)
+		return
+	}
 	scanID := r.PathValue("id")
 	if scanID == "" {
 		http.Error(w, `{"error":"missing scan id"}`, http.StatusBadRequest)

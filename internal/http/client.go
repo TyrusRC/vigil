@@ -108,21 +108,92 @@ func NewClient() *Client {
 	return c
 }
 
-// loopbackDialContext tries IPv6 (::1) first for loopback addresses. On WSL2
-// with Docker Desktop, containers bind [::]:port and IPv4 127.0.0.1 can time
-// out while [::1] connects instantly. Go's default dialer resolves "localhost"
-// to 127.0.0.1 only, which silently times out every request.
-func loopbackDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
-	host, port, err := net.SplitHostPort(addr)
-	if err != nil {
-		return (&net.Dialer{}).DialContext(ctx, network, addr)
+// sleepCtx waits for d or until ctx is cancelled, returning ctx.Err() if it
+// was cancelled first. Backoffs and cooldowns use it so a cancelled scan
+// aborts promptly instead of blocking a goroutine on a fixed timer.
+func sleepCtx(ctx context.Context, d time.Duration) error {
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-t.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	if host == "127.0.0.1" || host == "localhost" {
-		if conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(ctx, "tcp6", net.JoinHostPort("::1", port)); err == nil {
-			return conn, nil
+}
+
+// dialOne matches net.Dialer.DialContext; raceDials takes it so tests can
+// inject a dialer without touching the network.
+type dialOne func(ctx context.Context, network, addr string) (net.Conn, error)
+
+// raceDials dials every addr concurrently and returns the first connection
+// that succeeds, cancelling the slower dials. A dead or silently-dropping
+// address never serializes the request behind its timeout. It always drains
+// every dial so a redundant late winner is closed rather than leaked.
+func raceDials(ctx context.Context, dial dialOne, network string, addrs []string) (net.Conn, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	type result struct {
+		conn net.Conn
+		err  error
+	}
+	ch := make(chan result, len(addrs))
+	for _, a := range addrs {
+		go func(a string) {
+			conn, err := dial(ctx, network, a)
+			ch <- result{conn, err}
+		}(a)
+	}
+
+	var winner net.Conn
+	var lastErr error
+	for range addrs {
+		r := <-ch
+		switch {
+		case r.err != nil:
+			lastErr = r.err
+		case winner == nil:
+			winner = r.conn
+			cancel() // abort the slower dials
+		default:
+			r.conn.Close() // a redundant late success
 		}
 	}
-	return (&net.Dialer{}).DialContext(ctx, network, addr)
+	if winner != nil {
+		return winner, nil
+	}
+	return nil, lastErr
+}
+
+// loopbackDialTimeout bounds each loopback connect attempt. A live loopback
+// connects in well under a millisecond, so this only caps a dead address
+// family whose SYN is silently dropped (common for ::1 on WSL2) — without it
+// such a dial blocks until the OS connect timeout when no sibling succeeds.
+const loopbackDialTimeout = 2 * time.Second
+
+// retryBackoff is the pause before retrying a transient request failure, and
+// wafCooldown the pause after repeated WAF blocks. Both are ctx-aware (see
+// sleepCtx) so a cancelled scan never blocks on them.
+const (
+	retryBackoff = 1 * time.Second
+	wafCooldown  = 5 * time.Second
+)
+
+// loopbackDialContext resolves a loopback request by racing IPv6 (::1) against
+// IPv4 (127.0.0.1). On WSL2 with Docker Desktop a container may bind only
+// [::]:port while a plain server binds only 127.0.0.1:port; whichever is live
+// wins immediately, so a dead address family never costs a multi-second stall.
+func loopbackDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil || (host != "127.0.0.1" && host != "localhost") {
+		return (&net.Dialer{}).DialContext(ctx, network, addr)
+	}
+	dial := (&net.Dialer{Timeout: loopbackDialTimeout}).DialContext
+	return raceDials(ctx, dial, network, []string{
+		net.JoinHostPort("::1", port),
+		net.JoinHostPort("127.0.0.1", port),
+	})
 }
 
 // buildHTTPClient constructs the underlying http.Client.
@@ -281,7 +352,9 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 			httpResp.Body.Close()
 		}
 		atomic.AddInt32(&c.connErrors, 1)
-		time.Sleep(1 * time.Second)
+		if serr := sleepCtx(ctx, retryBackoff); serr != nil {
+			return nil, serr
+		}
 		httpReq2, cloneErr := http.NewRequestWithContext(ctx, httpReq.Method, httpReq.URL.String(), strings.NewReader(req.Body))
 		if cloneErr == nil {
 			for k, vals := range httpReq.Header {
@@ -335,7 +408,9 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 			})
 		}
 		if n >= 3 {
-			time.Sleep(5 * time.Second)
+			// Cooldown before returning the (already-built) response; abort
+			// early if the scan is cancelled rather than blocking the timer.
+			_ = sleepCtx(ctx, wafCooldown)
 		}
 	} else {
 		atomic.StoreInt32(&c.wafBlocks, 0)
@@ -353,4 +428,3 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 
 	return response, nil
 }
-

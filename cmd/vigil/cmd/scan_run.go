@@ -47,6 +47,16 @@ func runScan(cmd *cobra.Command, args []string) error {
 	s := scanner.New()
 	defer s.Close()
 
+	// Scan directory: the single place tool logs, native tool output files,
+	// and the auto-saved report all land. Use --output-dir when given, else a
+	// timestamped dir so a run's artifacts — including every tool's raw log —
+	// are never lost. Decided up front so tools write logs here as they run,
+	// and so the web UI's delete-output endpoint knows where they are.
+	scanDir := outputDir
+	if scanDir == "" {
+		scanDir = fmt.Sprintf("vigil-report-%s", time.Now().Format("2006-01-02T150405"))
+	}
+
 	// Start web UI server unless --headless or --no-ui
 	var eventBus *webui.EventBus
 	scanStatus := "running"
@@ -129,6 +139,53 @@ func runScan(cmd *cobra.Command, args []string) error {
 				w.Write(data)
 			})
 
+			// DELETE /api/findings/{id} — remove a single finding from the
+			// dashboard view (e.g. an operator triaging out a finding they do
+			// not want in the result). Affects this session's in-memory set;
+			// to suppress it on future scans, mark it a false positive instead.
+			mux.HandleFunc("/api/findings/", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				if r.Method != http.MethodDelete {
+					http.Error(w, `{"error":"DELETE required"}`, http.StatusMethodNotAllowed)
+					return
+				}
+				id := strings.TrimPrefix(r.URL.Path, "/api/findings/")
+				findingsMu.Lock()
+				kept := liveFindings[:0:0]
+				removed := false
+				for _, f := range liveFindings {
+					if f.ID == id {
+						removed = true
+						continue
+					}
+					kept = append(kept, f)
+				}
+				liveFindings = kept
+				remaining := len(liveFindings)
+				findingsMu.Unlock()
+				if !removed {
+					http.Error(w, `{"error":"finding not found"}`, http.StatusNotFound)
+					return
+				}
+				fmt.Fprintf(w, `{"ok":true,"remaining":%d}`, remaining)
+			})
+
+			// DELETE /api/output — clear all findings and delete this scan's
+			// saved output artifacts (reports, tool logs) from scanDir. Removes
+			// only vigil-produced files, never the caller's --output-dir itself.
+			mux.HandleFunc("/api/output", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				if r.Method != http.MethodDelete {
+					http.Error(w, `{"error":"DELETE required"}`, http.StatusMethodNotAllowed)
+					return
+				}
+				findingsMu.Lock()
+				liveFindings = nil
+				findingsMu.Unlock()
+				removed := deleteScanOutput(scanDir, outputDir == "")
+				fmt.Fprintf(w, `{"ok":true,"files_removed":%d}`, removed)
+			})
+
 			// SPA catch-all LAST
 			mux.Handle("/", uiHandler)
 			ln, uiURL, listenErr := webui.LaunchServer(mux, uiPort)
@@ -205,16 +262,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 		if verbose {
 			fmt.Fprintf(os.Stderr, "[*] --proxy set: auto-enabling --insecure (TLS verification skipped)\n")
 		}
-	}
-
-	// Scan directory: the single place tool logs, native tool output files,
-	// and the auto-saved report all land. Use --output-dir when given, else a
-	// timestamped dir so a run's artifacts — including every tool's raw log —
-	// are never lost. Decided up front so tools write logs here as they run,
-	// not into a directory chosen after the scan already finished.
-	scanDir := outputDir
-	if scanDir == "" {
-		scanDir = fmt.Sprintf("vigil-report-%s", time.Now().Format("2006-01-02T150405"))
 	}
 
 	config := &scanner.Config{

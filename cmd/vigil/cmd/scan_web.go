@@ -4,11 +4,46 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/TyrusRC/vigil/internal/core"
 	"github.com/TyrusRC/vigil/internal/scanner"
 )
+
+// vigilOutputGlobs are the filename patterns vigil writes into a scan dir.
+// Used to delete scan output without touching a caller's other files.
+var vigilOutputGlobs = []string{
+	"vigil-report.*", "vigil-partial.json", "tools.jsonl",
+	"*.log", "nikto.json", "dalfox.json", "wpscan.json", "arjun.json",
+}
+
+// deleteScanOutput removes this scan's saved artifacts from dir and returns how
+// many entries were removed. When auto is true the dir was created by vigil
+// (no --output-dir), so the whole directory is removed; otherwise only
+// vigil-produced files are deleted so a caller's --output-dir is never nuked.
+func deleteScanOutput(dir string, auto bool) int {
+	if dir == "" {
+		return 0
+	}
+	if auto {
+		if err := os.RemoveAll(dir); err == nil {
+			return 1
+		}
+		return 0
+	}
+	n := 0
+	for _, g := range vigilOutputGlobs {
+		matches, _ := filepath.Glob(filepath.Join(dir, g))
+		for _, m := range matches {
+			if os.Remove(m) == nil {
+				n++
+			}
+		}
+	}
+	return n
+}
 
 // fpMarkHandler serves POST /api/fp: the web UI calls it when an operator
 // marks a finding a false positive (fp=true) or restores it (fp=false). The
