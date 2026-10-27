@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -265,9 +266,14 @@ func (s *Server) handleDeleteTarget(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleScanTarget(w http.ResponseWriter, r *http.Request) {
-	// Optional config body; an empty body means "use settings defaults".
+	// Optional config body; an empty body means "use settings defaults", but a
+	// malformed (non-empty, unparseable) body is a client error, not a silent
+	// fallback to defaults.
 	var req ScanRequest
-	_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req)
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil && !errors.Is(err, io.EOF) {
+		writeError(w, http.StatusBadRequest, "invalid JSON body")
+		return
+	}
 	job, err := s.ScanTarget(r.Context(), r.PathValue("id"), req)
 	if err != nil {
 		writeServiceError(w, err)

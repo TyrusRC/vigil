@@ -16,7 +16,11 @@ function NewScanModal({ onClose, onCreated, toast, profiles, detectors }) {
     if (!target.trim()) { setErr('Enter a target URL.'); return }
     setBusy(true); setErr('')
     try {
-      const job = await api.createScan({ target: target.trim(), config: cfg })
+      // Omit an untouched config so the server applies the saved Settings
+      // defaults — same behaviour as scanning a saved target.
+      const body = { target: target.trim() }
+      if (Object.keys(cfg).length) body.config = cfg
+      const job = await api.createScan(body)
       toast('Scan started')
       onCreated(job)
     } catch (ex) {

@@ -14,9 +14,12 @@ import (
 
 // vigilOutputGlobs are the filename patterns vigil writes into a scan dir.
 // Used to delete scan output without touching a caller's other files.
+// NOTE: every pattern must match only files vigil itself writes — a broad
+// wildcard like "*.log" would delete a caller's unrelated files in their
+// --output-dir. Tool logs are unified into tools.jsonl, so no "*.log" entry.
 var vigilOutputGlobs = []string{
 	"vigil-report.*", "vigil-partial.json", "tools.jsonl",
-	"*.log", "nikto.json", "dalfox.json", "wpscan.json", "arjun.json",
+	"nikto.json", "dalfox.json", "wpscan.json", "arjun.json",
 }
 
 // deleteScanOutput removes this scan's saved artifacts from dir and returns how

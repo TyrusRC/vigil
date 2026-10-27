@@ -85,16 +85,21 @@ func TestDeleteScanOutput_UserDir_KeepsForeignFiles(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "vigil-report.json"), []byte("{}"), 0o644)
 	os.WriteFile(filepath.Join(dir, "tools.jsonl"), []byte("{}\n"), 0o644)
-	os.WriteFile(filepath.Join(dir, "nikto.log"), []byte("x"), 0o644)
+	// A .log file is the caller's own — vigil unifies tool logs into
+	// tools.jsonl and writes no .log, so a broad "*.log" glob must never match.
+	keepLog := filepath.Join(dir, "app.log")
+	os.WriteFile(keepLog, []byte("x"), 0o644)
 	keep := filepath.Join(dir, "my-notes.txt")
 	os.WriteFile(keep, []byte("important"), 0o644)
 
 	n := deleteScanOutput(dir, false)
-	if n != 3 {
-		t.Fatalf("removed %d vigil files, want 3", n)
+	if n != 2 {
+		t.Fatalf("removed %d vigil files, want 2", n)
 	}
-	if _, err := os.Stat(keep); err != nil {
-		t.Fatal("must NOT delete the caller's own files")
+	for _, f := range []string{keep, keepLog} {
+		if _, err := os.Stat(f); err != nil {
+			t.Fatalf("must NOT delete the caller's own file %s", filepath.Base(f))
+		}
 	}
 	if _, err := os.Stat(dir); err != nil {
 		t.Fatal("must NOT remove the user's --output-dir itself")

@@ -131,6 +131,9 @@ type dialOne func(ctx context.Context, network, addr string) (net.Conn, error)
 // address never serializes the request behind its timeout. It always drains
 // every dial so a redundant late winner is closed rather than leaked.
 func raceDials(ctx context.Context, dial dialOne, network string, addrs []string) (net.Conn, error) {
+	if len(addrs) == 0 {
+		return nil, errors.New("no addresses to dial")
+	}
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 

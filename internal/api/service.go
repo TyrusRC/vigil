@@ -172,8 +172,11 @@ func (s *Server) ToolList() []ToolInfo {
 // "iso-27001").
 func (s *Server) Compliance(id, framework string) (compliance.Assessment, error) {
 	job, ok := s.store.Get(id)
-	if !ok || job.Result() == nil {
+	if !ok {
 		return compliance.Assessment{}, ErrNotFound
+	}
+	if job.Result() == nil {
+		return compliance.Assessment{}, ErrNotCompleted
 	}
 	fw, err := compliance.ParseFramework(framework)
 	if err != nil {

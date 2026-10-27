@@ -231,6 +231,42 @@ func TestCompliance_Assess(t *testing.T) {
 	if rec := doJSON(t, srv, http.MethodGet, "/api/scans/"+job.ID+"/compliance?framework=bogus", ""); rec.Code != http.StatusBadRequest {
 		t.Errorf("bad framework code = %d, want 400", rec.Code)
 	}
+	// Missing scan → 404.
+	if rec := doJSON(t, srv, http.MethodGet, "/api/scans/nope/compliance?framework=pci-dss", ""); rec.Code != http.StatusNotFound {
+		t.Errorf("missing scan code = %d, want 404", rec.Code)
+	}
+}
+
+func TestCompliance_NotCompletedIs409(t *testing.T) {
+	release := make(chan struct{})
+	srv := NewServerWithStore(blockingRunner{release: release}, NewStore(), ServerConfig{AllowPrivateTargets: true, DataDir: t.TempDir()})
+	rec := doJSON(t, srv, http.MethodPost, "/api/scans", `{"target":"http://example.com"}`)
+	job := decodeJob(t, rec)
+	// Scan is blocked in the runner → exists but not completed.
+	rec = doJSON(t, srv, http.MethodGet, "/api/scans/"+job.ID+"/compliance?framework=pci-dss", "")
+	if rec.Code != http.StatusConflict {
+		t.Errorf("not-completed compliance code = %d, want 409", rec.Code)
+	}
+	close(release)
+	srv.WaitIdle()
+}
+
+func TestScanTarget_MalformedBodyIs400(t *testing.T) {
+	srv := consoleServer(t, fakeRunner{result: sampleResult()})
+	rec := doJSON(t, srv, http.MethodPost, "/api/targets", `{"url":"http://example.com"}`)
+	var tgt Target
+	_ = json.Unmarshal(rec.Body.Bytes(), &tgt)
+	// A non-empty but broken JSON body is a client error, not a silent default.
+	rec = doJSON(t, srv, http.MethodPost, "/api/targets/"+tgt.ID+"/scan", `{"config": {`)
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("malformed body code = %d, want 400", rec.Code)
+	}
+	// An empty body is fine (use settings defaults).
+	rec = doJSON(t, srv, http.MethodPost, "/api/targets/"+tgt.ID+"/scan", "")
+	if rec.Code != http.StatusAccepted {
+		t.Errorf("empty body code = %d, want 202", rec.Code)
+	}
+	srv.WaitIdle()
 }
 
 func TestStores_PersistAcrossRestart(t *testing.T) {

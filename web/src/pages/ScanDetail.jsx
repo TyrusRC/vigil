@@ -40,8 +40,12 @@ export default function ScanDetail({ id, go, toast }) {
     es.addEventListener('finding', e => {
       try { const f = JSON.parse(e.data)?.finding; if (f) setFindings(prev => prev.some(p => p.id === f.id) ? prev : [...prev, f]) } catch {}
     })
-    es.addEventListener('complete', () => { loadScan(); loadFindings() })
-    es.addEventListener('error', () => { loadScan() })
+    // The scan reached a terminal state: refresh and stop the stream, else the
+    // native EventSource reconnects forever to an immediately-closing endpoint.
+    es.addEventListener('complete', () => { loadScan(); loadFindings(); es.close() })
+    // A named server 'error' event carries data (scan failed); a bare transport
+    // error does not — only the former is terminal, so only it closes the stream.
+    es.addEventListener('error', (e) => { loadScan(); if (e && e.data) es.close() })
     const poll = setInterval(() => { if (scanRef.current && (scanRef.current.status === 'running' || scanRef.current.status === 'queued')) loadScan() }, 3000)
     return () => { es.close(); clearInterval(poll) }
   }, [id, loadScan, loadFindings])

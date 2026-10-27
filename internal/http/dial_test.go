@@ -74,3 +74,17 @@ func TestRaceDials_AllFail(t *testing.T) {
 		t.Fatal("raceDials: want error when all targets fail, got nil")
 	}
 }
+
+func TestRaceDials_EmptyAddrs(t *testing.T) {
+	dial := func(_ context.Context, _, _ string) (net.Conn, error) {
+		t.Fatal("dial should not be called with no addresses")
+		return nil, nil
+	}
+	conn, err := raceDials(context.Background(), dial, "tcp", nil)
+	if err == nil {
+		if conn != nil {
+			conn.Close()
+		}
+		t.Fatal("raceDials: want error for empty addrs, got (conn, nil)")
+	}
+}
