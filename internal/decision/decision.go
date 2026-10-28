@@ -208,7 +208,7 @@ func jevScore(ctx context.Context, cfg Config, techTokens []string, items []Item
 			Instructions: "Is this security template relevant to run against the target? Template: " + it.Text,
 		}
 	}
-	body, err := json.Marshal(jevRequest{Model: cfg.Model, Domain: "web", State: state, Questions: qs})
+	body, err := json.Marshal(jevRequest{Model: cfg.Model, Domain: "guide", State: state, Questions: qs})
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func Adjudicate(ctx context.Context, cfg Config, items []Item) ([]*float64, erro
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			body, err := json.Marshal(jevRequest{Model: cfg.Model, Domain: "web", State: item.Text, Questions: q})
+			body, err := json.Marshal(jevRequest{Model: cfg.Model, Domain: "dast", State: item.Text, Questions: q})
 			if err != nil {
 				errs[idx] = err
 				return
