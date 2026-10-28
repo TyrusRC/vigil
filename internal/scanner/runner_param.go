@@ -2,6 +2,9 @@ package scanner
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -163,6 +166,32 @@ func (s *InternalScanner) applicableTests(param core.Parameter) []paramTest {
 // any detector code changes.
 func (s *InternalScanner) runParamDetectors(ctx context.Context, findingsChan chan<- *core.Finding, targetURL string, param core.Parameter, method string, scanClient *http.Client, siblings []core.Parameter, tierFilter map[string]bool) {
 	pc := scanClient.ForParam(param).WithSiblings(siblings)
+
+	// SPA catch-all pre-check: send two probes with unrelated values. If
+	// both responses have the same body hash, the server ignores this
+	// parameter entirely (SPA catch-all routing). Skip all injection
+	// detectors — they will only produce false positives.
+	if !s.config.DisableSPACheck && param.Location != core.ParamLocationPath {
+		r1, e1 := pc.SendPayload(ctx, targetURL, param.Name, "vigil_spa_probe_alpha", method)
+		r2, e2 := pc.SendPayload(ctx, targetURL, param.Name, "vigil_spa_probe_beta", method)
+		if e1 == nil && e2 == nil && r1 != nil && r2 != nil &&
+			r1.StatusCode == r2.StatusCode && len(r1.Body) > 0 {
+			h1 := sha256.Sum256([]byte(r1.Body))
+			h2 := sha256.Sum256([]byte(r2.Body))
+			if h1 == h2 {
+				if s.config.Verbose {
+					fmt.Fprintf(os.Stderr, "[*] SPA catch-all detected for param '%s' — body identical across probes, skipping injection detectors\n", param.Name)
+				}
+				if s.coverageTracker != nil {
+					s.coverageTracker.Record(CoverageRecord{
+						URL: targetURL, Parameter: param.Name,
+						Location: param.Location, Detector: "all", Status: "spa-catchall",
+					})
+				}
+				return
+			}
+		}
+	}
 
 	runners := map[string]func() []*core.Finding{
 		"sqli":            func() []*core.Finding { return s.testSQLiWithClient(ctx, targetURL, param, method, pc) },

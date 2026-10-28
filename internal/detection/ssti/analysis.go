@@ -27,8 +27,16 @@ func (d *Detector) containsMathResult(body, expected, baseline string) bool {
 
 	// But it should NOT appear in the baseline (to avoid false positives)
 	if strings.Contains(baseline, expected) {
-		// Check if the count increased
-		return strings.Count(body, expected) > strings.Count(baseline, expected)
+		delta := strings.Count(body, expected) - strings.Count(baseline, expected)
+		// Short expected values ("1", "7", "14", "49") appear hundreds of
+		// times in HTML/CSS/JS. CDN jitter (nonces, timestamps, cache IDs)
+		// can change the count by 1-2 between requests. Require a minimum
+		// delta of 3 for values <= 3 chars to filter out noise.
+		minDelta := 1
+		if len(expected) <= 3 {
+			minDelta = 3
+		}
+		return delta >= minDelta
 	}
 
 	return true

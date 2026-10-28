@@ -36,6 +36,8 @@ var (
 	wsURLRe = regexp.MustCompile(`["'](wss?://[a-zA-Z0-9._:/-]{5,100})["']`)
 	// Supabase/Firebase/Appwrite client init
 	baasURLRe = regexp.MustCompile(`["'](https://[a-zA-Z0-9-]+\.(?:supabase\.co|firebaseio\.com|firebaseapp\.com|appwrite\.io)[^"'\s]*)["']`)
+	// Supabase anon key (JWT with supabase issuer)
+	supabaseAnonKeyRe = regexp.MustCompile(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]{50,300}\.[A-Za-z0-9_-]{20,100}`)
 	// Environment-style config: BASE_URL, API_URL, BACKEND_URL
 	envConfigRe = regexp.MustCompile(`(?:BASE_URL|API_URL|BACKEND_URL|SERVER_URL|ENDPOINT)\s*[:=]\s*["']([^"']{5,100})["']`)
 )
@@ -134,7 +136,32 @@ func (d *JSAPIDiscoverer) Discover(ctx context.Context, targetURL string, resp *
 
 		// BaaS URLs (Supabase, Firebase, Appwrite)
 		for _, m := range baasURLRe.FindAllStringSubmatch(js, 5) {
-			add(m[1], "select", core.ParamLocationQuery, "GET")
+			baasURL := m[1]
+			add(baasURL, "select", core.ParamLocationQuery, "GET")
+
+			// Supabase-specific: extract anon key and add REST API schema endpoint.
+			// The /rest/v1/ endpoint returns an OpenAPI spec listing all tables
+			// accessible to the anon role. Missing RLS = unauthenticated data access.
+			if strings.Contains(baasURL, "supabase.co") {
+				anonKey := supabaseAnonKeyRe.FindString(js)
+				if anonKey != "" {
+					restURL := strings.TrimRight(baasURL, "/") + "/rest/v1/"
+					params = append(params, core.Parameter{
+						Name:           "apikey",
+						Value:          anonKey,
+						Location:       "header",
+						Method:         "GET",
+						SourceURL:      restURL,
+						Classification: "supabase-anon-key",
+					})
+				}
+			}
+
+			// Firebase RTDB: add /.json probe endpoint
+			if strings.Contains(baasURL, "firebaseio.com") {
+				fbURL := strings.TrimRight(baasURL, "/") + "/.json?shallow=true"
+				add(fbURL, "", core.ParamLocationQuery, "GET")
+			}
 		}
 
 		// Environment config URLs

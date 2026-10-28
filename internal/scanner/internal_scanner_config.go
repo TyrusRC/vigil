@@ -204,6 +204,13 @@ type InternalScanConfig struct {
 	AuthB         AuthState // identity B (the "attacker")
 	IDORTargetURL string    // optional override for the cross-identity probe URL
 
+	// SPA catch-all detection: before running injection detectors on a
+	// parameter, send two probes with unrelated values. If both responses
+	// have identical body hashes, the server ignores the parameter (static
+	// CDN / SPA catch-all routing) and all detectors would false-positive.
+	// Enabled by default; set true to skip the pre-check.
+	DisableSPACheck bool
+
 	// Scan intensity
 	MaxPayloadsPerParam  int
 	IncludeWAFBypass     bool

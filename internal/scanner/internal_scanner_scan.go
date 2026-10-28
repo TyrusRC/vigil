@@ -239,6 +239,21 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 		params = params[:maxParams]
 	}
 
+	// SPA catch-all detection: if the server returns the same body for
+	// random non-existent paths, it's a static CDN serving an SPA shell.
+	// Parameter-injection tests produce false positives because the
+	// server ignores all input. Skip injection and warn the operator.
+	spaCatchAll := false
+	if len(params) > 0 {
+		spaCatchAll = detectSPACatchAll(scanCtx, scanClient, targetURL)
+		if spaCatchAll {
+			fmt.Fprintf(os.Stderr, "[!] SPA catch-all routing detected — server returns identical body for all paths.\n")
+			fmt.Fprintf(os.Stderr, "[!] Skipping parameter-injection tests (CDN ignores params). URL-level tests will still run.\n")
+			fmt.Fprintf(os.Stderr, "[!] Tip: extract Supabase/Firebase keys from JS and probe the backend API directly.\n")
+			params = nil
+		}
+	}
+
 	// URL-level detectors (secheaders, TLS, cloud, smuggling, WS, etc.)
 	// must run regardless of how many parameters were discovered — they
 	// audit the host, not a parameter. Only the parameter-injection
@@ -247,11 +262,11 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	for _, p := range params {
 		paramNames = append(paramNames, p.Name+"("+p.Location+")")
 	}
-	if len(params) == 0 {
+	if len(params) == 0 && !spaCatchAll {
 		fmt.Fprintf(os.Stderr, "[!] No parameters found — skipping injection phase, URL-level tests will still run\n")
-	} else if s.config.Verbose {
+	} else if len(params) > 0 && s.config.Verbose {
 		fmt.Fprintf(os.Stderr, "[*] Testing %d parameters: %v\n", len(params), paramNames)
-	} else {
+	} else if len(params) > 0 {
 		fmt.Fprintf(os.Stderr, "[*] Testing %d parameters\n", len(params))
 	}
 
