@@ -85,6 +85,7 @@ import (
 	"github.com/TyrusRC/vigil/internal/detection/webhooksig"
 
 	"github.com/TyrusRC/vigil/internal/detection/apioverexpose"
+	"github.com/TyrusRC/vigil/internal/detection/openapiexpose"
 	"github.com/TyrusRC/vigil/internal/detection/typeconfuse"
 	"github.com/TyrusRC/vigil/internal/detection/longpwd"
 	"github.com/TyrusRC/vigil/internal/detection/samesitescript"
@@ -265,6 +266,7 @@ type InternalScanner struct {
 	webhookSigDetector      *webhooksig.Detector
 	typeConfuseDetector     *typeconfuse.Detector
 	apiOverexposeDetector   *apioverexpose.Detector
+	openapiExposeDetector   *openapiexpose.Detector
 	discoveryPipeline       *discovery.Pipeline
 	headlessPool            *headless.Pool
 	oobClient               *oob.Client

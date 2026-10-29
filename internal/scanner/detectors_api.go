@@ -132,6 +132,21 @@ func (s *InternalScanner) testTypeConfuse(ctx context.Context, targetURL string)
 	return res.Findings
 }
 
+// testOpenAPIExpose probes for publicly accessible OpenAPI/Swagger documentation.
+func (s *InternalScanner) testOpenAPIExpose(ctx context.Context, targetURL string) []*core.Finding {
+	if s.openapiExposeDetector == nil {
+		return nil
+	}
+	if s.config.Verbose {
+		fmt.Fprintf(os.Stderr, "[*] Testing OpenAPI/Swagger exposure on '%s'...\n", targetURL)
+	}
+	res, err := s.openapiExposeDetector.Detect(ctx, targetURL)
+	if err != nil || res == nil {
+		return nil
+	}
+	return res.Findings
+}
+
 // testAPIOverexpose compares list vs detail API endpoints for excessive
 // field exposure (OWASP API3:2023).
 func (s *InternalScanner) testAPIOverexpose(ctx context.Context, targetURL string) []*core.Finding {

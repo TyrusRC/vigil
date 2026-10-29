@@ -79,6 +79,7 @@ import (
 	"github.com/TyrusRC/vigil/internal/detection/longpwd"
 	"github.com/TyrusRC/vigil/internal/detection/webhooksig"
 	"github.com/TyrusRC/vigil/internal/detection/apioverexpose"
+	"github.com/TyrusRC/vigil/internal/detection/openapiexpose"
 	"github.com/TyrusRC/vigil/internal/detection/typeconfuse"
 	"github.com/TyrusRC/vigil/internal/detection/samesitescript"
 	"github.com/TyrusRC/vigil/internal/detection/wafdetect"
@@ -256,6 +257,7 @@ func (s *InternalScanner) initDetectors(httpClient *http.Client, config *Interna
 	s.webhookSigDetector = webhooksig.New(&nethttp.Client{Timeout: config.RequestTimeout})
 	s.typeConfuseDetector = typeconfuse.New(httpClient)
 	s.apiOverexposeDetector = apioverexpose.New(httpClient)
+	s.openapiExposeDetector = openapiexpose.New(httpClient)
 	s.config = config
 	s.confirmed = newConfirmedFindings()
 }
