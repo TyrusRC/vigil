@@ -115,3 +115,35 @@ func (s *InternalScanner) testORMLeak(ctx context.Context, targetURL string) []*
 	}
 	return res.Findings
 }
+
+// testTypeConfuse sends non-integer values (boolean, JSON, negative) to
+// integer-looking query parameters and flags 500 responses.
+func (s *InternalScanner) testTypeConfuse(ctx context.Context, targetURL string) []*core.Finding {
+	if s.typeConfuseDetector == nil {
+		return nil
+	}
+	if s.config.Verbose {
+		fmt.Fprintf(os.Stderr, "[*] Testing type confusion on '%s'...\n", targetURL)
+	}
+	res, err := s.typeConfuseDetector.Detect(ctx, targetURL)
+	if err != nil || res == nil {
+		return nil
+	}
+	return res.Findings
+}
+
+// testAPIOverexpose compares list vs detail API endpoints for excessive
+// field exposure (OWASP API3:2023).
+func (s *InternalScanner) testAPIOverexpose(ctx context.Context, targetURL string) []*core.Finding {
+	if s.apiOverexposeDetector == nil {
+		return nil
+	}
+	if s.config.Verbose {
+		fmt.Fprintf(os.Stderr, "[*] Testing API overexposure on '%s'...\n", targetURL)
+	}
+	res, err := s.apiOverexposeDetector.Detect(ctx, targetURL)
+	if err != nil || res == nil {
+		return nil
+	}
+	return res.Findings
+}

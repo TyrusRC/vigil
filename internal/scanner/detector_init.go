@@ -78,6 +78,8 @@ import (
 	"github.com/TyrusRC/vigil/internal/detection/iistilde"
 	"github.com/TyrusRC/vigil/internal/detection/longpwd"
 	"github.com/TyrusRC/vigil/internal/detection/webhooksig"
+	"github.com/TyrusRC/vigil/internal/detection/apioverexpose"
+	"github.com/TyrusRC/vigil/internal/detection/typeconfuse"
 	"github.com/TyrusRC/vigil/internal/detection/samesitescript"
 	"github.com/TyrusRC/vigil/internal/detection/wafdetect"
 	"github.com/TyrusRC/vigil/internal/detection/xfs"
@@ -252,6 +254,8 @@ func (s *InternalScanner) initDetectors(httpClient *http.Client, config *Interna
 	s.cspAuditDetector = cspaudit.New(&nethttp.Client{Timeout: config.RequestTimeout})
 	s.cookieTossDetector = cookietoss.New(&nethttp.Client{Timeout: config.RequestTimeout})
 	s.webhookSigDetector = webhooksig.New(&nethttp.Client{Timeout: config.RequestTimeout})
+	s.typeConfuseDetector = typeconfuse.New(httpClient)
+	s.apiOverexposeDetector = apioverexpose.New(httpClient)
 	s.config = config
 	s.confirmed = newConfirmedFindings()
 }

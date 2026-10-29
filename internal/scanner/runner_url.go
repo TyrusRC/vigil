@@ -207,6 +207,8 @@ func (s *InternalScanner) launchURLAPI(ctx context.Context, wg *sync.WaitGroup, 
 	s.launchIf(wg, c.EnableRateLimit, func() { emit(ctx, findingsChan, s.testRateLimit(ctx, targetURL)) })
 	s.launchIf(wg, c.APISpecURL != "", func() { emit(ctx, findingsChan, s.testAPISpec(ctx, targetURL)) })
 	s.launchIf(wg, c.EnableContentType, func() { emit(ctx, findingsChan, s.testContentType(ctx, targetURL)) })
+	s.launchIf(wg, true, func() { emit(ctx, findingsChan, s.testTypeConfuse(ctx, targetURL)) })
+	s.launchIf(wg, true, func() { emit(ctx, findingsChan, s.testAPIOverexpose(ctx, targetURL)) })
 }
 
 // launchURLModern dispatches modern / niche URL-level probes that

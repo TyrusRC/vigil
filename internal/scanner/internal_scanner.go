@@ -83,6 +83,9 @@ import (
 	"github.com/TyrusRC/vigil/internal/detection/cspaudit"
 	"github.com/TyrusRC/vigil/internal/detection/iistilde"
 	"github.com/TyrusRC/vigil/internal/detection/webhooksig"
+
+	"github.com/TyrusRC/vigil/internal/detection/apioverexpose"
+	"github.com/TyrusRC/vigil/internal/detection/typeconfuse"
 	"github.com/TyrusRC/vigil/internal/detection/longpwd"
 	"github.com/TyrusRC/vigil/internal/detection/samesitescript"
 	"github.com/TyrusRC/vigil/internal/detection/wafdetect"
@@ -260,6 +263,8 @@ type InternalScanner struct {
 	cspAuditDetector        *cspaudit.Detector
 	cookieTossDetector      *cookietoss.Detector
 	webhookSigDetector      *webhooksig.Detector
+	typeConfuseDetector     *typeconfuse.Detector
+	apiOverexposeDetector   *apioverexpose.Detector
 	discoveryPipeline       *discovery.Pipeline
 	headlessPool            *headless.Pool
 	oobClient               *oob.Client
