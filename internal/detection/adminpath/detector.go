@@ -63,7 +63,7 @@ var adminWordlist = []struct {
 	{"/debug/vars", core.SeverityMedium, "expvar handler"},
 	{"/_debug", core.SeverityMedium, "underscore-debug endpoint"},
 	{"/healthz?verbose=true", core.SeverityLow, "verbose healthz"},
-	{"/metrics", core.SeverityLow, "Prometheus metrics"},
+	{"/metrics", core.SeverityMedium, "Prometheus metrics (request counts, error rates, internal structure)"},
 	{"/_status", core.SeverityLow, "status endpoint"},
 	{"/server-status", core.SeverityMedium, "Apache server-status"},
 	{"/server-info", core.SeverityMedium, "Apache server-info"},
@@ -76,6 +76,7 @@ var adminWordlist = []struct {
 	{"/actuator/mappings", core.SeverityMedium, "actuator mappings"},
 	{"/actuator/trace", core.SeverityHigh, "actuator request trace"},
 	{"/actuator/httptrace", core.SeverityHigh, "actuator httptrace"},
+	{"/actuator/prometheus", core.SeverityMedium, "actuator Prometheus metrics"},
 
 	// API documentation / specs (info disclosure tier).
 	{"/swagger", core.SeverityLow, "Swagger UI"},
@@ -100,6 +101,12 @@ var adminWordlist = []struct {
 	{"/package.json", core.SeverityLow, "Node package.json"},
 	{"/.well-known/openid-configuration", core.SeverityLow, "OIDC discovery"},
 	{"/.well-known/security.txt", core.SeverityLow, "security.txt"},
+
+	// Null-byte extension bypass — some servers truncate at %00,
+	// serving the real file despite the fake extension.
+	{"/.env%2500.md", core.SeverityCritical, "null-byte bypass on .env"},
+	{"/config.json%2500.txt", core.SeverityHigh, "null-byte bypass on config.json"},
+	{"/package.json%2500.md", core.SeverityMedium, "null-byte bypass on package.json"},
 }
 
 // Detector probes the target for admin/debug/internal paths.

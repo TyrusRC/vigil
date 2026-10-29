@@ -245,6 +245,80 @@ func confidenceScore(c Confidence) int {
 	}
 }
 
+// MergeSameRoot collapses findings that share the same (Title, Parameter) into
+// one finding per root cause, collecting the affected URLs. URL-level findings
+// (e.g. "Web Cache Deception" on 43 different paths) become one entry with the
+// highest severity/confidence and an AffectedURLs list in Metadata. Param-level
+// injection findings that differ only by URL keep the URL that had the strongest
+// evidence. Call after Deduplicate.
+func (f Findings) MergeSameRoot() Findings {
+	type group struct {
+		best *Finding
+		urls []string
+	}
+	groups := make(map[string]*group)
+	order := make([]string, 0, len(f))
+
+	for _, finding := range f {
+		key := fmt.Sprintf("%d:%s|%d:%s", len(finding.Title), finding.Title, len(finding.Parameter), finding.Parameter)
+		if g, ok := groups[key]; !ok {
+			groups[key] = &group{best: finding, urls: []string{finding.URL}}
+			order = append(order, key)
+		} else {
+			g.urls = append(g.urls, finding.URL)
+			if severityScore(finding.Severity) > severityScore(g.best.Severity) ||
+				(severityScore(finding.Severity) == severityScore(g.best.Severity) &&
+					confidenceScore(finding.Confidence) > confidenceScore(g.best.Confidence)) {
+				oldURL := g.best.URL
+				g.best = finding
+				// Keep the best URL, the rest go to affected list
+				_ = oldURL
+			}
+		}
+	}
+
+	result := make(Findings, 0, len(order))
+	for _, key := range order {
+		g := groups[key]
+		if len(g.urls) > 1 {
+			// Deduplicate URLs
+			seen := make(map[string]bool)
+			unique := make([]string, 0, len(g.urls))
+			for _, u := range g.urls {
+				if !seen[u] {
+					seen[u] = true
+					unique = append(unique, u)
+				}
+			}
+			if g.best.Metadata == nil {
+				g.best.Metadata = make(map[string]interface{})
+			}
+			g.best.Metadata["affected_urls"] = unique
+			g.best.Metadata["affected_count"] = len(unique)
+		}
+		result = append(result, g.best)
+	}
+	return result
+}
+
+// severityScore returns a numeric score for severity comparison.
+func severityScore(s Severity) int {
+	switch s {
+	case SeverityCritical:
+		return 5
+	case SeverityHigh:
+		return 4
+	case SeverityMedium:
+		return 3
+	case SeverityLow:
+		return 2
+	case SeverityInfo:
+		return 1
+	default:
+		return 0
+	}
+}
+
 // FilterBySeverity returns findings with the specified severity.
 func (f Findings) FilterBySeverity(severity Severity) Findings {
 	result := make(Findings, 0)

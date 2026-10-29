@@ -494,8 +494,10 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 
 	prog.Finish()
 
-	// Deduplicate findings
-	result.Findings = collectedFindings.Deduplicate()
+	// Deduplicate findings: first exact dedup (same URL+type+param), then
+	// merge same root cause across different URLs into one finding with
+	// affected_urls metadata (e.g. "Web Cache Deception" on 43 paths → 1).
+	result.Findings = collectedFindings.Deduplicate().MergeSameRoot()
 
 	// Remove partial-results file — the caller writes the final report.
 	if partialDir != "" {
