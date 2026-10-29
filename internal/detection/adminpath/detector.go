@@ -92,6 +92,32 @@ var adminWordlist = []struct {
 	{"/graphql", core.SeverityMedium, "GraphQL endpoint"},
 	{"/graphiql", core.SeverityMedium, "GraphiQL UI"},
 
+	// Application server consoles.
+	{"/console/login/LoginForm.jsp", core.SeverityHigh, "WebLogic admin console"},
+	{"/console/", core.SeverityHigh, "WebLogic admin console"},
+	{"/manager/html", core.SeverityHigh, "Tomcat Manager"},
+	{"/manager/status", core.SeverityMedium, "Tomcat Manager status"},
+	{"/system/console", core.SeverityHigh, "OSGi/Felix console"},
+	{"/web-console", core.SeverityHigh, "JBoss web console"},
+	{"/jmx-console", core.SeverityHigh, "JBoss JMX console"},
+	{"/invoker/JMXInvokerServlet", core.SeverityCritical, "JBoss JMX invoker (RCE vector)"},
+
+	// Sensitive file types — credential stores and backups.
+	{"/backup.sql", core.SeverityCritical, "SQL database backup"},
+	{"/dump.sql", core.SeverityCritical, "SQL dump"},
+	{"/database.sql", core.SeverityCritical, "SQL database file"},
+	{"/credentials.kdbx", core.SeverityHigh, "KeePass credential vault"},
+	{"/server.key", core.SeverityHigh, "TLS private key"},
+	{"/server.pem", core.SeverityHigh, "TLS certificate/key bundle"},
+	{"/id_rsa", core.SeverityCritical, "SSH private key"},
+	{"/id_ed25519", core.SeverityCritical, "SSH private key (Ed25519)"},
+	{"/.ssh/authorized_keys", core.SeverityHigh, "SSH authorized keys"},
+	{"/keystore.jks", core.SeverityHigh, "Java keystore"},
+	{"/keystore.p12", core.SeverityHigh, "PKCS12 keystore"},
+	{"/.env.bak", core.SeverityCritical, "env backup"},
+	{"/.env.old", core.SeverityCritical, "old env file"},
+	{"/web.config.bak", core.SeverityHigh, "IIS config backup"},
+
 	// Misc developer leaks.
 	{"/.env", core.SeverityCritical, "exposed .env"},
 	{"/.git/config", core.SeverityCritical, "exposed .git config"},
