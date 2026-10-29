@@ -62,6 +62,12 @@ well.
 - **API overexposure detection** — compares list vs detail endpoint field counts; flags when a detail view returns >1.5× the fields of the list view with sensitive field names (userId, email, token, admin).
 - **Type confusion detection** — sends boolean, JSON, array, and negative values to integer-looking parameters; flags server 500 errors that indicate unhandled input type coercion.
 - **Supabase/Firebase key extraction** — discovers anon keys and project URLs in JS bundles; adds the REST API schema endpoint as a parameter for downstream RLS detection.
+- **Finding deduplication** — `MergeSameRoot()` collapses duplicate findings on different URLs with the same root cause into one finding with affected URLs, eliminating the 43× "Web Cache Deception" noise seen on large targets.
+- **Null-byte path traversal** — probes `%2500.md` extension bypass on sensitive file paths (catches Juice Shop–style `.bak` file disclosure).
+- **Prometheus /metrics detection** — flags exposed Prometheus and Spring Boot actuator endpoints with internal service data.
+- **Cache-Control CSP stripping** — detects `no-cache="content-security-policy"` that strips CSP from Chromium's disk cache (CDN proxy bypass class).
+- **Admin path coverage** — WebLogic console, Tomcat Manager, JBoss admin, OSGi Felix, plus standard admin/debug paths.
+- **Sensitive file types** — detects .kdbx (KeePass), .key, .pem, .p12, .jks, SSH keys, and SQL backups in directory listings.
 - **Risk-gated payloads** — destructive SQL payloads (`DROP TABLE`, `xp_cmdshell`) require `--risk 3`
 - **Incremental results** — findings flush to disk after each scan phase, so early results survive if a later phase times out
 - **Web console, full API & MCP** — `vigil web` opens a multi-page console (dashboard, targets, scans, live triage, reports, compliance, settings) backed by an authenticated JSON API that exposes every feature; `vigil mcp` serves the same operations to AI agents over the Model Context Protocol
