@@ -153,6 +153,38 @@ func (d *Detector) Detect(ctx context.Context, target, param, method string, opt
 		}
 	}
 
+	// CSP stripping via Cache-Control: no-cache="content-security-policy".
+	// Chromium honors the field-name argument and drops that header from the
+	// disk-cache copy. If the proxy forwards the origin's Cache-Control
+	// unfiltered, an attacker-controlled origin can strip CSP from cached
+	// pages served to other visitors.
+	if csp := baselineResp.Headers["Content-Security-Policy"]; csp != "" {
+		cspResp, err := d.client.Do(ctx, &http.Request{
+			Method:  method,
+			URL:     target,
+			Headers: map[string]string{
+				"Cache-Control": `no-cache="content-security-policy"`,
+			},
+		})
+		if err == nil {
+			if cspResp.Headers["Content-Security-Policy"] == "" {
+				finding := d.createFinding(target, cachepoisoning.Payload{
+					HeaderName:  "Cache-Control",
+					Value:       `no-cache="content-security-policy"`,
+					Description: "CSP stripped from cached response via Cache-Control field-name directive",
+				}, cspResp, "csp-cache-strip")
+				finding.Severity = "high"
+				finding.Confidence = "medium"
+				finding.Evidence = fmt.Sprintf(
+					"Baseline has CSP: %s. Response with Cache-Control: no-cache=\"content-security-policy\" drops CSP header. "+
+						"Chromium disk-cache serves the CSP-stripped version to later visitors.",
+					csp[:min(len(csp), 80)])
+				result.Findings = append(result.Findings, finding)
+				result.Vulnerable = true
+			}
+		}
+	}
+
 	return result, nil
 }
 
