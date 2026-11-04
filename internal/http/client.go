@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"strings"
@@ -28,6 +29,11 @@ var ErrOutOfScope = errors.New("request blocked: out of scope")
 
 // MaxResponseBodySize limits response body reads to 10MB to prevent OOM.
 const MaxResponseBodySize = 10 * 1024 * 1024
+
+// RawExchangeBodyLimit caps the response body kept in Response.RawResponse (the
+// Burp-style evidence dump). The full body still lives in Response.Body for
+// detector logic; the raw dump is for human display, so 16KB is plenty.
+const RawExchangeBodyLimit = 16 * 1024
 
 // Request represents an HTTP request.
 type Request struct {
@@ -57,6 +63,15 @@ type Response struct {
 	OriginalValue string
 	// WAFBlocked is true when the response looks like a WAF block page.
 	WAFBlocked bool
+	// RawRequest and RawResponse hold the real wire-format HTTP exchange —
+	// the actual request line, every header (User-Agent, Cookie, Content-Type,
+	// custom headers) and body that went on the wire, and the response status
+	// line, every response header (including multi-value Set-Cookie) and the
+	// body. Detectors attach these to findings via Finding.WithExchange so the
+	// UI shows a faithful Burp-proxy-history view instead of a synthetic stub.
+	// The response body is capped at RawExchangeBodyLimit to bound memory.
+	RawRequest  string
+	RawResponse string
 }
 
 // Client is an HTTP client for security testing.
@@ -94,6 +109,25 @@ type Client struct {
 
 	// wafWarnOnce ensures the WAF-block stderr warning fires only once.
 	wafWarnOnce sync.Once
+
+	// recorder, when set, captures the real request/response dump per URL so
+	// findings without their own attached exchange can be backfilled with the
+	// genuine wire traffic. Shared across Clones (pointer copied, not deep).
+	recorder *exchangeRecorder
+}
+
+// EnableExchangeRecording turns on per-URL capture of the real HTTP exchange,
+// keeping at most max entries (<=0 uses a sane default). Call once on the
+// scan's root client; Clones share the same store. Used to backfill Burp-style
+// evidence onto findings whose detector attached none.
+func (c *Client) EnableExchangeRecording(max int) {
+	c.recorder = newExchangeRecorder(max)
+}
+
+// RecordedExchange returns the real request/response dump captured for url, if
+// exchange recording is enabled and url was fetched.
+func (c *Client) RecordedExchange(url string) (request, response string, ok bool) {
+	return c.recorder.lookup(url)
 }
 
 // NewClient creates a new HTTP client.
@@ -348,6 +382,15 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 		httpReq.Header.Set("Cookie", cookie)
 	}
 
+	// Capture the real raw request (full wire format: request line + every
+	// header + body) before sending. DumpRequestOut buffers and restores the
+	// body via GetBody, so the request can still be sent afterwards. On the
+	// retry path the headers are copied verbatim, so this dump stays accurate.
+	var rawRequest string
+	if dump, derr := httputil.DumpRequestOut(httpReq, req.Body != ""); derr == nil {
+		rawRequest = string(dump)
+	}
+
 	// Execute request with one retry on transient failures.
 	httpResp, err := c.httpClient.Do(httpReq)
 	if err != nil || (httpResp != nil && httpResp.StatusCode >= 502 && httpResp.StatusCode <= 504) {
@@ -401,6 +444,19 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 		response.Headers[k] = strings.Join(vals, ", ")
 	}
 
+	// Attach the real wire-format exchange for Burp-style evidence. The request
+	// was dumped before sending; the response is reconstructed from the actual
+	// status line, every header (preserving multi-value Set-Cookie via
+	// http.Header.Write), and the body we just read (capped for display).
+	response.RawRequest = rawRequest
+	response.RawResponse = buildRawResponse(httpResp, body)
+
+	// Record the exchange keyed by the requested URL so findings whose detector
+	// attached no proof (header/cookie/CSP/exposure checks) can be backfilled
+	// with this real traffic. Keyed by req.URL — the exact target a detector
+	// scans — so a baseline GET is retrievable by the finding's URL.
+	c.recorder.record(req.URL, response.RawRequest, response.RawResponse)
+
 	// --- WAF-block detection ---
 	if isWAFBlock(response) {
 		response.WAFBlocked = true
@@ -430,4 +486,28 @@ func (c *Client) Do(ctx context.Context, req *Request) (*Response, error) {
 	}
 
 	return response, nil
+}
+
+// buildRawResponse reconstructs the wire-format HTTP response — status line,
+// all headers (including every Set-Cookie via http.Header.Write), a blank line,
+// then the body (capped at RawExchangeBodyLimit for display). The body passed
+// in is the already-read, size-limited body so we never re-read the stream.
+func buildRawResponse(resp *http.Response, body []byte) string {
+	var b strings.Builder
+	proto := resp.Proto
+	if proto == "" {
+		proto = "HTTP/1.1"
+	}
+	fmt.Fprintf(&b, "%s %s\r\n", proto, resp.Status)
+	// http.Header.Write emits each header as "Key: value\r\n", one line per
+	// value, so multi-value headers such as Set-Cookie are preserved intact.
+	_ = resp.Header.Write(&b)
+	b.WriteString("\r\n")
+	if len(body) > RawExchangeBodyLimit {
+		b.Write(body[:RawExchangeBodyLimit])
+		fmt.Fprintf(&b, "\r\n\r\n[... %d more bytes truncated ...]", len(body)-RawExchangeBodyLimit)
+	} else {
+		b.Write(body)
+	}
+	return b.String()
 }

@@ -199,7 +199,7 @@ func (d *Detector) createFinding(target, param string, payload ssti.Payload, res
 	)
 
 	if resp != nil {
-		finding.WithProof("", target, payload.Value, resp.StatusCode, resp.Body)
+		finding.WithExchange(resp.RawRequest, resp.RawResponse)
 	}
 	return finding
 }

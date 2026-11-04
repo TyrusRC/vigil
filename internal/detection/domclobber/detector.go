@@ -211,6 +211,6 @@ func (d *Detector) createFinding(target, param string, payload domclobber.Payloa
 		[]string{"CWE-79"},
 	)
 
-	if resp != nil { finding.WithProof("", target, "", resp.StatusCode, resp.Body) }
+	if resp != nil { finding.WithExchange(resp.RawRequest, resp.RawResponse) }
 	return finding
 }

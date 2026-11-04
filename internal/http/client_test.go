@@ -1124,3 +1124,43 @@ func TestClient_SendPayload_PUT_BodyOnly(t *testing.T) {
 		t.Fatalf("SendPayload() PUT error = %v", err)
 	}
 }
+
+// The captured raw exchange must be a faithful, Burp-proxy-history-style dump:
+// the real request line + every header that went on the wire (incl. a custom
+// header and Cookie), and the real response status line + every response header
+// (incl. multi-value Set-Cookie) + body. This is the evidence the UI renders,
+// so a stripped/synthetic dump is a regression.
+func TestClient_Do_CapturesRawExchange(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Header().Add("Set-Cookie", "a=1; Path=/")
+		w.Header().Add("Set-Cookie", "b=2; HttpOnly")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("<html>pwned</html>"))
+	}))
+	defer server.Close()
+
+	client := NewClient()
+	client.WithHeaders(map[string]string{"X-Test-Marker": "vigil-probe"})
+	client.WithCookies("session=secret-token")
+
+	resp, err := client.Do(context.Background(), &Request{Method: http.MethodGet, URL: server.URL})
+	if err != nil {
+		t.Fatalf("Do() error = %v", err)
+	}
+
+	// Request side: real request line + real headers that went on the wire.
+	for _, want := range []string{"GET / HTTP/1.1", "Host:", "User-Agent:", "X-Test-Marker: vigil-probe", "Cookie: session=secret-token"} {
+		if !strings.Contains(resp.RawRequest, want) {
+			t.Errorf("RawRequest missing %q\n--- got ---\n%s", want, resp.RawRequest)
+		}
+	}
+
+	// Response side: status line, every header incl. BOTH Set-Cookie values, body.
+	for _, want := range []string{"HTTP/1.1 200 OK", "Content-Type: text/html", "X-Frame-Options: DENY", "Set-Cookie: a=1; Path=/", "Set-Cookie: b=2; HttpOnly", "<html>pwned</html>"} {
+		if !strings.Contains(resp.RawResponse, want) {
+			t.Errorf("RawResponse missing %q\n--- got ---\n%s", want, resp.RawResponse)
+		}
+	}
+}

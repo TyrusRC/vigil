@@ -65,6 +65,11 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	applyScanConfigInPlace(s.client, scanConfig)
 	scanClient := s.client
 
+	// Capture the real wire exchange per URL so findings whose detector attached
+	// no request/response (security-header, cookie, CSP, exposure checks) can be
+	// backfilled with genuine Burp-style evidence instead of a synthetic stub.
+	scanClient.EnableExchangeRecording(0)
+
 	// Target-down detection: cancel the scan when the HTTP client has seen
 	// too many consecutive connection failures.
 	maxConnErr := s.config.MaxConsecutiveErrors
@@ -294,24 +299,30 @@ func (s *InternalScanner) Scan(ctx context.Context, target *core.Target, scanCon
 	go func() {
 		defer collectWg.Done()
 		for finding := range findingsChan {
-			// Auto-proof: if the detector didn't set Request, build a
-			// raw HTTP request from the finding's fields.
+			// Auto-proof: if the detector didn't attach the exchange, first
+			// try the real captured request/response for this URL (Burp-style
+			// evidence with every header). Only if nothing was recorded do we
+			// fall back to a synthetic stub built from the finding's fields.
 			if finding.Request == "" && finding.URL != "" {
-				param := finding.Parameter
-				if param == "" {
-					param = "input"
+				if req, resp, ok := scanClient.RecordedExchange(finding.URL); ok {
+					finding.WithExchange(req, resp)
+				} else {
+					param := finding.Parameter
+					if param == "" {
+						param = "input"
+					}
+					payload := finding.Evidence
+					if idx := strings.Index(payload, "\n"); idx > 0 {
+						payload = payload[:idx]
+					}
+					if strings.HasPrefix(payload, "Payload: ") {
+						payload = payload[9:]
+					}
+					if len(payload) > 200 {
+						payload = payload[:200]
+					}
+					finding.WithProof("GET", finding.URL, payload, 0, "")
 				}
-				payload := finding.Evidence
-				if idx := strings.Index(payload, "\n"); idx > 0 {
-					payload = payload[:idx]
-				}
-				if strings.HasPrefix(payload, "Payload: ") {
-					payload = payload[9:]
-				}
-				if len(payload) > 200 {
-					payload = payload[:200]
-				}
-				finding.WithProof("GET", finding.URL, payload, 0, "")
 			}
 			findingsMu.Lock()
 			collectedFindings = append(collectedFindings, finding)

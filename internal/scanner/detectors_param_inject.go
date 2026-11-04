@@ -86,7 +86,7 @@ func (s *InternalScanner) testSQLiWithClient(ctx context.Context, targetURL stri
 			finding.Evidence = fmt.Sprintf("Payload: %s\nEvidence: %s", payload.Value, analysis.Evidence)
 			finding.Tool = "internal-sqli-detector"
 			finding.Remediation = "Use parameterized queries or prepared statements. Never concatenate user input into SQL queries."
-			finding.WithProof(method, targetURL, payload.Value, resp.StatusCode, resp.Body)
+			finding.WithExchange(resp.RawRequest, resp.RawResponse)
 
 			finding.WithOWASPMapping(
 				[]string{"WSTG-INPV-05"},

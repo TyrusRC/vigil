@@ -25,6 +25,7 @@ func (c *Client) Clone() *Client {
 		cookieSrc:       c.cookieSrc,
 		paramOverride:   c.paramOverride,
 		siblingParams:   c.siblingParams,
+		recorder:        c.recorder,
 	}
 	for k, v := range c.headers {
 		cloned.headers[k] = v

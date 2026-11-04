@@ -192,6 +192,22 @@ func (f *Finding) WithProof(method, targetURL, payload string, statusCode int, r
 	return f
 }
 
+// WithExchange attaches the real, captured wire-format HTTP exchange to the
+// finding — the actual request (request line + every header + body that went
+// on the wire) and response (status line + every header incl. Set-Cookie +
+// body) as recorded by the HTTP client. This is the Burp-proxy-history
+// evidence: unlike WithProof it invents nothing. Empty arguments are ignored
+// so a caller can attach whichever side it captured. Evidence is left intact.
+func (f *Finding) WithExchange(request, response string) *Finding {
+	if request != "" {
+		f.Request = request
+	}
+	if response != "" {
+		f.Response = response
+	}
+	return f
+}
+
 // Age returns the duration since the finding was discovered.
 func (f *Finding) Age() time.Duration {
 	return time.Since(f.Timestamp)
