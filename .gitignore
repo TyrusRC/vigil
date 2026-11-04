@@ -81,3 +81,6 @@ docs/superpowers/
 scan-output/
 nikto_*.json
 vigil-report-*/
+
+# graphify knowledge-graph output (local tooling)
+graphify-out/

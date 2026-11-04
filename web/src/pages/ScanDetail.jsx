@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api'
 import { I } from '../icons'
 import { SEV, LABELS, SEV_RANK, sevOf, copy, findingToMarkdown } from '../util'
-import { Detail, SevGroup, TAB_KEYS } from '../components/Finding'
+import { Detail, SevGroup, EndpointGroup, groupByEndpoint, TAB_KEYS } from '../components/Finding'
 import { StatusPill, Spinner } from '../components/ui'
 
 const REPORT_FORMATS = ['json', 'sarif', 'html', 'markdown', 'csv']
@@ -15,7 +15,9 @@ export default function ScanDetail({ id, go, toast }) {
   const [query, setQuery] = useState('')
   const [muted, setMuted] = useState({})
   const [collapsed, setCollapsed] = useState({})
-  const [tab, setTab] = useState('request')
+  const [egCollapsed, setEgCollapsed] = useState({})
+  const [tab, setTab] = useState('evidence')
+  const [groupMode, setGroupMode] = useState(() => { try { return localStorage.getItem('vigil-group') || 'severity' } catch { return 'severity' } })
   const [hideDismissed, setHideDismissed] = useState(false)
   const [mode, setMode] = useState('findings') // findings | compliance
   const [triage, setTriage] = useState(() => { try { return JSON.parse(localStorage.getItem('vigil-triage-' + id) || '{}') } catch { return {} } })
@@ -25,6 +27,7 @@ export default function ScanDetail({ id, go, toast }) {
   const setRowRef = useCallback((fid, el) => { if (el) rowRefs.current[fid] = el; else delete rowRefs.current[fid] }, [])
 
   useEffect(() => { try { localStorage.setItem('vigil-triage-' + id, JSON.stringify(triage)) } catch {} }, [triage, id])
+  useEffect(() => { try { localStorage.setItem('vigil-group', groupMode) } catch {} }, [groupMode])
 
   const loadFindings = useCallback(() => {
     api.findings(id).then(f => { if (Array.isArray(f)) setFindings(f) }).catch(() => {})
@@ -91,18 +94,24 @@ export default function ScanDetail({ id, go, toast }) {
 
   const grouped = {}; SEV.forEach(s => grouped[s] = [])
   visible.forEach(f => grouped[sevOf(f)].push(f))
+  const endpointGroups = useMemo(() => groupByEndpoint(visible), [visible])
+  // Keyboard nav (j/k) must follow what's on screen, which is the endpoint order
+  // when grouped by endpoint — not the severity-sorted `visible` order.
+  const displayList = useMemo(
+    () => groupMode === 'endpoint' ? endpointGroups.flatMap(g => g.items) : visible,
+    [groupMode, endpointGroups, visible])
 
   const selected = findings.find(f => f.id === selectedId) || null
-  useEffect(() => { if (!selectedId && visible.length) setSelectedId(visible[0].id) }, [visible, selectedId])
-  useEffect(() => { setTab('request') }, [selectedId])
+  useEffect(() => { if (!selectedId && displayList.length) setSelectedId(displayList[0].id) }, [displayList, selectedId])
+  useEffect(() => { setTab('evidence') }, [selectedId])
 
   const move = useCallback((delta) => {
-    if (!visible.length) return
-    const idx = visible.findIndex(f => f.id === selectedId)
-    const next = idx < 0 ? 0 : Math.min(visible.length - 1, Math.max(0, idx + delta))
-    const nf = visible[next]
+    if (!displayList.length) return
+    const idx = displayList.findIndex(f => f.id === selectedId)
+    const next = idx < 0 ? 0 : Math.min(displayList.length - 1, Math.max(0, idx + delta))
+    const nf = displayList[next]
     if (nf) { setSelectedId(nf.id); rowRefs.current[nf.id]?.scrollIntoView({ block: 'nearest' }) }
-  }, [visible, selectedId])
+  }, [displayList, selectedId])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -112,7 +121,7 @@ export default function ScanDetail({ id, go, toast }) {
       if (typing || mode !== 'findings') return
       if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); move(1) }
       else if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); move(-1) }
-      else if (e.key >= '1' && e.key <= '4') { setTab(TAB_KEYS[+e.key - 1]) }
+      else if (e.key >= '1' && e.key <= '3') { setTab(TAB_KEYS[+e.key - 1]) }
       else if (selected && e.key === 'r') { const st = triage[selected.id] === 'reviewed' ? 'open' : 'reviewed'; setTriageFor(selected.id, st); toast(st === 'reviewed' ? 'Marked reviewed' : 'Reopened') }
       else if (selected && e.key === 'f') { const st = triage[selected.id] === 'fp' ? 'open' : 'fp'; setTriageFor(selected.id, st); toast(st === 'fp' ? 'Marked false positive' : 'Restored') }
       else if (selected && e.key === 'y') { copy(selected.url); toast('URL copied') }
@@ -166,15 +175,27 @@ export default function ScanDetail({ id, go, toast }) {
               <I.search width="15" height="15" />
               <input ref={searchRef} value={query} onChange={e => setQuery(e.target.value)} placeholder="Filter findings…  ( / )" aria-label="Filter findings" />
             </div>
-            {fpCount > 0 && (
-              <label className="toolbar-toggle">
-                <input type="checkbox" checked={hideDismissed} onChange={e => setHideDismissed(e.target.checked)} />
-                Hide {fpCount} false positive{fpCount > 1 ? 's' : ''}
-              </label>
-            )}
+            <div className="list-toolbar">
+              <div className="group-switch" role="tablist" aria-label="Group findings by">
+                <button role="tab" aria-selected={groupMode === 'severity'} className={groupMode === 'severity' ? 'active' : ''} onClick={() => setGroupMode('severity')}>Severity</button>
+                <button role="tab" aria-selected={groupMode === 'endpoint'} className={groupMode === 'endpoint' ? 'active' : ''} onClick={() => setGroupMode('endpoint')} title="Group every detector that fired on the same URL + parameter">Endpoint</button>
+              </div>
+              {fpCount > 0 && (
+                <label className="toolbar-toggle">
+                  <input type="checkbox" checked={hideDismissed} onChange={e => setHideDismissed(e.target.checked)} />
+                  Hide {fpCount} FP{fpCount > 1 ? 's' : ''}
+                </label>
+              )}
+            </div>
             <div className="finding-list" role="listbox" aria-label="Findings">
-              {SEV.map(s => !muted[s] && <SevGroup key={s} sev={s} items={grouped[s] || []} selectedId={selectedId} onSelect={f => setSelectedId(f.id)}
-                triage={triage} collapsed={collapsed[s]} toggle={() => setCollapsed(c => ({ ...c, [s]: !c[s] }))} rowRef={setRowRef} />)}
+              {groupMode === 'severity'
+                ? SEV.map(s => !muted[s] && <SevGroup key={s} sev={s} items={grouped[s] || []} selectedId={selectedId} onSelect={f => setSelectedId(f.id)}
+                    triage={triage} collapsed={collapsed[s]} toggle={() => setCollapsed(c => ({ ...c, [s]: !c[s] }))} rowRef={setRowRef} />)
+                : endpointGroups.map(g => {
+                    const key = `${g.url}\u0000${g.parameter}`
+                    return <EndpointGroup key={key} group={g} selectedId={selectedId} onSelect={f => setSelectedId(f.id)}
+                      triage={triage} collapsed={egCollapsed[key]} toggle={() => setEgCollapsed(c => ({ ...c, [key]: !c[key] }))} rowRef={setRowRef} />
+                  })}
               {!visible.length && <div className="sidebar-empty">{running ? 'Scanning…' : q ? 'No findings match your filter' : scan.status === 'failed' ? (scan.error || 'Scan failed') : 'No findings'}</div>}
             </div>
           </aside>

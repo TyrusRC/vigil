@@ -217,7 +217,7 @@ func (f Findings) Deduplicate() Findings {
 		if existing, ok := best[key]; !ok {
 			best[key] = finding
 			order = append(order, key)
-		} else if confidenceScore(finding.Confidence) > confidenceScore(existing.Confidence) {
+		} else if supersedesForDedup(finding, existing) {
 			best[key] = finding
 		}
 	}
@@ -227,6 +227,22 @@ func (f Findings) Deduplicate() Findings {
 		result = append(result, best[key])
 	}
 	return result
+}
+
+// supersedesForDedup reports whether candidate should replace incumbent when
+// both collapse to the same deduplication key. Severity is the primary axis —
+// a Critical must never be dropped in favour of a lower-severity duplicate,
+// even one with higher confidence (that silently hides the worse bug). Ties
+// break on confidence, then on verified status (a confirmed finding carries
+// stronger evidence than an unconfirmed one of equal rank).
+func supersedesForDedup(candidate, incumbent *Finding) bool {
+	if cs, is := candidate.Severity.Score(), incumbent.Severity.Score(); cs != is {
+		return cs > is
+	}
+	if cc, ic := confidenceScore(candidate.Confidence), confidenceScore(incumbent.Confidence); cc != ic {
+		return cc > ic
+	}
+	return candidate.Verified && !incumbent.Verified
 }
 
 // confidenceScore returns a numeric score for confidence comparison.

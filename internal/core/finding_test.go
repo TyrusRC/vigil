@@ -210,6 +210,53 @@ func TestFindings_Deduplicate(t *testing.T) {
 	}
 }
 
+// When duplicates collide on the dedup key, the survivor must be the
+// higher-SEVERITY finding — not merely the higher-confidence one. A
+// scanner that drops a Critical in favour of a Low because the Low had
+// marginally higher confidence silently hides the worse vulnerability.
+func TestFindings_Deduplicate_PrefersSeverityOverConfidence(t *testing.T) {
+	findings := Findings{
+		{ID: "crit", Type: "SQLi", URL: "https://example.com/test", Parameter: "id",
+			Severity: SeverityCritical, Confidence: ConfidenceLow},
+		{ID: "low", Type: "SQLi", URL: "https://example.com/test", Parameter: "id",
+			Severity: SeverityLow, Confidence: ConfidenceHigh},
+	}
+
+	deduplicated := findings.Deduplicate()
+
+	if len(deduplicated) != 1 {
+		t.Fatalf("len(deduplicated) = %d, want 1", len(deduplicated))
+	}
+	if deduplicated[0].ID != "crit" {
+		t.Errorf("survivor = %q (severity %s), want the Critical finding %q",
+			deduplicated[0].ID, deduplicated[0].Severity, "crit")
+	}
+}
+
+// With equal severity, confidence remains the tiebreaker, and a verified
+// finding outranks an unverified one at equal severity+confidence.
+func TestFindings_Deduplicate_TieBreakConfidenceThenVerified(t *testing.T) {
+	byConfidence := Findings{
+		{ID: "lowconf", Type: "XSS", URL: "https://example.com/p", Parameter: "q",
+			Severity: SeverityHigh, Confidence: ConfidenceLow},
+		{ID: "highconf", Type: "XSS", URL: "https://example.com/p", Parameter: "q",
+			Severity: SeverityHigh, Confidence: ConfidenceHigh},
+	}
+	if got := byConfidence.Deduplicate(); len(got) != 1 || got[0].ID != "highconf" {
+		t.Errorf("equal severity: survivor = %v, want highconf", got)
+	}
+
+	byVerified := Findings{
+		{ID: "unverified", Type: "XSS", URL: "https://example.com/p", Parameter: "q",
+			Severity: SeverityHigh, Confidence: ConfidenceHigh, Verified: false},
+		{ID: "verified", Type: "XSS", URL: "https://example.com/p", Parameter: "q",
+			Severity: SeverityHigh, Confidence: ConfidenceHigh, Verified: true},
+	}
+	if got := byVerified.Deduplicate(); len(got) != 1 || got[0].ID != "verified" {
+		t.Errorf("equal severity+confidence: survivor = %v, want verified", got)
+	}
+}
+
 func TestFindings_FilterBySeverity(t *testing.T) {
 	findings := Findings{
 		{ID: "1", Severity: SeverityLow},
