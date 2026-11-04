@@ -1,6 +1,6 @@
 import React from 'react'
 import { I } from '../icons'
-import { LABELS, SEV_RANK, sevOf, cvssBand, copy, findingToMarkdown, Code, CurlCopy } from '../util'
+import { SEV, LABELS, SEV_RANK, sevOf, cvssBand, copy, findingToMarkdown, Code, CurlCopy } from '../util'
 
 // Evidence is now one side-by-side pane (request | response, Burp-style) rather
 // than two separate tabs, so a red-teamer reads the exchange without flipping.
@@ -120,27 +120,44 @@ export function Detail({ f, tab, setTab, triage, setTriageFor, onToast }) {
   )
 }
 
-/* One finding row — shared by the severity and endpoint groupings. */
-function FindingRow({ f, selectedId, onSelect, triage, rowRef, showSev }) {
+/* One finding row — shared by the severity and endpoint groupings.
+   primary: what the bold line shows — 'type' (default) or 'param' (used inside a
+   same-type group, where the type is already in the header and the parameter is
+   what distinguishes the rows). hideUrl drops the redundant URL when the group
+   header already states it. */
+function FindingRow({ f, selectedId, onSelect, triage, rowRef, showSev, primary = 'type', hideUrl }) {
   const st = triage[f.id] || 'open'
   const sev = sevOf(f)
+  const label = primary === 'param' ? (f.parameter || f.type || f.title) : (f.type || f.title)
   return (
     <div ref={el => rowRef(f.id, el)} data-fid={f.id}
       className={`finding-row ${selectedId === f.id ? 'active' : ''} ${st === 'fp' ? 'dismissed' : ''}`}
       role="option" aria-selected={selectedId === f.id} onClick={() => onSelect(f)}>
       <div className="type">
         {showSev && <span className="row-sev-dot" style={{ background: `var(--${sev})` }} title={LABELS[sev]} />}
-        {f.type || f.title}
+        {label}
         {st === 'reviewed' && <I.check className="row-flag ok" width="13" height="13" />}
         {st === 'fp' && <I.xcircle className="row-flag bad" width="13" height="13" />}
       </div>
-      <div className="url">{f.url}{f.parameter ? ` → ${f.parameter}` : ''}</div>
+      {!hideUrl && <div className="url">{f.url}{f.parameter ? ` → ${f.parameter}` : ''}</div>}
       <div className="row-meta">
         {f.tool && <span className="mini-tag tool">{f.tool}</span>}
         {f.cvss > 0 && <span className="mini-tag">CVSS {Number(f.cvss).toFixed(1)}</span>}
         {f.verified && <span className="mini-tag verified">verified</span>}
       </div>
     </div>
+  )
+}
+
+/* Compact severity spread for a group header: one colored pip per severity
+   present, carrying its count, so a mixed group's makeup is visible unexpanded. */
+function SevSpread({ counts }) {
+  return (
+    <span className="eg-sevs">
+      {SEV.filter(s => counts[s]).map(s => (
+        <span key={s} className="sev-pip" style={{ background: `var(--${s})` }} title={`${counts[s]} ${LABELS[s]}`}>{counts[s]}</span>
+      ))}
+    </span>
   )
 }
 
@@ -163,43 +180,91 @@ export function SevGroup({ sev, items, selectedId, onSelect, triage, collapsed, 
   )
 }
 
-/* Collapsible endpoint+parameter group — collapses the many detectors that
-   fire on one (URL, parameter) into a single expandable cluster, so a reflected
-   param that lights up seven detectors reads as one target, not seven rows. */
+/* Collapsible endpoint group. A group is one of:
+   - 'param': many detectors on one (URL, parameter) — the reflected-param pile;
+   - 'type':  one finding type repeated across many parameters of one URL — e.g.
+     a "Missing Security Header" per header, collapsed into a single cluster so
+     they stop fragmenting the list;
+   - 'single': a lone finding that shares neither axis with another.
+   Rows show whichever axis is NOT in the header (type inside a param group, the
+   parameter inside a type group), and the header carries the full severity
+   spread rather than a single top dot. */
 export function EndpointGroup({ group, selectedId, onSelect, triage, collapsed, toggle, rowRef }) {
-  const { url, parameter, items, topSev } = group
+  const { kind, parameter, typeLabel, path, url, items, sevCounts } = group
   const open = !collapsed
-  const c = `var(--${topSev})`
   const openCount = items.filter(f => (triage[f.id] || 'open') !== 'fp').length
+  const header = kind === 'type'
+    ? <span className="eg-param"><span className="eg-typelabel">{typeLabel}</span></span>
+    : parameter
+      ? <span className="eg-param">param <span className="mono">{parameter}</span></span>
+      : <span className="eg-pagelevel">page-level</span>
   return (
     <div className="endpoint-group">
       <div className="endpoint-group-header" onClick={toggle}>
-        <span className="dot" style={{ background: c }} />
-        <span className="eg-param">{parameter ? <>param <span className="mono">{parameter}</span></> : <span className="eg-pagelevel">page-level</span>}</span>
-        <span className="eg-url mono" title={url}>{url}</span>
+        <SevSpread counts={sevCounts} />
+        {header}
+        <span className="eg-url mono" title={url}>{path}</span>
         <span className="group-count" title={`${openCount} open of ${items.length}`}>{items.length}</span>
         <span className="caret">{open ? '▾' : '▸'}</span>
       </div>
       {open && items.map((f) => (
-        <FindingRow key={f.id} f={f} selectedId={selectedId} onSelect={onSelect} triage={triage} rowRef={rowRef} showSev />
+        <FindingRow key={f.id} f={f} selectedId={selectedId} onSelect={onSelect} triage={triage}
+          rowRef={rowRef} showSev primary={kind === 'type' ? 'param' : 'type'} hideUrl />
       ))}
     </div>
   )
 }
 
-/* Build endpoint groups from a flat, pre-sorted finding list. Groups are keyed
-   by (url, parameter), ranked by their worst severity then by size, and each
-   group's findings keep the incoming severity order. */
+// urlPath strips scheme+host so the distinguishing path/query tail (e.g. the
+// matrix-param ";.css" that separates two page-level groups) stays visible
+// instead of being truncated off the right edge of the full URL.
+function urlPath(u) {
+  try { const x = new URL(u); return (x.pathname + x.search) || '/' } catch { return u }
+}
+
+// finalize computes the worst severity and the per-severity counts for a group.
+function finalize(g) {
+  const sevCounts = {}
+  let topSev = sevOf(g.items[0])
+  for (const f of g.items) {
+    const s = sevOf(f)
+    sevCounts[s] = (sevCounts[s] || 0) + 1
+    if ((SEV_RANK[s] ?? 9) < (SEV_RANK[topSev] ?? 9)) topSev = s
+  }
+  return { ...g, topSev, sevCounts, path: urlPath(g.url) }
+}
+
+/* Build endpoint groups from a flat, pre-sorted finding list, in two passes:
+   1) cluster by (URL, parameter) — multi-item clusters become 'param' groups;
+   2) the leftover singletons re-cluster by (URL, type) — a repeated type (the
+      security-header case) becomes one 'type' group; a truly lone finding stays
+      a 'single'. Groups rank by worst severity, then size. This stops the
+      grouping from trading one noise pattern for a parade of 1-item groups. */
 export function groupByEndpoint(list) {
-  const map = new Map()
+  const byParam = new Map()
   for (const f of list) {
     const key = `${f.url}\u0000${f.parameter || ''}`
-    let g = map.get(key)
-    if (!g) { g = { url: f.url, parameter: f.parameter || '', items: [], topSev: sevOf(f) }; map.set(key, g) }
+    let g = byParam.get(key)
+    if (!g) { g = { kind: 'param', url: f.url, parameter: f.parameter || '', items: [] }; byParam.set(key, g) }
     g.items.push(f)
-    if ((SEV_RANK[sevOf(f)] ?? 9) < (SEV_RANK[g.topSev] ?? 9)) g.topSev = sevOf(f)
   }
-  return [...map.values()].sort((a, b) => {
+
+  const out = []
+  const singletonsByType = new Map()
+  for (const g of byParam.values()) {
+    if (g.items.length > 1) { out.push(finalize(g)); continue }
+    const f = g.items[0]
+    const tkey = `${f.url}\u0000${(f.type || f.title || '').toLowerCase()}`
+    let t = singletonsByType.get(tkey)
+    if (!t) { t = { url: f.url, typeLabel: f.type || f.title, items: [] }; singletonsByType.set(tkey, t) }
+    t.items.push(f)
+  }
+  for (const t of singletonsByType.values()) {
+    if (t.items.length > 1) out.push(finalize({ kind: 'type', url: t.url, typeLabel: t.typeLabel, items: t.items }))
+    else out.push(finalize({ kind: 'single', url: t.url, parameter: t.items[0].parameter || '', items: t.items }))
+  }
+
+  return out.sort((a, b) => {
     const sa = SEV_RANK[a.topSev] ?? 9, sb = SEV_RANK[b.topSev] ?? 9
     if (sa !== sb) return sa - sb
     return b.items.length - a.items.length

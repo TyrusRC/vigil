@@ -192,7 +192,7 @@ export default function ScanDetail({ id, go, toast }) {
                 ? SEV.map(s => !muted[s] && <SevGroup key={s} sev={s} items={grouped[s] || []} selectedId={selectedId} onSelect={f => setSelectedId(f.id)}
                     triage={triage} collapsed={collapsed[s]} toggle={() => setCollapsed(c => ({ ...c, [s]: !c[s] }))} rowRef={setRowRef} />)
                 : endpointGroups.map(g => {
-                    const key = `${g.url}\u0000${g.parameter}`
+                    const key = `${g.kind}\u0000${g.url}\u0000${g.typeLabel || g.parameter || ''}`
                     return <EndpointGroup key={key} group={g} selectedId={selectedId} onSelect={f => setSelectedId(f.id)}
                       triage={triage} collapsed={egCollapsed[key]} toggle={() => setEgCollapsed(c => ({ ...c, [key]: !c[key] }))} rowRef={setRowRef} />
                   })}
